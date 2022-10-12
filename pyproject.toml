@@ -1,0 +1,90 @@
+[tool.poetry]
+name = "serialite"
+version = "0.3.1"
+description = "A serialization library for Python"
+authors = ["David Hagen <david@drhagen.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/drhagen/serialite"
+keywords = ["serialization", "deserialization", "serde", "pydantic", "fastapi"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Operating System :: OS Independent",
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.10"
+typing_extensions = "^4.3.0"
+fastapi = { version = "^0.78.0", optional = true }
+pydantic = { version = "^1.9.1", optional = true }
+numpy = { version = "^1.23.0", optional = true }
+
+[tool.poetry.dev-dependencies]
+nox_poetry = "^1.0.1"
+pre-commit = "^2.19.0"
+
+# Test
+pytest = "^7.1.1"
+coverage = { version = "^6.3.2", extras = ["toml"] }
+pytest-cov = "^3.0.0"
+requests = "^2.28.1"
+
+# Black
+black = ">=22.3.0"
+
+# Isort
+isort = "^5.9.3"
+
+# Flake8
+flake8 = "^4.0.1"
+pyproject-flake8 = "^0.0.1a3"
+pep8-naming = "^0.12.1"
+flake8-noqa = "^1.2.1"
+
+[tool.poetry.extras]
+fastapi = ["fastapi", "pydantic"]
+numpy = ["numpy"]
+
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
+
+[tool.coverage.paths]
+source = [
+    "src/",
+    ".nox/test*/lib/python*/site-packages/",
+    ".nox/test*/Lib/site-packages/",
+]
+
+
+[tool.black]
+line-length = 99
+preview = true
+
+
+[tool.isort]
+profile = "black"
+line_length = 99
+extra_standard_library = ["typing_extensions"]
+
+
+[tool.flake8]
+max-line-length = 99
+noqa-require-code = true
+classmethod-decorators = ["classmethod", "classproperty"]
+# F402: Variable shadowing is perfectly fine
+extend-ignore = ["F402"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

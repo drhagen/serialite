@@ -1,0 +1,90 @@
+name: python
+
+on: [push]
+
+env:
+  python-version: "3.10"
+  poetry-version: "1.2.1"
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: ['3.10']
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Install Poetry
+        run: pipx install poetry==${{ env.poetry-version }}
+      - name: Install Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: poetry
+      - name: Install environment
+        run: poetry install
+      - name: Test with nox
+        run: >-
+          poetry run nox -s 
+          test-${{ matrix.python-version }}
+          test_fastapi-${{ matrix.python-version }}
+          test_numpy-${{ matrix.python-version }}
+      - name: Store coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: .coverage.*
+  coverage:
+    needs: test
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Install Poetry
+        run: pipx install poetry==${{ env.poetry-version }}
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: poetry
+      - name: Install environment
+        run: poetry install
+      - name: Fetch coverage
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage
+      - name: Combine coverage and generate report
+        run: poetry run nox -s coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+  quality:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Install Poetry
+        run: pipx install poetry==${{ env.poetry-version }}
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+          cache: poetry
+      - name: Install environment
+        run: poetry install
+      - name: Run code quality checks
+        run: poetry run nox -s black isort flake8
+  poetry-check:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Poetry
+        run: pipx install poetry==${{ env.poetry-version }}
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }}
+      - name: Validate Poetry configuration and lockfile freshness
+        run: poetry lock --check
