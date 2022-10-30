@@ -9,8 +9,14 @@ from .._result import DeserializationFailure, DeserializationResult, Deserializa
 class DateTimeSerializer(Serializer[datetime]):
     def from_data(self, data) -> DeserializationResult[datetime]:
         if isinstance(data, str):
+            if data.endswith("Z"):
+                # Python does not handle the terminal "Z"
+                # https://github.com/python/cpython/issues/80010
+                sanitized_data = data[:-1] + "+00:00"
+            else:
+                sanitized_data = data
             try:
-                value = datetime.fromisoformat(data)
+                value = datetime.fromisoformat(sanitized_data)
             except ValueError:
                 return DeserializationFailure(f"Not a valid DateTime: {data!r}")
             else:
