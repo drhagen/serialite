@@ -1,21 +1,21 @@
 import nox_poetry
 
 
-@nox_poetry.session(python=["3.10"])
+@nox_poetry.session(python=["3.10", "3.11"])
 def test(session: nox_poetry.Session):
     session.install(".", "pytest", "pytest-cov")
     session.env["COVERAGE_FILE"] = f".coverage.{session.python}"
     session.run("python", "-m", "pytest", "--cov", "serialite")
 
 
-@nox_poetry.session(python=["3.10"])
+@nox_poetry.session(python=["3.10", "3.11"])
 def test_fastapi(session: nox_poetry.Session):
     session.install(".[fastapi]", "pytest", "pytest-cov", "requests")
     session.env["COVERAGE_FILE"] = f".coverage.fastapi.{session.python}"
     session.run("python", "-m", "pytest", "--cov", "serialite", "tests/fastapi")
 
 
-@nox_poetry.session(python=["3.10"])
+@nox_poetry.session(python=["3.10", "3.11"])
 def test_numpy(session: nox_poetry.Session):
     session.install(".[numpy]", "pytest", "pytest-cov")
     session.env["COVERAGE_FILE"] = f".coverage.numpy.{session.python}"
