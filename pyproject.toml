@@ -17,26 +17,24 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-typing_extensions = "^4.3.0"
-fastapi = { version = "^0.78.0", optional = true }
-pydantic = { version = "^1.9.1", optional = true }
-numpy = { version = "^1.23.0", optional = true }
+typing_extensions = "^4.3"
+fastapi = { version = "^0.100", optional = true }
+pydantic = { version = "^1.10", optional = true }
+numpy = { version = "^1.25", optional = true }
 
 [tool.poetry.dev-dependencies]
 nox_poetry = "^1.0.2"
-pre-commit = "^2.19.0"
 
 # Test
-pytest = "^7.1.1"
-coverage = { version = "^6.3.2", extras = ["toml"] }
-pytest-cov = "^3.0.0"
-requests = "^2.28.1"
+pytest = "^7.2"
+pytest-cov = "*"
+httpx = "*"  # Needed by starlette testclient
 
 # Black
-black = ">=22.3.0"
+black = ">=22.3"
 
 # Isort
-isort = "^5.9.3"
+isort = "^5.9"
 
 # Flake8
 flake8 = "^4.0.1"

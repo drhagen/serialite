@@ -34,9 +34,9 @@ class DataSubClassSerializableA(DataAbstractSerializableClass):
         return self.value
 
 
-DataSubClassSerializableA.__subclass_serializers__[
-    "DataSubClassSerializableA"
-] = DataSubClassSerializableA
+DataSubClassSerializableA.__subclass_serializers__["DataSubClassSerializableA"] = (
+    DataSubClassSerializableA
+)
 
 
 def test_from_data_valid():
