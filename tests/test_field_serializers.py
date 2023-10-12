@@ -35,10 +35,10 @@ def test_single_field(fields_serializer):
 @pytest.mark.parametrize(
     "fields_serializer",
     [
-        FieldsSerializer(myField=MultiField(dict(a=UUID))),
-        FieldsSerializer(myField=MultiField(dict(a=UUID, b=str))),
-        FieldsSerializer(myField=MultiField(dict(b=str, a=UUID), to_data="a")),
-        FieldsSerializer(myField=MultiField(dict(a=UuidSerializer()))),
+        FieldsSerializer(myField=MultiField({"a": UUID})),
+        FieldsSerializer(myField=MultiField({"a": UUID, "b": str})),
+        FieldsSerializer(myField=MultiField({"b": str, "a": UUID}, to_data="a")),
+        FieldsSerializer(myField=MultiField({"a": UuidSerializer()})),
     ],
 )
 def test_multi_field(fields_serializer):
@@ -53,7 +53,7 @@ def test_multi_field(fields_serializer):
     "fields_serializer",
     [
         FieldsSerializer(myField=SingleField(str, default="Pirate")),
-        FieldsSerializer(myField=MultiField(dict(a=str, b=int), default="Pirate")),
+        FieldsSerializer(myField=MultiField({"a": str, "b": int}, default="Pirate")),
     ],
 )
 def test_default_value(fields_serializer):
@@ -73,7 +73,7 @@ def test_from_data_not_dict():
     "fields_serializer",
     [
         FieldsSerializer(a=int),
-        FieldsSerializer(myField=MultiField(dict(b=str, a=int))),
+        FieldsSerializer(myField=MultiField({"b": str, "a": int})),
     ],
 )
 def test_from_data_deserialization_failure(fields_serializer):
@@ -98,7 +98,7 @@ def test_from_data_invalid_field_allowed():
 
 
 def test_from_data_multi_field_repeated_fields():
-    fields_serializer = FieldsSerializer(a=MultiField(dict(b=int, c=str)))
+    fields_serializer = FieldsSerializer(a=MultiField({"b": int, "c": str}))
     assert fields_serializer.from_data({"b": 2, "c": "Boom"}) == DeserializationFailure(
         {"c": "This field cannot be provided because these fields are already provided: b"}
     )
@@ -108,7 +108,7 @@ def test_from_data_multi_field_repeated_fields():
     "fields_serializer",
     [
         FieldsSerializer(myField=SingleField(UUID, default=empty_default)),
-        FieldsSerializer(myField=MultiField(dict(myField=UUID, alt=str), default=empty_default)),
+        FieldsSerializer(myField=MultiField({"myField": UUID, "alt": str}, default=empty_default)),
     ],
 )
 def test_from_data_default_value_empty_default(fields_serializer):
@@ -127,7 +127,7 @@ def test_from_data_no_default_single_field():
 
 
 def test_from_data_no_default_multi_field():
-    fields_serializer = FieldsSerializer(myField=MultiField(dict(a=str, b=int)))
+    fields_serializer = FieldsSerializer(myField=MultiField({"a": str, "b": int}))
     data = {}
     assert fields_serializer.from_data(data) == DeserializationFailure(
         {"myField": "One of these fields is required: a, b"}
@@ -138,7 +138,7 @@ def test_from_data_field_not_writable():
     data = {"b": "Hiding"}
 
     fields_serializer = FieldsSerializer(
-        myField=MultiField(dict(a=int, b=str), access=AccessPermissions.read_only)
+        myField=MultiField({"a": int, "b": str}, access=AccessPermissions.read_only)
     )
     assert fields_serializer.from_data(data) == DeserializationFailure(
         {"b": "This field is invalid."}
@@ -157,17 +157,17 @@ def test_to_data_default_value_no_hiding():
     assert fields_serializer.to_data(value) == value
 
     fields_serializer = FieldsSerializer(
-        myField=MultiField(dict(a=str, b=int), default="Pirate", hide_default=False)
+        myField=MultiField({"a": str, "b": int}, default="Pirate", hide_default=False)
     )
     assert fields_serializer.to_data(value) == {"a": "Pirate"}
 
 
 def test_to_data_multi_field_use_to_data():
-    fields_serializer = FieldsSerializer(myField=MultiField(dict(a=int, b=str)))
+    fields_serializer = FieldsSerializer(myField=MultiField({"a": int, "b": str}))
     value = {"myField": 2}
     assert fields_serializer.to_data(value) == {"a": 2}
 
-    fields_serializer = FieldsSerializer(myField=MultiField(dict(a=int, b=str), to_data="b"))
+    fields_serializer = FieldsSerializer(myField=MultiField({"a": int, "b": str}, to_data="b"))
     value = {"myField": "3"}
     assert fields_serializer.to_data(value) == {"b": "3"}
 

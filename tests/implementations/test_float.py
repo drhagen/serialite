@@ -16,7 +16,7 @@ def test_valid_inputs(data):
     assert float_serializer.to_data(data) == data
 
 
-@pytest.mark.parametrize("data,value", [["nan", nan], ["inf", inf], ["-inf", -inf]])
+@pytest.mark.parametrize(("data", "value"), [("nan", nan), ("inf", inf), ("-inf", -inf)])
 def test_nonfinite_inputs(data, value):
     nonfinite_float_serializer = FloatSerializer(
         nan_values=("nan",), inf_values=("inf",), neg_inf_values=("-inf",)

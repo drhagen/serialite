@@ -1,44 +1,44 @@
-import nox_poetry
+import nox
+from nox_poetry import Session, session
+
+nox.options.sessions = ["test", "coverage", "lint"]
 
 
-@nox_poetry.session(python=["3.10", "3.11"])
-def test(session: nox_poetry.Session):
-    session.install(".", "pytest", "pytest-cov")
-    session.env["COVERAGE_FILE"] = f".coverage.{session.python}"
-    session.run("python", "-m", "pytest", "--cov", "serialite")
+@session(python=["3.10", "3.11"])
+def test(s: Session):
+    s.install(".", "pytest", "pytest-cov")
+    s.env["COVERAGE_FILE"] = f".coverage.{s.python}"
+    s.run("python", "-m", "pytest", "--cov", "serialite")
 
 
-@nox_poetry.session(python=["3.10", "3.11"])
-def test_fastapi(session: nox_poetry.Session):
-    session.install(".[fastapi]", "pytest", "pytest-cov", "httpx")
-    session.env["COVERAGE_FILE"] = f".coverage.fastapi.{session.python}"
-    session.run("python", "-m", "pytest", "--cov", "serialite", "tests/fastapi")
+@session(python=["3.10", "3.11"])
+def test_fastapi(s: Session):
+    s.install(".[fastapi]", "pytest", "pytest-cov", "httpx")
+    s.env["COVERAGE_FILE"] = f".coverage.fastapi.{s.python}"
+    s.run("python", "-m", "pytest", "--cov", "serialite", "tests/fastapi")
 
 
-@nox_poetry.session(python=["3.10", "3.11"])
-def test_numpy(session: nox_poetry.Session):
-    session.install(".[numpy]", "pytest", "pytest-cov")
-    session.env["COVERAGE_FILE"] = f".coverage.numpy.{session.python}"
-    session.run("python", "-m", "pytest", "--cov", "serialite", "tests/test_numpy.py")
+@session(python=["3.10", "3.11"])
+def test_numpy(s: Session):
+    s.install(".[numpy]", "pytest", "pytest-cov")
+    s.env["COVERAGE_FILE"] = f".coverage.numpy.{s.python}"
+    s.run("python", "-m", "pytest", "--cov", "serialite", "tests/test_numpy.py")
 
 
-@nox_poetry.session(venv_backend="none")
-def coverage(session: nox_poetry.Session):
-    session.run("coverage", "combine")
-    session.run("coverage", "html")
-    session.run("coverage", "xml")
+@session(venv_backend="none")
+def coverage(s: Session):
+    s.run("coverage", "combine")
+    s.run("coverage", "html")
+    s.run("coverage", "xml")
 
 
-@nox_poetry.session(venv_backend="none")
-def black(session: nox_poetry.Session):
-    session.run("black", "--check", ".")
+@session(venv_backend="none")
+def fmt(s: Session) -> None:
+    s.run("ruff", "check", ".", "--select", "I", "--fix")
+    s.run("black", ".")
 
 
-@nox_poetry.session(venv_backend="none")
-def isort(session: nox_poetry.Session):
-    session.run("isort", "--check", ".")
-
-
-@nox_poetry.session(venv_backend="none")
-def flake8(session: nox_poetry.Session):
-    session.run("pflake8", "src", "tests")
+@session(venv_backend="none")
+def lint(s: Session) -> None:
+    s.run("black", "--check", ".")
+    s.run("ruff", "check", ".")

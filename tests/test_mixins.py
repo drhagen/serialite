@@ -10,7 +10,7 @@ from serialite import (
 
 
 class DataAbstractSerializableClass(AbstractSerializableMixin):
-    __subclass_serializers__ = {}
+    __subclass_serializers__ = {}  # noqa: RUF012
 
     @abstractmethod
     def get_value(self):

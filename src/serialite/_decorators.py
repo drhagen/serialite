@@ -10,6 +10,9 @@ from ._descriptors import classproperty
 from ._fields_serializer import FieldsSerializer, SingleField, no_default
 from ._mixins import AbstractSerializableMixin, SerializableMixin
 
+# Allow commented out code in this file because it is important documentation
+# ruff: noqa: ERA001
+
 
 # Inspired by https://stackoverflow.com/a/14412901/1485877
 def flexible_decorator(dec):
@@ -93,8 +96,6 @@ def infer_fields_serializer(cls):
                 field_default = maybe_default
             elif maybe_factory_default is not MISSING:
                 field_default = maybe_factory_default()
-            else:
-                assert False
 
             serializer_fields[field.name] = SingleField(field_serializer, default=field_default)
 
@@ -113,7 +114,7 @@ def serializable(cls):
     """
     infer_fields_serializer(cls)
 
-    new_bases = (SerializableMixin,) + cls.__bases__
+    new_bases = (SerializableMixin, *cls.__bases__)
     try:
         # Try to mutate the bases of the class in place.
         # This will fail if the only base is `object`.
@@ -189,7 +190,7 @@ def abstract_serializable(cls):
     """
     infer_subclass_serializers(cls)
 
-    new_bases = (AbstractSerializableMixin,) + cls.__bases__
+    new_bases = (AbstractSerializableMixin, *cls.__bases__)
     try:
         # Try to mutate the bases of the class in place.
         # This will fail if the only base is `object`.

@@ -115,7 +115,7 @@ class MultiField(FieldsSerializerField):
         default: Any = no_default,
         hide_default: bool = True,
         access: AccessPermissions = AccessPermissions.read_write,
-        to_data: str = None,
+        to_data: str = None,  # noqa: RUF013
     ):
         """A field serializer with a direct data field to object field mapping.
 

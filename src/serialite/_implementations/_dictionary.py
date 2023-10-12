@@ -87,7 +87,7 @@ class RawDictSerializer(Generic[Value], Serializer[dict[str, Value]]):
         self,
         value_serializer: Serializer[Value],
         *,
-        key_serializer: Serializer[str] = StringSerializer(),
+        key_serializer: Serializer[str] = StringSerializer(),  # noqa: B008
     ):
         self.value_serializer = value_serializer
         self.key_serializer = key_serializer
