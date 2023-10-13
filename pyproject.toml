@@ -20,7 +20,8 @@ python = "^3.10"
 typing_extensions = "^4.3"
 fastapi = { version = "^0.100", optional = true }
 pydantic = { version = "^1.10", optional = true }
-numpy = { version = "^1.25", optional = true }
+# Lie about numpy only being needed below 3.13 in order to satisfy its Python ceiling
+numpy = { version = "^1.25", optional = true, python = "<3.13" }
 
 [tool.poetry.dev-dependencies]
 nox_poetry = "^1.0.2"
