@@ -1,16 +1,20 @@
-name: python
+name: CI
 
-on: [push]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 env:
   python-version: "3.10"
-  poetry-version: "1.2.1"
+  poetry-version: "1.6.1"
 
 jobs:
   test:
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repo
@@ -60,7 +64,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
-  quality:
+  lint:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repo
@@ -75,14 +79,15 @@ jobs:
       - name: Install environment
         run: poetry install
       - name: Run code quality checks
-        run: poetry run nox -s black isort flake8
+        run: poetry run nox -s lint
   poetry-check:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
       - name: Install Poetry
         run: pipx install poetry==${{ env.poetry-version }}
-      - name: Set up Python
+      - name: Install Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.python-version }}

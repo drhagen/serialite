@@ -10,7 +10,7 @@ from serialite import (
 
 
 class DataAbstractSerializableClass(AbstractSerializableMixin):
-    __subclass_serializers__ = {}
+    __subclass_serializers__ = {}  # noqa: RUF012
 
     @abstractmethod
     def get_value(self):
@@ -34,9 +34,9 @@ class DataSubClassSerializableA(DataAbstractSerializableClass):
         return self.value
 
 
-DataSubClassSerializableA.__subclass_serializers__[
-    "DataSubClassSerializableA"
-] = DataSubClassSerializableA
+DataSubClassSerializableA.__subclass_serializers__["DataSubClassSerializableA"] = (
+    DataSubClassSerializableA
+)
 
 
 def test_from_data_valid():

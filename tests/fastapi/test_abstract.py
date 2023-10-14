@@ -25,7 +25,7 @@ def fastapi_mixin_client():
     app = FastAPI()
 
     class Base(AbstractSerializableMixin):
-        __subclass_serializers__ = {}
+        __subclass_serializers__ = {}  # noqa: RUF012
         __fields_serializer__ = FieldsSerializer(a=str, b=float)
 
         def __init__(self, a: str, b: float):

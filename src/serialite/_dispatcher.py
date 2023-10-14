@@ -72,7 +72,7 @@ def subclassdispatch(func):
             # issubclass does not work on Union and Optional
             # WeakKeyDictionary does not work on UnionType
             # must bypass the dispatcher
-            if len(cls.__args__) == 2 and cls.__args__[1] is type(None):  # noqa: E721
+            if len(cls.__args__) == 2 and cls.__args__[1] is type(None):
                 # Optional is just a Union with NoneType in the second argument
                 return optional_to_data
             else:

@@ -8,7 +8,7 @@ from serialite import DeserializationSuccess, serializer
 
 
 @pytest.mark.parametrize(
-    "data_type,data,value",
+    ("data_type", "data", "value"),
     [
         (bool, True, True),
         (int, 3, 3),

@@ -74,7 +74,7 @@ class AbstractSerializableMixin(Serializable):
     remainder of the dictionary to.
     """
 
-    __subclass_serializers__: dict[str, Serializable]
+    __subclass_serializers__: ClassVar[dict[str, Serializable]]
 
     @classmethod
     def from_data(cls, data):

@@ -142,7 +142,7 @@ class Serializable(Serializer[SerializableOutput]):
         include: AbstractSetIntStr | MappingIntStrAny = None,
         exclude: AbstractSetIntStr | MappingIntStrAny = None,
         by_alias: bool = False,
-        skip_defaults: bool = None,
+        skip_defaults: bool = None,  # noqa: RUF013
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
         exclude_none: bool = False,
