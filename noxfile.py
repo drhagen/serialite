@@ -25,6 +25,15 @@ def test_numpy(s: Session):
     s.run("python", "-m", "pytest", "--cov", "serialite", "tests/test_numpy.py")
 
 
+@session(python=["3.10", "3.11", "3.12"])
+def test_ordered_set(s: Session):
+    s.install(".[ordered-set]", "pytest", "pytest-cov")
+    s.env["COVERAGE_FILE"] = f".coverage.ordered_set.{s.python}"
+    s.run(
+        "python", "-m", "pytest", "--cov", "serialite", "tests/implementations/test_ordered_set.py"
+    )
+
+
 @session(venv_backend="none")
 def coverage(s: Session):
     s.run("coverage", "combine")
