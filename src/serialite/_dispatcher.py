@@ -196,6 +196,13 @@ def list_to_data(cls):
     return ListSerializer(serializer(cls.__args__[0]))
 
 
+@serializer.register(set)
+def set_to_data(cls):
+    from ._implementations import SetSerializer
+
+    return SetSerializer(serializer(cls.__args__[0]))
+
+
 @serializer.register(tuple)
 def tuple_to_data(cls):
     from ._implementations import TupleSerializer
@@ -261,3 +268,16 @@ else:
         from ._implementations import ArraySerializer
 
         return ArraySerializer(dtype=float)
+
+
+try:
+    from ordered_set import OrderedSet
+except ImportError:
+    pass
+else:
+
+    @serializer.register(OrderedSet)
+    def ordered_set_to_data(cls):
+        from ._implementations import OrderedSetSerializer
+
+        return OrderedSetSerializer(serializer(cls.__args__[0]))
