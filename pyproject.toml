@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "serialite"
-version = "0.3.2"
+version = "0.3.3"
 description = "A serialization library for Python"
 authors = ["David Hagen <david@drhagen.com>"]
 license = "MIT"
