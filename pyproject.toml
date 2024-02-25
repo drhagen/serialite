@@ -20,6 +20,7 @@ python = "^3.10"
 typing_extensions = "^4.3"
 fastapi = { version = "^0.100", optional = true }
 pydantic = { version = "^1.10", optional = true }
+ordered-set = { version = "^4.1", optional = true }
 # Lie about numpy only being needed below 3.13 in order to satisfy its Python ceiling
 numpy = { version = "^1.25", optional = true, python = "<3.13" }
 
@@ -38,6 +39,7 @@ ruff = ">=0.0.275"
 [tool.poetry.extras]
 fastapi = ["fastapi", "pydantic"]
 numpy = ["numpy"]
+ordered-set = ["ordered-set"]
 
 
 [tool.coverage.run]

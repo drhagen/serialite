@@ -34,6 +34,7 @@ jobs:
           test-${{ matrix.python-version }}
           test_fastapi-${{ matrix.python-version }}
           test_numpy-${{ matrix.python-version }}
+          test_ordered_set-${{ matrix.python-version }}
       - name: Store coverage
         uses: actions/upload-artifact@v3
         with:
