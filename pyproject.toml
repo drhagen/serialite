@@ -18,23 +18,22 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.10"
 typing_extensions = "^4.3"
-fastapi = { version = "^0.100", optional = true }
+fastapi = { version = ">=0.100,<0.111", optional = true }
 pydantic = { version = "^1.10", optional = true }
 ordered-set = { version = "^4.1", optional = true }
 # Lie about numpy only being needed below 3.13 in order to satisfy its Python ceiling
 numpy = { version = "^1.25", optional = true, python = "<3.13" }
 
 [tool.poetry.dev-dependencies]
-nox_poetry = "^1.0.2"
+nox_poetry = "^1.0.3"
 
 # Test
-pytest = "^7.2"
+pytest = "^8"
 pytest-cov = "*"
-httpx = "*"  # Needed by starlette testclient
+httpx = "*" # Needed by starlette testclient
 
 # Lint
-black = ">=22.3"
-ruff = ">=0.0.275"
+ruff = "^0.3"
 
 [tool.poetry.extras]
 fastapi = ["fastapi", "pydantic"]
@@ -60,14 +59,11 @@ source = [
 ]
 
 
-[tool.black]
-line-length = 99
-preview = true
-
-
 [tool.ruff]
 src = ["src"]
 line-length = 99
+
+[tool.ruff.lint]
 extend-select = [
     "I", # isort
     "N", # pep8-naming
@@ -84,17 +80,17 @@ extend-select = [
 # PT011: testing for broad exceptions is fine
 extend-ignore = ["F402", "PT011"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # F401: unused-import; Allow unused imports in __init__.py files
 "__init__.py" = ["F401"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 extra-standard-library = ["typing_extensions"]
 
-[tool.ruff.pep8-naming]
+[tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["serialite._descriptors.classproperty"]
 
-[tool.ruff.flake8-bugbear]
+[tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["serialite.field", "fastapi.Body"]
 
 
