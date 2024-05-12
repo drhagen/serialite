@@ -30,7 +30,7 @@ jobs:
         run: poetry install
       - name: Test with nox
         run: >-
-          poetry run nox -s 
+          poetry run nox -s
           test-${{ matrix.python-version }}
           test_fastapi-${{ matrix.python-version }}
           test_numpy-${{ matrix.python-version }}
@@ -62,8 +62,9 @@ jobs:
       - name: Combine coverage and generate report
         run: poetry run nox -s coverage
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
   lint:
     runs-on: ubuntu-22.04
