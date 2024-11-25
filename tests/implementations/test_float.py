@@ -1,10 +1,17 @@
-from math import inf, nan
+from math import inf, isnan, nan
 
 import pytest
 
 from serialite import DeserializationFailure, DeserializationSuccess, FloatSerializer
 
 float_serializer = FloatSerializer()
+
+
+def float_equal(a, b):
+    if isnan(a) and isnan(b):
+        return True
+    else:
+        return a == b
 
 
 @pytest.mark.parametrize("data", [12, 15.34])
@@ -22,7 +29,10 @@ def test_nonfinite_inputs(data, value):
         nan_values=("nan",), inf_values=("inf",), neg_inf_values=("-inf",)
     )
 
-    assert nonfinite_float_serializer.from_data(data) == DeserializationSuccess(value)
+    # Do not use equality because DeserializationSuccess(nan) != DeserializationSuccess(nan)
+    actual = nonfinite_float_serializer.from_data(data)
+    assert isinstance(actual, DeserializationSuccess)
+    assert float_equal(actual.or_die(), value)
     assert nonfinite_float_serializer.to_data(value) == data
 
 

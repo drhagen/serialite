@@ -4,28 +4,28 @@ from nox_poetry import Session, session
 options.sessions = ["test", "test_fastapi", "test_numpy", "test_ordered_set", "coverage", "lint"]
 
 
-@session(python=["3.10", "3.11", "3.12"])
+@session(python=["3.10", "3.11", "3.12", "3.13"])
 def test(s: Session):
     s.install(".", "pytest", "pytest-cov")
     s.env["COVERAGE_FILE"] = f".coverage.{s.python}"
     s.run("python", "-m", "pytest", "--cov", "serialite")
 
 
-@session(python=["3.10", "3.11", "3.12"])
+@session(python=["3.10", "3.11", "3.12", "3.13"])
 def test_fastapi(s: Session):
     s.install(".[fastapi]", "pytest", "pytest-cov", "httpx")
     s.env["COVERAGE_FILE"] = f".coverage.fastapi.{s.python}"
     s.run("python", "-m", "pytest", "--cov", "serialite", "tests/fastapi")
 
 
-@session(python=["3.10", "3.11", "3.12"])
+@session(python=["3.10", "3.11", "3.12", "3.13"])
 def test_numpy(s: Session):
     s.install(".[numpy]", "pytest", "pytest-cov")
     s.env["COVERAGE_FILE"] = f".coverage.numpy.{s.python}"
     s.run("python", "-m", "pytest", "--cov", "serialite", "tests/test_numpy.py")
 
 
-@session(python=["3.10", "3.11", "3.12"])
+@session(python=["3.10", "3.11", "3.12", "3.13"])
 def test_ordered_set(s: Session):
     s.install(".[ordered-set]", "pytest", "pytest-cov")
     s.env["COVERAGE_FILE"] = f".coverage.ordered_set.{s.python}"
