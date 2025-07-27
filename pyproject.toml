@@ -1,47 +1,71 @@
-[tool.poetry]
+[build-system]
+requires = ["uv_build == 0.8.*"]
+build-backend = "uv_build"
+
+[project]
 name = "serialite"
 version = "0.3.5"
 description = "A serialization library for Python"
-authors = ["David Hagen <david@drhagen.com>"]
+authors = [ { name = "David Hagen", email = "david@drhagen.com" } ]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/drhagen/serialite"
 keywords = ["serialization", "deserialization", "serde", "pydantic", "fastapi"]
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11", 
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
+dependencies = [
+    "typing_extensions ~=4.3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-typing_extensions = "^4.3"
-fastapi = { version = ">=0.100,<0.111", optional = true }
-pydantic = { version = "^1.10", optional = true }
-ordered-set = { version = "^4.1", optional = true }
-numpy = { version = "^1.25", optional = true }
+[project.optional-dependencies]
+fastapi = [
+    "fastapi >=0.100,<0.111",
+    "pydantic ~= 1.10",
+]
 
-[tool.poetry.dev-dependencies]
-nox_poetry = "^1.0.3"
+numpy = [
+    "numpy ~= 1.25",
+]
 
-# Test
-pytest = "^8"
-pytest-cov = "*"
-httpx = "*" # Needed by starlette testclient
+ordered-set = [
+    "ordered-set ~=4.1",
+]
 
-# Lint
-ruff = "^0.3"
+[project.urls]
+Repository = "https://github.com/drhagen/serialite"
 
-[tool.poetry.extras]
-fastapi = ["fastapi", "pydantic"]
-numpy = ["numpy"]
-ordered-set = ["ordered-set"]
+[dependency-groups]
+nox = [
+    "nox-uv == 0.6.*",
+]
+test = [
+    "pytest == 8.*",
+    "coverage == 7.*",
+    "httpx", # Needed by starlette testclient
+]
+lint = [
+    "ruff == 0.3.*"
+]
 
+[tool.uv]
+default-groups = "all"
+python-preference = "only-managed"
 
 [tool.coverage.run]
 branch = true
+source_pkgs = ["serialite"]
+relative_files = true
 
 [tool.coverage.report]
 exclude_lines = [
@@ -53,10 +77,8 @@ exclude_lines = [
 [tool.coverage.paths]
 source = [
     "src/",
-    ".nox/test*/lib/python*/site-packages/",
-    ".nox/test*/Lib/site-packages/",
+    "**/site-packages/",
 ]
-
 
 [tool.ruff]
 src = ["src"]
@@ -91,8 +113,3 @@ classmethod-decorators = ["serialite._descriptors.classproperty"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["serialite.field", "fastapi.Body"]
-
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
