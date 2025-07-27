@@ -1,36 +1,39 @@
-from nox import options, parametrize
-from nox_poetry import Session, session
+from nox import Session, options, parametrize
+from nox_uv import session
 
+options.default_venv_backend = "uv"
 options.sessions = ["test", "test_fastapi", "test_numpy", "test_ordered_set", "coverage", "lint"]
 
 
-@session(python=["3.10", "3.11", "3.12", "3.13"])
+@session(python=["3.10", "3.11", "3.12", "3.13"], uv_groups=["test"])
 def test(s: Session):
-    s.install(".", "pytest", "pytest-cov")
-    s.env["COVERAGE_FILE"] = f".coverage.{s.python}"
-    s.run("python", "-m", "pytest", "--cov", "serialite")
+    coverage_file = f".coverage.{s.python}"
+    s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests")
 
 
-@session(python=["3.10", "3.11", "3.12", "3.13"])
+@session(python=["3.10", "3.11", "3.12", "3.13"], uv_groups=["test"], uv_extras=["fastapi"])
 def test_fastapi(s: Session):
-    s.install(".[fastapi]", "pytest", "pytest-cov", "httpx")
-    s.env["COVERAGE_FILE"] = f".coverage.fastapi.{s.python}"
-    s.run("python", "-m", "pytest", "--cov", "serialite", "tests/fastapi")
+    coverage_file = f".coverage.{s.python}.fastapi"
+    s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests/fastapi")
 
 
-@session(python=["3.10", "3.11", "3.12", "3.13"])
+@session(python=["3.10", "3.11", "3.12", "3.13"], uv_groups=["test"], uv_extras=["numpy"])
 def test_numpy(s: Session):
-    s.install(".[numpy]", "pytest", "pytest-cov")
-    s.env["COVERAGE_FILE"] = f".coverage.numpy.{s.python}"
-    s.run("python", "-m", "pytest", "--cov", "serialite", "tests/test_numpy.py")
+    coverage_file = f".coverage.{s.python}.numpy"
+    s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests/test_numpy.py")
 
 
-@session(python=["3.10", "3.11", "3.12", "3.13"])
+@session(python=["3.10", "3.11", "3.12", "3.13"], uv_groups=["test"], uv_extras=["ordered-set"])
 def test_ordered_set(s: Session):
-    s.install(".[ordered-set]", "pytest", "pytest-cov")
-    s.env["COVERAGE_FILE"] = f".coverage.ordered_set.{s.python}"
+    coverage_file = f".coverage.{s.python}.ordered_set"
     s.run(
-        "python", "-m", "pytest", "--cov", "serialite", "tests/implementations/test_ordered_set.py"
+        "coverage",
+        "run",
+        "--data-file",
+        coverage_file,
+        "-m",
+        "pytest",
+        "tests/implementations/test_ordered_set.py",
     )
 
 

@@ -35,7 +35,7 @@ class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[T
         # Validate values
         errors = {}
         values = []
-        for i, (item, serializer) in enumerate(zip(data, self.element_serializers)):
+        for i, (item, serializer) in enumerate(zip(data, self.element_serializers, strict=True)):
             value_or_error = serializer.from_data(item)
             if isinstance(value_or_error, DeserializationFailure):
                 errors[str(i)] = value_or_error.error
@@ -57,7 +57,8 @@ class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[T
             )
 
         return [
-            serializer.to_data(item) for item, serializer in zip(value, self.element_serializers)
+            serializer.to_data(item)
+            for item, serializer in zip(value, self.element_serializers, strict=True)
         ]
 
     def collect_openapi_models(
