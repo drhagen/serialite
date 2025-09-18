@@ -73,3 +73,13 @@ def test_dispatch_any():
     assert any_serializer.from_data(1).or_die() == 1
     assert any_serializer.from_data("any string").or_die() == "any string"
     assert any_serializer.from_data({"a": 1}).or_die() == {"a": 1}
+
+
+def test_dispatch_type_alias():
+    type Scale = Literal["log", "linear"]
+
+    scale_serializer = serializer(Scale)
+    assert scale_serializer.from_data("log").or_die() == "log"
+    assert scale_serializer.from_data("linear").or_die() == "linear"
+    assert scale_serializer.to_data("log") == "log"
+    assert scale_serializer.to_data("linear") == "linear"

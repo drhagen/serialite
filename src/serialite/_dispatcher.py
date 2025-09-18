@@ -4,7 +4,7 @@ from abc import get_cache_token
 from datetime import datetime
 from pathlib import Path
 from types import GenericAlias, UnionType
-from typing import Any, Literal, TypeVar, Union, get_origin
+from typing import Any, Literal, TypeAliasType, TypeVar, Union, get_origin
 from uuid import UUID
 
 from ._base import Serializer
@@ -67,6 +67,10 @@ def subclassdispatch(func):
                 dispatch_cache.clear()
                 cache_token = current_token
 
+        if isinstance(cls, TypeAliasType):
+            # Hash is not defined on TypeAliasType, so it cannot be used in WeakKeyDictionary
+            return type_alias_type_serializer
+
         origin = get_origin(cls)
         if origin in {Union, UnionType}:
             # issubclass does not work on Union and Optional
@@ -74,10 +78,10 @@ def subclassdispatch(func):
             # must bypass the dispatcher
             if len(cls.__args__) == 2 and cls.__args__[1] is type(None):
                 # Optional is just a Union with NoneType in the second argument
-                return optional_to_data
+                return optional_serializer
             else:
                 # This is the standard Union
-                return union_to_data
+                return union_serializer
 
         try:
             impl = dispatch_cache[cls]
@@ -90,13 +94,13 @@ def subclassdispatch(func):
                     # must extract the base class and dispatch on that
                     if origin is Literal:
                         # issubclass does not work on Literal either
-                        impl = literal_to_data
+                        impl = literal_serializer
                     else:
                         # This is the standard Generic class
                         impl = _find_impl(origin, registry)
                 elif cls is Any:
                     # issubclass does not work on Any; must directly inject this
-                    impl = any_to_data
+                    impl = any_serializer
                 else:
                     impl = _find_impl(cls, registry)
             dispatch_cache[cls] = impl
@@ -141,77 +145,77 @@ def serializer(cls: type[Output]) -> Serializer[Output]:
 
 
 @serializer.register(type(None))
-def none_to_data(cls):
+def none_serializer(cls):
     from ._implementations import NoneSerializer
 
     return NoneSerializer()
 
 
 @serializer.register(bool)
-def boolean_to_data(cls):
+def boolean_serializer(cls):
     from ._implementations import BooleanSerializer
 
     return BooleanSerializer()
 
 
 @serializer.register(int)
-def integer_to_data(cls):
+def integer_serializer(cls):
     from ._implementations import IntegerSerializer
 
     return IntegerSerializer()
 
 
 @serializer.register(float)
-def float_to_data(cls):
+def float_serializer(cls):
     from ._implementations import FloatSerializer
 
     return FloatSerializer()
 
 
 @serializer.register(str)
-def string_to_data(cls):
+def string_serializer(cls):
     from ._implementations import StringSerializer
 
     return StringSerializer()
 
 
 @serializer.register(datetime)
-def datetime_to_data(cls):
+def datetime_serializer(cls):
     from ._implementations import DateTimeSerializer
 
     return DateTimeSerializer()
 
 
 @serializer.register(UUID)
-def uuid_to_data(cls):
+def uuid_serializer(cls):
     from ._implementations import UuidSerializer
 
     return UuidSerializer()
 
 
 @serializer.register(list)
-def list_to_data(cls):
+def list_serializer(cls):
     from ._implementations import ListSerializer
 
     return ListSerializer(serializer(cls.__args__[0]))
 
 
 @serializer.register(set)
-def set_to_data(cls):
+def set_serializer(cls):
     from ._implementations import SetSerializer
 
     return SetSerializer(serializer(cls.__args__[0]))
 
 
 @serializer.register(tuple)
-def tuple_to_data(cls):
+def tuple_serializer(cls):
     from ._implementations import TupleSerializer
 
     return TupleSerializer(*(serializer(arg) for arg in cls.__args__))
 
 
 @serializer.register(dict)
-def dict_to_data(cls):
+def dict_serializer(cls):
     from ._implementations import OrderedDictSerializer, RawDictSerializer
 
     if cls.__args__[0] is str:
@@ -221,7 +225,7 @@ def dict_to_data(cls):
 
 
 @serializer.register(Path)
-def path_to_data(cls):
+def path_serializer(cls):
     from ._implementations import PathSerializer
 
     return PathSerializer()
@@ -229,7 +233,7 @@ def path_to_data(cls):
 
 # Union disables subclassing so Optional cannot be used to dispatch
 # @serializer.register(Optional)
-def optional_to_data(cls):
+def optional_serializer(cls):
     from ._implementations import OptionalSerializer
 
     return OptionalSerializer(serializer(cls.__args__[0]))
@@ -237,24 +241,30 @@ def optional_to_data(cls):
 
 # Union disables subclassing so it cannot be used to dispatch
 # @serializer.register(Union)
-def union_to_data(cls):
+def union_serializer(cls):
     from ._implementations import TryUnionSerializer
 
     return TryUnionSerializer(*[serializer(type_arg) for type_arg in cls.__args__])
 
 
 # @serializer.register(Literal)
-def literal_to_data(cls):
+def literal_serializer(cls):
     from ._implementations import LiteralSerializer
 
     return LiteralSerializer(*cls.__args__)
 
 
 # @serializer.register(Any)
-def any_to_data(cls):
+def any_serializer(cls):
     from ._implementations import JsonSerializer
 
     return JsonSerializer()
+
+
+# TypeAliasType does not implement hashing so it cannot be used to dispatch
+# @serializer.register(TypeAliasType)
+def type_alias_type_serializer(cls):
+    return serializer(cls.__value__)
 
 
 try:
@@ -264,7 +274,7 @@ except ImportError:
 else:
 
     @serializer.register(np.ndarray)
-    def array_to_data(cls):
+    def array_serializer(cls):
         from ._implementations import ArraySerializer
 
         return ArraySerializer(dtype=float)
@@ -277,7 +287,7 @@ except ImportError:
 else:
 
     @serializer.register(OrderedSet)
-    def ordered_set_to_data(cls):
+    def ordered_set_serializer(cls):
         from ._implementations import OrderedSetSerializer
 
         return OrderedSetSerializer(serializer(cls.__args__[0]))
