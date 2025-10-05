@@ -53,7 +53,7 @@ test = [
     "httpx", # Needed by starlette testclient
 ]
 lint = [
-    "ruff == 0.3.*"
+    "ruff == 0.5.*"
 ]
 
 [tool.uv]
