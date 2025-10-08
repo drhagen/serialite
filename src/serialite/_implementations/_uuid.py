@@ -3,20 +3,21 @@ __all__ = ["UuidSerializer"]
 from uuid import UUID
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 
 
 class UuidSerializer(Serializer[UUID]):
-    def from_data(self, data) -> DeserializationResult[UUID]:
+    def from_data(self, data) -> Result[UUID]:
         if isinstance(data, str):
             try:
                 value = UUID(data)
             except Exception:
-                return DeserializationFailure(f"Not a valid UUID: {data!r}")
+                return Failure(Errors.one(ValidationError(f"Not a valid UUID: {data!r}")))
             else:
-                return DeserializationSuccess(value)
+                return Success(value)
         else:
-            return DeserializationFailure(f"Not a valid UUID: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid UUID: {data!r}")))
 
     def to_data(self, value: UUID):
         if not isinstance(value, UUID):

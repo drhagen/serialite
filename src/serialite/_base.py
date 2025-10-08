@@ -6,7 +6,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from ._descriptors import classproperty
-from ._result import DeserializationFailure, DeserializationResult
+from ._result import Failure, Result, Success
 from ._stable_set import StableSet
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ class Serializer(Generic[Output]):
     """Serialize and deserialize a particular object."""
 
     @abstractmethod
-    def from_data(self, data: Any) -> DeserializationResult[Output]:
+    def from_data(self, data: Any) -> Result[Output]:
         """Deserialize an object from data."""
         raise NotImplementedError()
 
@@ -67,7 +67,7 @@ class Serializable(Serializer[SerializableOutput]):
     # appear inconsistent with the base class.
     @classmethod
     @abstractmethod
-    def from_data(cls, data: Any) -> DeserializationResult[Output]:
+    def from_data(cls, data: Any) -> Result[Output]:
         pass
 
     @abstractmethod
@@ -105,15 +105,15 @@ class Serializable(Serializer[SerializableOutput]):
         if isinstance(value, cls):
             return value
 
-        result = cls.from_data(value)
-
-        if isinstance(result, DeserializationFailure):
-            # Must raise ValueError, TypeError, or AssertionError for Pydantic
-            # to catch it. Or we could construct a Pydantic ValidationError.
-            # https://pydantic-docs.helpmanual.io/usage/validators/
-            raise ValueError(result.error)
-        else:
-            return result.or_die()
+        match cls.from_data(value):
+            case Failure(error):
+                # Must raise ValueError, TypeError, or AssertionError for
+                # Pydantic to catch it. Or we could construct a Pydantic
+                # ValidationError.
+                # https://docs.pydantic.dev/latest/concepts/validators/
+                raise ValueError(error)
+            case Success(value):
+                return value
 
     @classmethod
     def __get_validators__(cls):

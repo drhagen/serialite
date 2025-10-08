@@ -4,8 +4,11 @@ from dataclasses import dataclass
 import pytest
 
 from serialite import (
-    DeserializationFailure,
+    Errors,
+    Failure,
     PositiveIntegerSerializer,
+    Success,
+    ValidationError,
     abstract_serializable,
     field,
     serializable,
@@ -44,7 +47,7 @@ def test_dataclass_basic(cls: type):
     data = {"a": 1, "b": "foo"}
 
     assert value.to_data() == data
-    assert cls.from_data(data).or_die() == value
+    assert cls.from_data(data) == Success(value)
 
 
 @serializable
@@ -100,9 +103,9 @@ def test_dataclass_field(cls: type):
     assert value_implicit_default.to_data() == data_implicit_default
     assert value_explicit_default.to_data() == data_implicit_default
 
-    assert cls.from_data(data_not_default).or_die() == value_not_default
-    assert cls.from_data(data_implicit_default).or_die() == value_implicit_default
-    assert cls.from_data(data_explicit_default).or_die() == value_implicit_default
+    assert cls.from_data(data_not_default) == Success(value_not_default)
+    assert cls.from_data(data_implicit_default) == Success(value_implicit_default)
+    assert cls.from_data(data_explicit_default) == Success(value_implicit_default)
 
 
 def test_field_serializer_is_serializer():
@@ -117,9 +120,9 @@ def test_field_serializer_is_serializer():
     bad_data = {"a": -1}
 
     assert value.to_data() == good_data
-    assert Override.from_data(good_data).or_die() == value
-    assert Override.from_data(bad_data) == DeserializationFailure(
-        {"a": "Not a valid positive integer: -1"}
+    assert Override.from_data(good_data) == Success(value)
+    assert Override.from_data(bad_data) == Failure(
+        Errors.one(ValidationError("Not a valid positive integer: -1"), location=["a"])
     )
 
 
@@ -140,8 +143,8 @@ def test_field_serializer_is_type():
     assert value_default.to_data() == data_default
     assert value.to_data() == good_data
 
-    assert IsType.from_data(data_default).or_die() == value_default
-    assert IsType.from_data(good_data).or_die() == value
-    assert IsType.from_data(bad_data) == DeserializationFailure(
-        {"b": {"1": "Not a valid string: 2"}}
+    assert IsType.from_data(data_default) == Success(value_default)
+    assert IsType.from_data(good_data) == Success(value)
+    assert IsType.from_data(bad_data) == Failure(
+        Errors.one(ValidationError("Not a valid string: 2"), location=["b", 1])
     )

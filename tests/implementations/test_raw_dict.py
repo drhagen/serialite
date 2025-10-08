@@ -1,12 +1,14 @@
 import pytest
 
 from serialite import (
-    DeserializationFailure,
-    DeserializationSuccess,
+    Errors,
+    Failure,
     FloatSerializer,
     RawDictSerializer,
     ReservedSerializer,
     StringSerializer,
+    Success,
+    ValidationError,
 )
 
 raw_dict_serializer = RawDictSerializer(FloatSerializer())
@@ -19,20 +21,24 @@ raw_dict_serializer_with_key = RawDictSerializer(
 def test_valid_inputs():
     data = {"a": 12.3, "b": 15.5, "c": 16.0}
 
-    assert raw_dict_serializer.from_data(data) == DeserializationSuccess(data)
+    assert raw_dict_serializer.from_data(data) == Success(data)
     assert raw_dict_serializer.to_data(data) == data
 
 
 def test_from_data_failure_not_a_dict():
     data = 12.5
-    assert raw_dict_serializer.from_data(data) == DeserializationFailure("Not a valid dict: 12.5")
+    assert raw_dict_serializer.from_data(data) == Failure(
+        Errors.one(ValidationError("Not a valid dict: 12.5"))
+    )
 
 
 def test_from_data_failure_value():
     data = {"a": "str1", "b": 15.5, "c": "str2"}
     actual = raw_dict_serializer.from_data(data)
-    expected_msg = {"a": "Not a valid float: 'str1'", "c": "Not a valid float: 'str2'"}
-    assert actual == DeserializationFailure(expected_msg)
+    expected = Errors()
+    expected.add(ValidationError("Not a valid float: 'str1'"), location=["a"])
+    expected.add(ValidationError("Not a valid float: 'str2'"), location=["c"])
+    assert actual == Failure(expected)
 
 
 def test_to_data_failure():
@@ -43,15 +49,14 @@ def test_to_data_failure():
 def test_key_serializer_valid_inputs():
     data = {"a": 12.3, "b": 15.5, "c": 16.0}
 
-    assert raw_dict_serializer_with_key.from_data(data) == DeserializationSuccess(data)
+    assert raw_dict_serializer_with_key.from_data(data) == Success(data)
     assert raw_dict_serializer_with_key.to_data(data) == data
 
 
 def test_key_serializer_bad_inputs():
     data = {"a": 12.3, "null": 15.5, "c": 16.0}
-
-    assert raw_dict_serializer_with_key.from_data(data) == DeserializationFailure(
-        {"null": "Reserved value: 'null'"}
+    assert raw_dict_serializer_with_key.from_data(data) == Failure(
+        Errors.one(ValidationError("Reserved value: 'null'"), location=["null"])
     )
     with pytest.raises(ValueError):
         _ = raw_dict_serializer_with_key.to_data(data)

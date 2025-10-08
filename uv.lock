@@ -360,6 +360,18 @@ wheels = [
 ]
 
 [[package]]
+name = "returns"
+version = "0.26.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/06/c2/6dda7ef39464568152e35c766a8b49ab1cdb1b03a5891441a7c2fa40dc61/returns-0.26.0.tar.gz", hash = "sha256:180320e0f6e9ea9845330ccfc020f542330f05b7250941d9b9b7c00203fcc3da", size = 105300, upload-time = "2025-07-24T13:11:21.772Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/57/4d/a7545bf6c62b0dbe5795f22ea9e88cc070fdced5c34663ebc5bed2f610c0/returns-0.26.0-py3-none-any.whl", hash = "sha256:7cae94c730d6c56ffd9d0f583f7a2c0b32cfe17d141837150c8e6cff3eb30d71", size = 160515, upload-time = "2025-07-24T13:11:20.041Z" },
+]
+
+[[package]]
 name = "ruff"
 version = "0.5.7"
 source = { registry = "https://pypi.org/simple" }
@@ -389,6 +401,7 @@ name = "serialite"
 version = "0.3.5"
 source = { editable = "." }
 dependencies = [
+    { name = "returns" },
     { name = "typing-extensions" },
 ]
 
@@ -423,6 +436,7 @@ requires-dist = [
     { name = "numpy", marker = "extra == 'numpy'", specifier = "~=1.25" },
     { name = "ordered-set", marker = "extra == 'ordered-set'", specifier = "~=4.1" },
     { name = "pydantic", marker = "extra == 'fastapi'", specifier = "~=1.10" },
+    { name = "returns", specifier = "~=0.26" },
     { name = "typing-extensions", specifier = "~=4.3" },
 ]
 provides-extras = ["fastapi", "numpy", "ordered-set"]

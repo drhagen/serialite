@@ -1,16 +1,17 @@
 __all__ = ["IntegerSerializer", "NonnegativeIntegerSerializer", "PositiveIntegerSerializer"]
 
 from .._base import Serializer
+from .._errors import Errors, ValidationError
 from .._numeric_check import is_int
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._result import Failure, Result, Success
 
 
 class IntegerSerializer(Serializer[int]):
-    def from_data(self, data) -> DeserializationResult[int]:
+    def from_data(self, data) -> Result[int]:
         if isinstance(data, int):
-            return DeserializationSuccess(data)
+            return Success(data)
         else:
-            return DeserializationFailure(f"Not a valid integer: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid integer: {data!r}")))
 
     def to_data(self, value: int):
         if not isinstance(value, int):
@@ -22,11 +23,13 @@ class IntegerSerializer(Serializer[int]):
 
 
 class NonnegativeIntegerSerializer(Serializer[int]):
-    def from_data(self, data) -> DeserializationResult[int]:
+    def from_data(self, data) -> Result[int]:
         if is_int(data) and data >= 0:
-            return DeserializationSuccess(data)
+            return Success(data)
         else:
-            return DeserializationFailure(f"Not a valid nonnegative integer: {data!r}")
+            return Failure(
+                Errors.one(ValidationError(f"Not a valid nonnegative integer: {data!r}"))
+            )
 
     def to_data(self, value: int):
         if not is_int(value) or value < 0:
@@ -38,11 +41,11 @@ class NonnegativeIntegerSerializer(Serializer[int]):
 
 
 class PositiveIntegerSerializer(Serializer[int]):
-    def from_data(self, data) -> DeserializationResult[int]:
+    def from_data(self, data) -> Result[int]:
         if is_int(data) and data > 0:
-            return DeserializationSuccess(data)
+            return Success(data)
         else:
-            return DeserializationFailure(f"Not a valid positive integer: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid positive integer: {data!r}")))
 
     def to_data(self, value: int):
         if not is_int(value) or value <= 0:

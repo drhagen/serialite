@@ -1,15 +1,16 @@
 __all__ = ["BooleanSerializer"]
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 
 
 class BooleanSerializer(Serializer[bool]):
-    def from_data(self, data) -> DeserializationResult[bool]:
+    def from_data(self, data) -> Result[bool]:
         if isinstance(data, bool):
-            return DeserializationSuccess(data)
+            return Success(data)
         else:
-            return DeserializationFailure(f"Not a valid boolean: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid boolean: {data!r}")))
 
     def to_data(self, value: bool):
         if not isinstance(value, bool):

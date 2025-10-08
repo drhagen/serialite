@@ -3,7 +3,7 @@ __all__ = ["JsonSerializer"]
 from typing import Any
 
 from .._base import Serializer
-from .._result import DeserializationResult, DeserializationSuccess
+from .._result import Result, Success
 
 
 class JsonSerializer(Serializer[Any]):
@@ -13,8 +13,8 @@ class JsonSerializer(Serializer[Any]):
     merely return their inputs.
     """
 
-    def from_data(self, data) -> DeserializationResult[Any]:
-        return DeserializationSuccess(data)
+    def from_data(self, data) -> Result[Any]:
+        return Success(data)
 
     def to_data(self, value: Any):
         return value

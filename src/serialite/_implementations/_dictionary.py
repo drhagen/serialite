@@ -4,7 +4,8 @@ from collections import OrderedDict
 from typing import Generic, TypeVar
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 from ._string import StringSerializer
 
@@ -27,41 +28,41 @@ class OrderedDictSerializer(Generic[Key, Value], Serializer[dict[Key, Value]]):
         self.key_serializer = key_serializer
         self.value_serializer = value_serializer
 
-    def from_data(self, data) -> DeserializationResult[dict[Key, Value]]:
+    def from_data(self, data) -> Result[dict[Key, Value]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
-            return DeserializationFailure(f"Not a valid list: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid list: {data!r}")))
 
         # Validate keys first, so that errors in values can be better formatted
-        errors = {}
+        errors = Errors()
         keys = []
         for i, item in enumerate(data):
             if not isinstance(item, (list, tuple)) or len(item) != 2:
-                errors[str(i)] = f"Not a valid length-2 list: {item!r}"
+                errors.add(ValidationError(f"Not a valid length-2 list: {item!r}"), location=[i])
             else:
-                value_or_error = self.key_serializer.from_data(item[0])
-                if isinstance(value_or_error, DeserializationFailure):
-                    errors[str(i)] = value_or_error.error
-                else:
-                    keys.append(value_or_error.value)
+                match self.key_serializer.from_data(item[0]):
+                    case Failure(error):
+                        errors.extend(error, location=[i])
+                    case Success(value):
+                        keys.append(value)
 
-        if len(errors) > 0:
-            return DeserializationFailure(errors)
+        if not errors.is_empty():
+            return Failure(errors)
 
         # Validate values, including the key in errors to help identify the location of the failure
-        errors = {}
+        errors = Errors()
         values = []
         for i, item in enumerate(data):
-            value_or_error = self.value_serializer.from_data(item[1])
-            if isinstance(value_or_error, DeserializationFailure):
-                errors[str(keys[i])] = value_or_error.error
-            else:
-                values.append((keys[i], value_or_error.value))
+            match self.value_serializer.from_data(item[1]):
+                case Failure(error):
+                    errors.extend(error, location=[keys[i]])
+                case Success(value):
+                    values.append((keys[i], value))
 
-        if len(errors) > 0:
-            return DeserializationFailure(errors)
+        if not errors.is_empty():
+            return Failure(errors)
         else:
-            return DeserializationSuccess(OrderedDict(values))
+            return Success(OrderedDict(values))
 
     def to_data(self, value: dict[Key, Value]):
         if not isinstance(value, dict):
@@ -92,35 +93,33 @@ class RawDictSerializer(Generic[Value], Serializer[dict[str, Value]]):
         self.value_serializer = value_serializer
         self.key_serializer = key_serializer
 
-    def from_data(self, data) -> DeserializationResult[dict[str, Value]]:
+    def from_data(self, data) -> Result[dict[str, Value]]:
         # Return early if the data isn't even a dict
         if not isinstance(data, dict):
-            return DeserializationFailure(f"Not a valid dict: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid dict: {data!r}")))
 
         # Validate keys and values
         # Include the key in errors to help identify the location of the failure
-        errors = {}
+        errors = Errors()
         values = {}
         for key, value in data.items():
-            key_or_error = self.key_serializer.from_data(key)
-            if isinstance(key_or_error, DeserializationFailure):
-                errors[key] = key_or_error.error
-                continue
-            else:
-                output_key = key_or_error.value
+            match self.key_serializer.from_data(key):
+                case Failure(error):
+                    errors.extend(error, location=[key])
+                    continue
+                case Success(parsed_key):
+                    pass
 
-            value_or_error = self.value_serializer.from_data(value)
-            if isinstance(value_or_error, DeserializationFailure):
-                # Use original keys for errors
-                errors[key] = value_or_error.error
-            else:
-                # Use deserialized keys for values
-                values[output_key] = value_or_error.value
+            match self.value_serializer.from_data(value):
+                case Failure(error):
+                    errors.extend(error, location=[key])
+                case Success(parsed_value):
+                    values[parsed_key] = parsed_value
 
-        if len(errors) > 0:
-            return DeserializationFailure(errors)
+        if not errors.is_empty():
+            return Failure(errors)
         else:
-            return DeserializationSuccess(values)
+            return Success(values)
 
     def to_data(self, value: dict[str, Value]):
         if not isinstance(value, dict):

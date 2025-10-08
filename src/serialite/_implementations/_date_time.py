@@ -3,11 +3,12 @@ __all__ = ["DateTimeSerializer"]
 from datetime import datetime
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 
 
 class DateTimeSerializer(Serializer[datetime]):
-    def from_data(self, data) -> DeserializationResult[datetime]:
+    def from_data(self, data) -> Result[datetime]:
         if isinstance(data, str):
             if data.endswith("Z"):
                 # Python does not handle the terminal "Z"
@@ -18,11 +19,11 @@ class DateTimeSerializer(Serializer[datetime]):
             try:
                 value = datetime.fromisoformat(sanitized_data)
             except ValueError:
-                return DeserializationFailure(f"Not a valid DateTime: {data!r}")
+                return Failure(Errors.one(ValidationError(f"Not a valid DateTime: {data!r}")))
             else:
-                return DeserializationSuccess(value)
+                return Success(value)
         else:
-            return DeserializationFailure(f"Not a valid DateTime: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid DateTime: {data!r}")))
 
     def to_data(self, value):
         if not isinstance(value, datetime):

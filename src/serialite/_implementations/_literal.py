@@ -1,8 +1,9 @@
 __all__ = ["LiteralSerializer"]
 
 from .._base import Serializer
+from .._errors import Errors, ValidationError
 from .._numeric_check import is_int, is_real
-from .._result import DeserializationFailure, DeserializationSuccess
+from .._result import Failure, Success
 
 
 class LiteralSerializer(Serializer):
@@ -11,9 +12,11 @@ class LiteralSerializer(Serializer):
 
     def from_data(self, data):
         if data in self.possibilities:
-            return DeserializationSuccess(data)
+            return Success(data)
         else:
-            return DeserializationFailure(f"Not one of {list(self.possibilities)!r}: {data!r}")
+            return Failure(
+                Errors.one(ValidationError(f"Not one of {list(self.possibilities)!r}: {data!r}"))
+            )
 
     def to_data(self, value):
         if value not in self.possibilities:

@@ -4,7 +4,8 @@ __all__ = ["SetSerializer"]
 from typing import Generic, TypeVar
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 
 Element = TypeVar("Element")
@@ -14,30 +15,33 @@ class SetSerializer(Generic[Element], Serializer[set[Element]]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
 
-    def from_data(self, data) -> DeserializationResult[set[Element]]:
+    def from_data(self, data) -> Result[set[Element]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
-            return DeserializationFailure(f"Not a valid list: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid list: {data!r}")))
 
         # Validate values
-        errors = {}
+        errors = Errors()
         values = set()
         for i, value in enumerate(data):
-            value_or_error = self.element_serializer.from_data(value)
-            if isinstance(value_or_error, DeserializationFailure):
-                errors[str(i)] = value_or_error.error
-            elif value_or_error.value in values:
-                errors[str(i)] = (
-                    f"Duplicated value found: {value_or_error.value!r}. "
-                    "Expected a list of unique values."
-                )
-            else:
-                values.add(value_or_error.value)
+            match self.element_serializer.from_data(value):
+                case Failure(error):
+                    errors.extend(error, location=[i])
+                case Success(value):
+                    if value in values:
+                        errors.add(
+                            ValidationError(
+                                f"Duplicated value found: {value!r}. Expected a list of unique values."
+                            ),
+                            location=[i],
+                        )
+                    else:
+                        values.add(value)
 
-        if len(errors) > 0:
-            return DeserializationFailure(errors)
+        if not errors.is_empty():
+            return Failure(errors)
         else:
-            return DeserializationSuccess(values)
+            return Success(values)
 
     def to_data(self, value: set[Element]):
         if not isinstance(value, set):

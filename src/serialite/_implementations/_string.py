@@ -3,7 +3,8 @@ __all__ = ["StringSerializer"]
 import re
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 
 
 class StringSerializer(Serializer[str]):
@@ -11,14 +12,16 @@ class StringSerializer(Serializer[str]):
         self.accept = accept
         self.accept_regex = re.compile(accept) if accept is not None else None
 
-    def from_data(self, data) -> DeserializationResult[str]:
+    def from_data(self, data) -> Result[str]:
         if isinstance(data, str):
             if self.accept is None or self.accept_regex.fullmatch(data):
-                return DeserializationSuccess(data)
+                return Success(data)
             else:
-                return DeserializationFailure(f"Does not match regex r'{self.accept}': {data!r}")
+                return Failure(
+                    Errors.one(ValidationError(f"Does not match regex r'{self.accept}': {data!r}"))
+                )
         else:
-            return DeserializationFailure(f"Not a valid string: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid string: {data!r}")))
 
     def to_data(self, value: str):
         if not isinstance(value, str):

@@ -15,7 +15,8 @@ from enum import Enum, auto
 from typing import Any
 
 from ._base import Serializer
-from ._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from ._errors import Errors, ValidationError
+from ._result import Failure, Result, Success
 from ._stable_set import StableSet
 
 # A sentinel object to indicate that a default is not available,
@@ -221,7 +222,7 @@ class FieldsSerializer(Mapping):
         # which it maps. This provides the mapping from data field name to object field name.
         self.data_name_to_object_name = data_name_to_object_name
 
-    def from_data(self, data: dict[str, Any], *, allow_unused=False) -> DeserializationResult:
+    def from_data(self, data: dict[str, Any], *, allow_unused=False) -> Result[dict[str, Any]]:
         """Deserialize fields from a dictionary.
 
         Complex objects are usually serialized as a dictionary, where each key
@@ -250,10 +251,10 @@ class FieldsSerializer(Mapping):
         """
         # Return early if the data isn't even a dict
         if not isinstance(data, dict):
-            return DeserializationFailure(f"Not a dictionary: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a dictionary: {data!r}")))
 
         values = {}
-        errors = {}
+        errors = Errors()
 
         # Check that all data fields are valid, that all values are valid,
         # and map data fields to object fields
@@ -264,41 +265,44 @@ class FieldsSerializer(Mapping):
             ):
                 # This data field name is not understood
                 if not allow_unused:
-                    # Fail it
-                    errors[key] = "This field is invalid."
+                    errors.add(ValidationError("This field is invalid."), location=[key])
                 else:
                     # Quietly ignore it
                     pass
-            else:
-                # This data field maps to an object field
-                object_field_name = self.data_name_to_object_name[key]
-                if object_field_name in values:
-                    # If this object field is already filled, it must have been
-                    # filled under a different data field name in the same
-                    # MultiField serializer field. Find the data field name
-                    # already used and report this field cannot be used as long
-                    # as the first one is also used.
-                    multi_field = self.object_field_serializers[object_field_name]
-                    preexisting_keys = [
-                        field_key
-                        for field_key in multi_field.serializers.keys()
-                        if field_key in data and field_key != key
-                    ]
-                    errors[key] = (
+                continue
+
+            # This data field maps to an object field
+            object_field_name = self.data_name_to_object_name[key]
+            if object_field_name in values:
+                # If this object field is already filled, it must have been
+                # filled under a different data field name in the same
+                # MultiField serializer field. Find the data field name
+                # already used and report this field cannot be used as long
+                # as the first one is also used.
+                multi_field = self.object_field_serializers[object_field_name]
+                preexisting_keys = [
+                    field_key
+                    for field_key in multi_field.serializers.keys()
+                    if field_key in data and field_key != key
+                ]
+                errors.add(
+                    ValidationError(
                         "This field cannot be provided because these fields are already provided: "
                         + ", ".join(preexisting_keys)
-                    )
-                else:
-                    error_or_value = self.data_field_deserializers[key].from_data(value)
+                    ),
+                    location=[key],
+                )
+                continue
 
-                    if isinstance(error_or_value, DeserializationFailure):
-                        errors[key] = error_or_value.error
+            match self.data_field_deserializers[key].from_data(value):
+                case Failure(error):
+                    errors.extend(error, location=[key])
 
-                        # Mark this object field as handled so that an additional error is not
-                        # generated
-                        values[object_field_name] = None
-                    else:
-                        values[object_field_name] = error_or_value.value
+                    # Mark this object field as handled so that an additional error is not
+                    # generated later when checking required fields
+                    values[object_field_name] = None
+                case Success(value):
+                    values[object_field_name] = value
 
         # Check that object fields have been created, defaulted, or ignored
         for object_field_name, serializer_field in self.object_field_serializers.items():
@@ -306,12 +310,15 @@ class FieldsSerializer(Mapping):
                 if serializer_field.default is no_default:
                     # This field is required
                     if isinstance(serializer_field, SingleField):
-                        errors[object_field_name] = "This field is required."
+                        errors.add(
+                            ValidationError("This field is required."),
+                            location=[object_field_name],
+                        )
                     elif isinstance(serializer_field, MultiField):
                         error_message = "One of these fields is required: " + ", ".join(
                             serializer_field.serializers.keys()
                         )
-                        errors[object_field_name] = error_message
+                        errors.add(ValidationError(error_message), location=[object_field_name])
                     else:
                         raise TypeError(
                             f"Expected FieldsSerializerField, not {type(serializer_field)}"
@@ -323,10 +330,10 @@ class FieldsSerializer(Mapping):
                     # This field has a default value
                     values[object_field_name] = serializer_field.default
 
-        if len(errors) > 0:
-            return DeserializationFailure(errors)
+        if not errors.is_empty():
+            return Failure(errors)
         else:
-            return DeserializationSuccess(values)
+            return Success(values)
 
     def to_data(self, values, *, source="dictionary"):
         """Serialize fields to a dictionary.
