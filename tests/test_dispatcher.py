@@ -4,7 +4,7 @@ from uuid import UUID
 
 import pytest
 
-from serialite import DeserializationSuccess, serializer
+from serialite import Success, serializer
 
 
 @pytest.mark.parametrize(
@@ -34,7 +34,7 @@ from serialite import DeserializationSuccess, serializer
 def test_dispatch(data_type, data, value):
     this_serializer = serializer(data_type)
 
-    assert this_serializer.from_data(data) == DeserializationSuccess(value)
+    assert this_serializer.from_data(data) == Success(value)
     assert this_serializer.to_data(value) == data
 
 
@@ -42,9 +42,9 @@ def test_dispatch(data_type, data, value):
 def test_dispatch_optional(type):
     optional_serializer = serializer(type)
 
-    assert optional_serializer.from_data(1).or_die() == 1
+    assert optional_serializer.from_data(1) == Success(1)
     assert optional_serializer.to_data(1) == 1
-    assert optional_serializer.from_data(None).or_die() is None
+    assert optional_serializer.from_data(None) == Success(None)
     assert optional_serializer.to_data(None) is None
 
 
@@ -52,34 +52,34 @@ def test_dispatch_optional(type):
 def test_dispatch_union(type):
     union_serializer = serializer(type)
 
-    assert union_serializer.from_data(1).or_die() == 1
+    assert union_serializer.from_data(1) == Success(1)
     assert union_serializer.to_data(1) == 1
-    assert union_serializer.from_data("a").or_die() == "a"
+    assert union_serializer.from_data("a") == Success("a")
     assert union_serializer.to_data("a") == "a"
 
 
 def test_dispatch_literal():
     literal_serializer = serializer(Literal["none", 1, 2, 3])
 
-    assert literal_serializer.from_data("none").or_die() == "none"
+    assert literal_serializer.from_data("none") == Success("none")
     assert literal_serializer.to_data(1) == 1
-    assert literal_serializer.from_data(2).or_die() == 2
+    assert literal_serializer.from_data(2) == Success(2)
     assert literal_serializer.to_data(3) == 3
 
 
 def test_dispatch_any():
     any_serializer = serializer(Any)
 
-    assert any_serializer.from_data(1).or_die() == 1
-    assert any_serializer.from_data("any string").or_die() == "any string"
-    assert any_serializer.from_data({"a": 1}).or_die() == {"a": 1}
+    assert any_serializer.from_data(1) == Success(1)
+    assert any_serializer.from_data("any string") == Success("any string")
+    assert any_serializer.from_data({"a": 1}) == Success({"a": 1})
 
 
 def test_dispatch_type_alias():
     type Scale = Literal["log", "linear"]
 
     scale_serializer = serializer(Scale)
-    assert scale_serializer.from_data("log").or_die() == "log"
-    assert scale_serializer.from_data("linear").or_die() == "linear"
+    assert scale_serializer.from_data("log") == Success("log")
+    assert scale_serializer.from_data("linear") == Success("linear")
     assert scale_serializer.to_data("log") == "log"
     assert scale_serializer.to_data("linear") == "linear"

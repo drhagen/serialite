@@ -4,8 +4,9 @@ from math import inf, isnan, nan
 from typing import Any, Sequence
 
 from .._base import Serializer
+from .._errors import Errors, ValidationError
 from .._numeric_check import is_real
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._result import Failure, Result, Success
 
 
 class FloatSerializer(Serializer[float]):
@@ -19,17 +20,17 @@ class FloatSerializer(Serializer[float]):
         self.inf_values = inf_values
         self.neg_inf_values = neg_inf_values
 
-    def from_data(self, data) -> DeserializationResult[float]:
+    def from_data(self, data) -> Result[float]:
         if data in self.nan_values:
-            return DeserializationSuccess(nan)
+            return Success(nan)
         elif data in self.inf_values:
-            return DeserializationSuccess(inf)
+            return Success(inf)
         elif data in self.neg_inf_values:
-            return DeserializationSuccess(-inf)
+            return Success(-inf)
         elif is_real(data):
-            return DeserializationSuccess(float(data))
+            return Success(float(data))
         else:
-            return DeserializationFailure(f"Not a valid float: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid float: {data!r}")))
 
     def to_data(self, value: float):
         if not is_real(value):

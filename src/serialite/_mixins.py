@@ -3,8 +3,9 @@ __all__ = ["SerializableMixin", "AbstractSerializableMixin"]
 from typing import ClassVar
 
 from ._base import Serializable, Serializer
+from ._errors import Errors, ValidationError
 from ._fields_serializer import FieldsSerializer
-from ._result import DeserializationFailure, DeserializationSuccess
+from ._result import Failure, Success
 from ._stable_set import StableSet
 
 
@@ -19,12 +20,11 @@ class SerializableMixin(Serializable):
 
     @classmethod
     def from_data(cls, data):
-        value_or_error = cls.__fields_serializer__.from_data(data)
-
-        if isinstance(value_or_error, DeserializationFailure):
-            return value_or_error
-        else:
-            return DeserializationSuccess(cls(**value_or_error.value))
+        match cls.__fields_serializer__.from_data(data):
+            case Failure(error):
+                return Failure(error)
+            case Success(value):
+                return Success(cls(**value))
 
     def to_data(self):
         return self.__fields_serializer__.to_data(self, source="object")
@@ -81,16 +81,20 @@ class AbstractSerializableMixin(Serializable):
         try:
             type_name = data["_type"]
         except KeyError:
-            return DeserializationFailure({"_type": "This field is required."})
+            return Failure(
+                Errors.one(ValidationError("This field is required."), location=["_type"])
+            )
         except TypeError:
-            return DeserializationFailure(f"Not a dictionary: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a dictionary: {data!r}")))
 
         # The rest of data
         subclass_data = {key: value for key, value in data.items() if key != "_type"}
 
         subclass = cls.__subclass_serializers__.get(type_name)
         if subclass is None:
-            return DeserializationFailure({"_type": f"Class not found: {type_name!r}"})
+            return Failure(
+                Errors.one(ValidationError(f"Class not found: {type_name!r}"), location=["_type"])
+            )
         else:
             return subclass.from_data(subclass_data)
 

@@ -1,10 +1,12 @@
 import pytest
 
 from serialite import (
-    DeserializationFailure,
-    DeserializationSuccess,
+    Errors,
+    Failure,
     ReservedSerializer,
     StringSerializer,
+    Success,
+    ValidationError,
 )
 
 reserved_serializer = ReservedSerializer(StringSerializer(), reserved={"false", "true"})
@@ -12,13 +14,15 @@ reserved_serializer = ReservedSerializer(StringSerializer(), reserved={"false", 
 
 def test_valid_inputs():
     data = "foo"
-    assert reserved_serializer.from_data(data) == DeserializationSuccess(data)
+    assert reserved_serializer.from_data(data) == Success(data)
     assert reserved_serializer.to_data(data) == data
 
 
 def test_reserved_inputs():
     data = "true"
-    assert reserved_serializer.from_data(data) == DeserializationFailure("Reserved value: 'true'")
+    assert reserved_serializer.from_data(data) == Failure(
+        Errors.one(ValidationError("Reserved value: 'true'"))
+    )
 
 
 def test_to_data_failure():

@@ -1,15 +1,16 @@
 __all__ = ["NoneSerializer"]
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Success
 
 
 class NoneSerializer(Serializer[None]):
     def from_data(self, data):
         if data is None:
-            return DeserializationSuccess(None)
+            return Success(None)
         else:
-            return DeserializationFailure(f"Not a null: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a null: {data!r}")))
 
     def to_data(self, value: None):
         if value is not None:

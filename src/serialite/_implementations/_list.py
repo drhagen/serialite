@@ -3,7 +3,8 @@ __all__ = ["ListSerializer"]
 from typing import Generic, TypeVar
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 
 Element = TypeVar("Element")
@@ -20,25 +21,25 @@ class ListSerializer(Generic[Element], Serializer[list[Element]]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
 
-    def from_data(self, data) -> DeserializationResult[list[Element]]:
+    def from_data(self, data) -> Result[list[Element]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
-            return DeserializationFailure(f"Not a valid list: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid list: {data!r}")))
 
         # Validate values
-        errors = {}
+        errors = Errors()
         values = []
         for i, value in enumerate(data):
-            value_or_error = self.element_serializer.from_data(value)
-            if isinstance(value_or_error, DeserializationFailure):
-                errors[str(i)] = value_or_error.error
-            else:
-                values.append(value_or_error.value)
+            match self.element_serializer.from_data(value):
+                case Failure(error):
+                    errors.extend(error, location=[i])
+                case Success(value):
+                    values.append(value)
 
-        if len(errors) > 0:
-            return DeserializationFailure(errors)
+        if not errors.is_empty():
+            return Failure(errors)
         else:
-            return DeserializationSuccess(values)
+            return Success(values)
 
     def to_data(self, value: list[Element]):
         # Accept an ndarray also for ergonomics

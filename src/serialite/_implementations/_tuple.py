@@ -4,7 +4,8 @@ from typing import Generic
 from typing_extensions import TypeVarTuple, Unpack
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 
 TupleArguments = TypeVarTuple("TupleArguments")
@@ -21,31 +22,35 @@ class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[T
     def __init__(self, *element_serializers: Unpack[TupleArguments]):
         self.element_serializers = element_serializers
 
-    def from_data(self, data) -> DeserializationResult[tuple[Unpack[TupleArguments]]]:
+    def from_data(self, data) -> Result[tuple[Unpack[TupleArguments]]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
-            return DeserializationFailure(f"Not a valid list: {data!r}")
+            return Failure(Errors.one(ValidationError(f"Not a valid list: {data!r}")))
 
         # Return early if the list is not the correct length
         if len(data) != len(self.element_serializers):
-            return DeserializationFailure(
-                f"Has {len(data)} elements, not {len(self.element_serializers)}: {data!r}"
+            return Failure(
+                Errors.one(
+                    ValidationError(
+                        f"Has {len(data)} elements, not {len(self.element_serializers)}: {data!r}"
+                    )
+                )
             )
 
         # Validate values
-        errors = {}
+        errors = Errors()
         values = []
         for i, (item, serializer) in enumerate(zip(data, self.element_serializers, strict=True)):
-            value_or_error = serializer.from_data(item)
-            if isinstance(value_or_error, DeserializationFailure):
-                errors[str(i)] = value_or_error.error
-            else:
-                values.append(value_or_error.value)
+            match serializer.from_data(item):
+                case Failure(error):
+                    errors.extend(error, location=[i])
+                case Success(value):
+                    values.append(value)
 
-        if len(errors) > 0:
-            return DeserializationFailure(errors)
+        if not errors.is_empty():
+            return Failure(errors)
         else:
-            return DeserializationSuccess(tuple(values))
+            return Success(tuple(values))
 
     def to_data(self, value: tuple[Unpack[TupleArguments]]):
         # Accept an ndarray or list for ergonomics

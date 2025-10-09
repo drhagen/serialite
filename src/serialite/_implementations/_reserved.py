@@ -4,7 +4,8 @@ from collections.abc import Set
 from typing import Generic, TypeVar
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult
+from .._errors import Errors, ValidationError
+from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 
 Element = TypeVar("Element")
@@ -15,15 +16,14 @@ class ReservedSerializer(Generic[Element], Serializer[Element]):
         self.internal_serializer = internal_serializer
         self.reserved = reserved
 
-    def from_data(self, data) -> DeserializationResult[Element]:
-        result = self.internal_serializer.from_data(data)
-
-        if isinstance(result, DeserializationFailure):
-            return result
-        elif result.value in self.reserved:
-            return DeserializationFailure(f"Reserved value: {result.value!r}")
-        else:
-            return result
+    def from_data(self, data) -> Result[Element]:
+        match self.internal_serializer.from_data(data):
+            case Failure(error):
+                return Failure(error)
+            case Success(value):
+                if value in self.reserved:
+                    return Failure(Errors.one(ValidationError(f"Reserved value: {value!r}")))
+                return Success(value)
 
     def to_data(self, value):
         if value in self.reserved:

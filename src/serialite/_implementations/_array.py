@@ -6,7 +6,7 @@ import numpy as np
 
 from .._base import Serializer
 from .._dispatcher import serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 from ._list import ListSerializer
 
@@ -29,13 +29,12 @@ class ArraySerializer(Generic[Element], Serializer[np.ndarray]):
         self.element_serializer = element_serializer
         self.dtype = dtype
 
-    def from_data(self, data) -> DeserializationResult[np.ndarray]:
-        elements = self.list_serializer.from_data(data)
-
-        if isinstance(elements, DeserializationFailure):
-            return elements
-        else:
-            return DeserializationSuccess(np.array(elements.value, dtype=self.dtype))
+    def from_data(self, data) -> Result[np.ndarray]:
+        match self.list_serializer.from_data(data):
+            case Failure(error):
+                return Failure(error)
+            case Success(value):
+                return Success(np.array(value, dtype=self.dtype))
 
     def to_data(self, value: np.ndarray):
         if not isinstance(value, np.ndarray):

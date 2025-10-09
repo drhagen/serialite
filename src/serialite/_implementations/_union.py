@@ -3,7 +3,8 @@ __all__ = ["TryUnionSerializer", "OptionalSerializer"]
 from typing import Generic, TypeVar
 
 from .._base import Serializer
-from .._result import DeserializationFailure, DeserializationResult, DeserializationSuccess
+from .._errors import Errors
+from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 
 Element = TypeVar("Element")
@@ -15,16 +16,18 @@ class TryUnionSerializer(Serializer):
 
     def from_data(self, data):
         # Try each possibility and return the first value that succeeds,
-        # otherwise return both errors
-        errors = {}
+        # otherwise return all errors.
+        errors = Errors()
         for serializer in self.serializers:
-            value_or_error = serializer.from_data(data)
-            if isinstance(value_or_error, DeserializationSuccess):
-                return value_or_error
-            else:
-                errors[str(serializer)] = value_or_error.error
+            match serializer.from_data(data):
+                case Failure(error):
+                    # Use the serializer representation as the location so that
+                    # Errors can be composed.
+                    errors.extend(error, location=[str(serializer)])
+                case Success(value):
+                    return Success(value)
 
-        return DeserializationFailure(errors)
+        return Failure(errors)
 
     def to_data(self, value):
         # Try each possibility. It should not be possible for both to fail.
@@ -57,10 +60,11 @@ class OptionalSerializer(Generic[Element], Serializer[Element | None]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
 
-    def from_data(self, data) -> DeserializationResult[Element | None]:
+    def from_data(self, data) -> Result[Element | None]:
         if data is None:
-            return DeserializationSuccess(None)
+            return Success(None)
         else:
+            # Delegate to the element serializer
             return self.element_serializer.from_data(data)
 
     def to_data(self, value: Element | None):
