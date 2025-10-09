@@ -16,4 +16,6 @@ class PathSerializer(Serializer):
                 return Success(Path(value))
 
     def to_data(self, value):
+        if not isinstance(value, Path):
+            raise ValueError(f"Not a Path: {value!r}")
         return value.as_posix()
