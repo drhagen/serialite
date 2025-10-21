@@ -34,7 +34,7 @@ fastapi = [
 ]
 
 numpy = [
-    "numpy ~= 1.25",
+    "numpy >=1.25,<3",
 ]
 
 ordered-set = [
