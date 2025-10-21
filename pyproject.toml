@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "serialite"
-version = "0.3.5"
+version = "0.3.6"
 description = "A serialization library for Python"
 authors = [ { name = "David Hagen", email = "david@drhagen.com" } ]
 license = "MIT"
