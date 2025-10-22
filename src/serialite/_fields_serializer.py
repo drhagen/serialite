@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 __all__ = [
-    "FieldsSerializer",
     "AccessPermissions",
+    "FieldsSerializer",
     "FieldsSerializerField",
-    "SingleField",
     "MultiField",
-    "no_default",
+    "SingleField",
     "empty_default",
+    "no_default",
 ]
 
 from collections.abc import Mapping
@@ -150,10 +150,8 @@ class MultiField(FieldsSerializerField):
         cleaned_field_serializers = {}
         for name, field in serializers.items():
             # Serializers can be instances or subclasses of base class Serializer
-            if (
-                isinstance(field, Serializer)
-                or isinstance(field, type)
-                and issubclass(field, Serializer)
+            if isinstance(field, Serializer) or (
+                isinstance(field, type) and issubclass(field, Serializer)
             ):
                 cleaned_field_serializers[name] = field
             else:
@@ -180,10 +178,8 @@ class FieldsSerializer(Mapping):
         for name, field in object_field_serializers.items():
             if isinstance(field, FieldsSerializerField):
                 cleaned_object_field_serializers[name] = field
-            elif (
-                isinstance(field, Serializer)
-                or isinstance(field, type)
-                and issubclass(field, Serializer)
+            elif isinstance(field, Serializer) or (
+                isinstance(field, type) and issubclass(field, Serializer)
             ):
                 cleaned_object_field_serializers[name] = SingleField(field)
             else:

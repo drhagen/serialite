@@ -13,7 +13,7 @@ from serialite import FieldsSerializer, SerializableMixin, SingleField, serializ
 # Pydantic. Both cases need to be tested.
 
 
-@pytest.fixture()
+@pytest.fixture
 def fastapi_mixin_client():
     app = FastAPI()
 
@@ -43,7 +43,7 @@ def fastapi_mixin_client():
     return TestClient(app)
 
 
-@pytest.fixture()
+@pytest.fixture
 def pydantic_mixin_client():
     app = FastAPI()
 
@@ -68,7 +68,7 @@ def pydantic_mixin_client():
     return TestClient(app)
 
 
-@pytest.fixture()
+@pytest.fixture
 def fastapi_dataclass_client():
     app = FastAPI()
 
@@ -94,7 +94,7 @@ def fastapi_dataclass_client():
     return TestClient(app)
 
 
-@pytest.fixture()
+@pytest.fixture
 def pydantic_dataclass_client():
     app = FastAPI()
 
@@ -170,7 +170,7 @@ def test_fastapi_not_too_strict(client_fixture, request):
     assert isinstance(response.json()["foo"]["b"], float)
 
 
-@pytest.fixture()
+@pytest.fixture
 def fastapi_pydantic_client():
     app = FastAPI()
 

@@ -10,7 +10,7 @@ class StableSet(Set[Element]):
     """An immutable set with stable iteration order."""
 
     def __init__(self, *items: Element):
-        self._elements = {item: None for item in items}
+        self._elements = dict.fromkeys(items)
 
     def __contains__(self, item: Element):
         return item in self._elements.keys()
