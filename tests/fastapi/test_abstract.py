@@ -70,7 +70,7 @@ def fastapi_mixin_client():
     return TestClient(app)
 
 
-@pytest.fixture()
+@pytest.fixture
 def fastapi_dataclass_client():
     app = FastAPI()
 

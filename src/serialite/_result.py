@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__all__ = ["Result", "Success", "Failure"]
+__all__ = ["Failure", "Result", "Success"]
 
 from returns import result
 
