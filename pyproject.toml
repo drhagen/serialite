@@ -8,6 +8,7 @@ version = "0.3.6"
 description = "A serialization library for Python"
 authors = [ { name = "David Hagen", email = "david@drhagen.com" } ]
 license = "MIT"
+license-files = ["LICENSE"]
 readme = "README.md"
 keywords = ["serialization", "deserialization", "serde", "pydantic", "fastapi"]
 requires-python = ">=3.12"
@@ -53,7 +54,7 @@ test = [
     "httpx", # Needed by starlette testclient
 ]
 lint = [
-    "ruff == 0.3.*"
+    "ruff == 0.14.*"
 ]
 
 [tool.uv]

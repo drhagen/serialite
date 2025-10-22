@@ -1,4 +1,4 @@
-__all__ = ["SerializableMixin", "AbstractSerializableMixin"]
+__all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
 from typing import ClassVar
 

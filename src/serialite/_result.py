@@ -2,8 +2,8 @@ from __future__ import annotations
 
 __all__ = [
     "DeserializationError",
-    "DeserializationResult",
     "DeserializationFailure",
+    "DeserializationResult",
     "DeserializationSuccess",
 ]
 

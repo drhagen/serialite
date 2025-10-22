@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__all__ = ["Serializer", "Serializable"]
+__all__ = ["Serializable", "Serializer"]
 
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeVar

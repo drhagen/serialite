@@ -1,4 +1,4 @@
-__all__ = ["serializable", "abstract_serializable"]
+__all__ = ["abstract_serializable", "serializable"]
 
 import dataclasses
 from dataclasses import MISSING
