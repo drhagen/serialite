@@ -1,4 +1,4 @@
-__all__ = ["TryUnionSerializer", "OptionalSerializer"]
+__all__ = ["OptionalSerializer", "TryUnionSerializer"]
 
 from typing import Generic, TypeVar
 
