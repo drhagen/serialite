@@ -1,12 +1,14 @@
-__all__ = ["SetSerializer"]
+__all__ = ["DuplicatedValueError", "SetSerializer"]
 
-
-from typing import Generic, TypeVar
+from dataclasses import dataclass
+from typing import Any, Generic, TypeVar
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._stable_set import StableSet
+from ._type_errors import ExpectedListError
 
 Element = TypeVar("Element")
 
@@ -18,7 +20,7 @@ class SetSerializer(Generic[Element], Serializer[set[Element]]):
     def from_data(self, data) -> Result[set[Element]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
-            return Failure(Errors.one(ValidationError(f"Not a valid list: {data!r}")))
+            return Failure(Errors.one(ExpectedListError(data)))
 
         # Validate values
         errors = Errors()
@@ -29,12 +31,7 @@ class SetSerializer(Generic[Element], Serializer[set[Element]]):
                     errors.extend(error, location=[i])
                 case Success(value):
                     if value in values:
-                        errors.add(
-                            ValidationError(
-                                f"Duplicated value found: {value!r}. Expected a list of unique values."
-                            ),
-                            location=[i],
-                        )
+                        errors.add(DuplicatedValueError(value), location=[i])
                     else:
                         values.add(value)
 
@@ -56,3 +53,12 @@ class SetSerializer(Generic[Element], Serializer[set[Element]]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "array", "items": self.element_serializer.to_openapi_schema(refs)}
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class DuplicatedValueError(Exception):
+    duplicate: Any
+
+    def __str__(self) -> str:
+        return f"Expected a list of unique values, but got this duplicate {self.duplicate!r}"

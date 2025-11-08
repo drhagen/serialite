@@ -1,13 +1,14 @@
 import pytest
 
 from serialite import (
+    DuplicatedValueError,
     Errors,
     ExpectedFloatError,
+    ExpectedListError,
     Failure,
     FloatSerializer,
     SetSerializer,
     Success,
-    ValidationError,
 )
 
 set_serializer = SetSerializer(FloatSerializer())
@@ -23,9 +24,7 @@ def test_valid_inputs():
 
 def test_from_data_failure_top_level():
     data = 12.5
-    assert set_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid list: 12.5"))
-    )
+    assert set_serializer.from_data(data) == Failure(Errors.one(ExpectedListError(data)))
 
 
 def test_from_data_failure_element():
@@ -41,7 +40,7 @@ def test_from_data_failure_uniqueness():
     data = [12.3, 15.5, 16.0, 12.3]
     actual = set_serializer.from_data(data)
     expected = Errors.one(
-        ValidationError("Duplicated value found: 12.3. Expected a list of unique values."),
+        DuplicatedValueError(12.3),
         location=[3],
     )
     assert actual == Failure(expected)
