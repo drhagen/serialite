@@ -18,6 +18,7 @@ from ._reserved import ReservedSerializer
 from ._set import SetSerializer
 from ._string import StringSerializer
 from ._tuple import TupleSerializer
+from ._string import RegexMismatchError, StringSerializer
 from ._type_errors import (
     ExpectedBooleanError,
     ExpectedDictionaryError,
