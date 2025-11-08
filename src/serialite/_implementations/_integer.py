@@ -6,13 +6,13 @@ __all__ = [
 ]
 
 from dataclasses import dataclass
-from typing import Any
 
 from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
 from .._numeric_check import is_int
 from .._result import Failure, Result, Success
+from ._type_errors import ExpectedIntegerError
 
 
 class IntegerSerializer(Serializer[int]):
@@ -67,21 +67,6 @@ class PositiveIntegerSerializer(Serializer[int]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "integer", "minimum": 1}
-
-
-@serializable
-@dataclass(frozen=True, slots=True)
-class ExpectedIntegerError(Exception):
-    """Raised when input data is not an integer.
-
-    Attributes:
-        actual: The value that was provided.
-    """
-
-    actual: Any
-
-    def __str__(self) -> str:
-        return f"Expected integer, but got {self.actual!r}"
 
 
 @serializable

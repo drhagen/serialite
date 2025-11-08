@@ -1,13 +1,12 @@
-__all__ = ["ListSerializer", "ExpectedListError"]
+__all__ = ["ListSerializer"]
 
-from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from .._base import Serializer
-from .._decorators import serializable
 from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._stable_set import StableSet
+from ._type_errors import ExpectedListError
 
 Element = TypeVar("Element")
 
@@ -57,12 +56,3 @@ class ListSerializer(Generic[Element], Serializer[list[Element]]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "array", "items": self.element_serializer.to_openapi_schema(refs)}
-
-
-@serializable
-@dataclass(frozen=True, slots=True)
-class ExpectedListError(Exception):
-    actual: Any
-
-    def __str__(self) -> str:
-        return f"Expected list, but got {self.actual!r}"

@@ -1,23 +1,32 @@
-from ._boolean import BooleanSerializer, ExpectedBooleanError
+from ._boolean import BooleanSerializer
 from ._date_time import DateTimeSerializer
 from ._dictionary import OrderedDictSerializer, RawDictSerializer
-from ._float import ExpectedFloatError, FloatSerializer
+    ExpectedLength2ListError,
+from ._float import FloatSerializer
 from ._integer import (
-    ExpectedIntegerError,
     IntegerOutOfRangeError,
     IntegerSerializer,
     NonnegativeIntegerSerializer,
     PositiveIntegerSerializer,
 )
 from ._json import JsonSerializer
-from ._list import ExpectedListError, ListSerializer
+from ._list import ListSerializer
 from ._literal import LiteralSerializer
-from ._none import ExpectedNoneError, NoneSerializer
+from ._none import NoneSerializer
 from ._path import PathSerializer
 from ._reserved import ReservedSerializer
 from ._set import SetSerializer
 from ._string import StringSerializer
 from ._tuple import TupleSerializer
+from ._type_errors import (
+    ExpectedBooleanError,
+    ExpectedDictionaryError,
+    ExpectedFloatError,
+    ExpectedIntegerError,
+    ExpectedListError,
+    ExpectedNullError,
+    ExpectedStringError,
+)
 from ._union import OptionalSerializer, TryUnionSerializer
 from ._uuid import UuidSerializer
 

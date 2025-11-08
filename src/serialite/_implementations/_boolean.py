@@ -1,11 +1,9 @@
-__all__ = ["BooleanSerializer", "ExpectedBooleanError"]
-
-from dataclasses import dataclass
+__all__ = ["BooleanSerializer"]
 
 from .._base import Serializer
-from .._decorators import serializable
 from .._errors import Errors
 from .._result import Failure, Result, Success
+from ._type_errors import ExpectedBooleanError
 
 
 class BooleanSerializer(Serializer[bool]):
@@ -22,12 +20,3 @@ class BooleanSerializer(Serializer[bool]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "boolean"}
-
-
-@serializable
-@dataclass(frozen=True, slots=True)
-class ExpectedBooleanError(Exception):
-    actual: object
-
-    def __str__(self) -> str:
-        return f"Expected boolean, but got {self.actual!r}"
