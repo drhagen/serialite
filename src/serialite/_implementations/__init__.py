@@ -33,7 +33,7 @@ from ._type_errors import (
     ExpectedStringError,
 )
 from ._union import OptionalSerializer, TryUnionSerializer
-from ._uuid import UuidSerializer
+from ._uuid import InvalidUuidError, UuidSerializer
 
 try:
     from ._array import ArraySerializer

@@ -2,7 +2,14 @@ from uuid import UUID
 
 import pytest
 
-from serialite import Errors, Failure, Success, UuidSerializer, ValidationError
+from serialite import (
+    Errors,
+    ExpectedStringError,
+    Failure,
+    InvalidUuidError,
+    Success,
+    UuidSerializer,
+)
 
 uuid_serializer = UuidSerializer()
 
@@ -15,11 +22,14 @@ def test_valid_inputs():
     assert uuid_serializer.to_data(value) == data
 
 
-@pytest.mark.parametrize("data", [12.5, "Hello World"])
-def test_from_data_failure(data):
-    assert uuid_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError(f"Not a valid UUID: {data!r}"))
-    )
+def test_from_data_failure_non_string():
+    data = 12.5
+    assert uuid_serializer.from_data(data) == Failure(Errors.one(ExpectedStringError(data)))
+
+
+def test_from_data_failure_invalid_string():
+    data = "Hello World"
+    assert uuid_serializer.from_data(data) == Failure(Errors.one(InvalidUuidError(data)))
 
 
 def test_to_data_failure():
