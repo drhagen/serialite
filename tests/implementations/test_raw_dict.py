@@ -2,14 +2,15 @@ import pytest
 
 from serialite import (
     Errors,
+    ExpectedDictionaryError,
     ExpectedFloatError,
     Failure,
     FloatSerializer,
     RawDictSerializer,
     ReservedSerializer,
+    ReservedValueError,
     StringSerializer,
     Success,
-    ValidationError,
 )
 
 raw_dict_serializer = RawDictSerializer(FloatSerializer())
@@ -29,7 +30,7 @@ def test_valid_inputs():
 def test_from_data_failure_not_a_dict():
     data = 12.5
     assert raw_dict_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid dict: 12.5"))
+        Errors.one(ExpectedDictionaryError(data))
     )
 
 
@@ -57,7 +58,7 @@ def test_key_serializer_valid_inputs():
 def test_key_serializer_bad_inputs():
     data = {"a": 12.3, "null": 15.5, "c": 16.0}
     assert raw_dict_serializer_with_key.from_data(data) == Failure(
-        Errors.one(ValidationError("Reserved value: 'null'"), location=["null"])
+        Errors.one(ReservedValueError("null"), location=["null"])
     )
     with pytest.raises(ValueError):
         _ = raw_dict_serializer_with_key.to_data(data)
