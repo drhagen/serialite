@@ -1,10 +1,13 @@
-__all__ = ["DateTimeSerializer"]
+__all__ = ["DateTimeSerializer", "InvalidDateTimeError"]
 
+from dataclasses import dataclass
 from datetime import datetime
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._result import Failure, Result, Success
+from ._type_errors import ExpectedStringError
 
 
 class DateTimeSerializer(Serializer[datetime]):
@@ -19,11 +22,11 @@ class DateTimeSerializer(Serializer[datetime]):
             try:
                 value = datetime.fromisoformat(sanitized_data)
             except ValueError:
-                return Failure(Errors.one(ValidationError(f"Not a valid DateTime: {data!r}")))
+                return Failure(Errors.one(InvalidDateTimeError(data)))
             else:
                 return Success(value)
         else:
-            return Failure(Errors.one(ValidationError(f"Not a valid DateTime: {data!r}")))
+            return Failure(Errors.one(ExpectedStringError(data)))
 
     def to_data(self, value):
         if not isinstance(value, datetime):
@@ -32,3 +35,12 @@ class DateTimeSerializer(Serializer[datetime]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "string", "format": "date-time"}
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class InvalidDateTimeError(Exception):
+    actual: str
+
+    def __str__(self) -> str:
+        return f"Expected DateTime, but got {self.actual!r}"
