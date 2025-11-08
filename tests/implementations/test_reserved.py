@@ -4,9 +4,9 @@ from serialite import (
     Errors,
     Failure,
     ReservedSerializer,
+    ReservedValueError,
     StringSerializer,
     Success,
-    ValidationError,
 )
 
 reserved_serializer = ReservedSerializer(StringSerializer(), reserved={"false", "true"})
@@ -20,9 +20,7 @@ def test_valid_inputs():
 
 def test_reserved_inputs():
     data = "true"
-    assert reserved_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Reserved value: 'true'"))
-    )
+    assert reserved_serializer.from_data(data) == Failure(Errors.one(ReservedValueError("true")))
 
 
 def test_to_data_failure():
