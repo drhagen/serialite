@@ -1,4 +1,4 @@
-from ._boolean import BooleanSerializer
+from ._boolean import BooleanSerializer, ExpectedBooleanError
 from ._date_time import DateTimeSerializer
 from ._dictionary import OrderedDictSerializer, RawDictSerializer
 from ._float import ExpectedFloatError, FloatSerializer

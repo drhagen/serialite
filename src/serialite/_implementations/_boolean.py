@@ -1,7 +1,10 @@
-__all__ = ["BooleanSerializer"]
+__all__ = ["BooleanSerializer", "ExpectedBooleanError"]
+
+from dataclasses import dataclass
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._result import Failure, Result, Success
 
 
@@ -10,7 +13,7 @@ class BooleanSerializer(Serializer[bool]):
         if isinstance(data, bool):
             return Success(data)
         else:
-            return Failure(Errors.one(ValidationError(f"Not a valid boolean: {data!r}")))
+            return Failure(Errors.one(ExpectedBooleanError(data)))
 
     def to_data(self, value: bool):
         if not isinstance(value, bool):
@@ -19,3 +22,12 @@ class BooleanSerializer(Serializer[bool]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "boolean"}
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class ExpectedBooleanError(Exception):
+    actual: object
+
+    def __str__(self) -> str:
+        return f"Expected boolean, but got {self.actual!r}"

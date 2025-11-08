@@ -1,6 +1,6 @@
 import pytest
 
-from serialite import BooleanSerializer, Errors, Failure, Success, ValidationError
+from serialite import BooleanSerializer, Errors, ExpectedBooleanError, Failure, Success
 
 boolean_serializer = BooleanSerializer()
 
@@ -14,7 +14,7 @@ def test_valid_inputs(data):
 @pytest.mark.parametrize("data", ["maybe", "true"])
 def test_from_data_failure(data):
     actual = boolean_serializer.from_data(data)
-    expected = Failure(Errors.one(ValidationError(f"Not a valid boolean: {data!r}")))
+    expected = Failure(Errors.one(ExpectedBooleanError(data)))
     assert actual == expected
 
 
