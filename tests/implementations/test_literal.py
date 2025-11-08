@@ -1,6 +1,13 @@
 import pytest
 
-from serialite import Errors, Failure, LiteralSerializer, Success, ValidationError
+from serialite import (
+    Errors,
+    ExpectedLiteralError,
+    Failure,
+    LiteralSerializer,
+    Success,
+    ValidationError,
+)
 
 literal_serializer = LiteralSerializer("none", 1, 2, 3)
 
@@ -15,7 +22,7 @@ def test_invalid_input():
     data = "invalid"
 
     assert literal_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not one of ['none', 1, 2, 3]: 'invalid'"))
+        Errors.one(ExpectedLiteralError(["none", 1, 2, 3], "invalid"))
     )
     with pytest.raises(ValueError):
         _ = literal_serializer.to_data(data)

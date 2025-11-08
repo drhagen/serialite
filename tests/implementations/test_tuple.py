@@ -3,12 +3,13 @@ import pytest
 from serialite import (
     Errors,
     ExpectedFloatError,
+    ExpectedListError,
     Failure,
     FloatSerializer,
     StringSerializer,
     Success,
+    TupleLengthError,
     TupleSerializer,
-    ValidationError,
 )
 
 tuple_serializer = TupleSerializer(FloatSerializer(), StringSerializer())
@@ -24,16 +25,12 @@ def test_valid_inputs():
 
 def test_from_data_failure_wrong_type():
     data = 12.5
-    assert tuple_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid list: 12.5"))
-    )
+    assert tuple_serializer.from_data(data) == Failure(Errors.one(ExpectedListError(data)))
 
 
 def test_from_data_failure_wrong_length():
     data = [12.5]
-    assert tuple_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Has 1 elements, not 2: [12.5]"))
-    )
+    assert tuple_serializer.from_data(data) == Failure(Errors.one(TupleLengthError(1, 2, [12.5])))
 
 
 def test_from_data_failure_element():
