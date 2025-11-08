@@ -2,11 +2,11 @@ import pytest
 
 from serialite import (
     Errors,
+    ExpectedFloatError,
     Failure,
     FloatSerializer,
     OptionalSerializer,
     Success,
-    ValidationError,
 )
 
 optional_serializer = OptionalSerializer(FloatSerializer())
@@ -20,9 +20,7 @@ def test_valid_inputs(data):
 
 def test_from_data_failure():
     data = "12.5"
-    assert optional_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid float: '12.5'"))
-    )
+    assert optional_serializer.from_data(data) == Failure(Errors.one(ExpectedFloatError("12.5")))
 
 
 def test_to_data_failure():

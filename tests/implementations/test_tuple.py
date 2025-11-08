@@ -2,6 +2,7 @@ import pytest
 
 from serialite import (
     Errors,
+    ExpectedFloatError,
     Failure,
     FloatSerializer,
     StringSerializer,
@@ -38,7 +39,7 @@ def test_from_data_failure_wrong_length():
 def test_from_data_failure_element():
     data = ["12.3", "str2"]
     actual = tuple_serializer.from_data(data)
-    expected = Errors.one(ValidationError("Not a valid float: '12.3'"), location=[0])
+    expected = Errors.one(ExpectedFloatError("12.3"), location=[0])
     assert actual == Failure(expected)
 
 

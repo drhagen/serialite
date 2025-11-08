@@ -1,10 +1,12 @@
-__all__ = ["FloatSerializer"]
+__all__ = ["ExpectedFloatError", "FloatSerializer"]
 
+from dataclasses import dataclass
 from math import inf, isnan, nan
 from typing import Any, Sequence
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._numeric_check import is_real
 from .._result import Failure, Result, Success
 
@@ -30,7 +32,7 @@ class FloatSerializer(Serializer[float]):
         elif is_real(data):
             return Success(float(data))
         else:
-            return Failure(Errors.one(ValidationError(f"Not a valid float: {data!r}")))
+            return Failure(Errors.one(ExpectedFloatError(data)))
 
     def to_data(self, value: float):
         if not is_real(value):
@@ -47,3 +49,18 @@ class FloatSerializer(Serializer[float]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "number"}
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class ExpectedFloatError(Exception):
+    """Raised when the input data is not a valid float.
+
+    Attributes:
+        actual: The value received.
+    """
+
+    actual: Any
+
+    def __str__(self) -> str:
+        return f"Expected float, but got {self.actual!r}"

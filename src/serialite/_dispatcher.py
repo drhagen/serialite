@@ -256,7 +256,7 @@ def literal_serializer(cls):
 
 # @serializer.register(Any)
 def any_serializer(cls):
-    from ._implementations import JsonSerializer
+    from ._implementations._json import JsonSerializer
 
     return JsonSerializer()
 

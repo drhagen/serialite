@@ -2,6 +2,7 @@ import pytest
 
 from serialite import (
     Errors,
+    ExpectedFloatError,
     Failure,
     FloatSerializer,
     RawDictSerializer,
@@ -36,8 +37,8 @@ def test_from_data_failure_value():
     data = {"a": "str1", "b": 15.5, "c": "str2"}
     actual = raw_dict_serializer.from_data(data)
     expected = Errors()
-    expected.add(ValidationError("Not a valid float: 'str1'"), location=["a"])
-    expected.add(ValidationError("Not a valid float: 'str2'"), location=["c"])
+    expected.add(ExpectedFloatError("str1"), location=["a"])
+    expected.add(ExpectedFloatError("str2"), location=["c"])
     assert actual == Failure(expected)
 
 

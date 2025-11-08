@@ -2,6 +2,7 @@ import pytest
 
 from serialite import (
     Errors,
+    ExpectedFloatError,
     Failure,
     FloatSerializer,
     ListSerializer,
@@ -30,8 +31,8 @@ def test_from_data_failure_element():
     data = ["str1", 15.5, "str2"]
     actual = list_serializer.from_data(data)
     expected = Errors()
-    expected.add(ValidationError("Not a valid float: 'str1'"), location=[0])
-    expected.add(ValidationError("Not a valid float: 'str2'"), location=[2])
+    expected.add(ExpectedFloatError("str1"), location=[0])
+    expected.add(ExpectedFloatError("str2"), location=[2])
     assert actual == Failure(expected)
 
 

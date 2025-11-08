@@ -1,7 +1,7 @@
 from ._boolean import BooleanSerializer
 from ._date_time import DateTimeSerializer
 from ._dictionary import OrderedDictSerializer, RawDictSerializer
-from ._float import FloatSerializer
+from ._float import ExpectedFloatError, FloatSerializer
 from ._integer import (
     IntegerSerializer,
     NonnegativeIntegerSerializer,
