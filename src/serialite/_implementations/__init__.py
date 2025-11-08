@@ -10,7 +10,7 @@ from ._integer import (
     PositiveIntegerSerializer,
 )
 from ._json import JsonSerializer
-from ._list import ListSerializer
+from ._list import ExpectedListError, ListSerializer
 from ._literal import LiteralSerializer
 from ._none import NoneSerializer
 from ._path import PathSerializer

@@ -3,11 +3,11 @@ import pytest
 from serialite import (
     Errors,
     ExpectedFloatError,
+    ExpectedListError,
     Failure,
     FloatSerializer,
     ListSerializer,
     Success,
-    ValidationError,
 )
 
 list_serializer = ListSerializer(FloatSerializer())
@@ -22,9 +22,7 @@ def test_valid_inputs():
 
 def test_from_data_failure_top_level():
     data = 12.5
-    assert list_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid list: 12.5"))
-    )
+    assert list_serializer.from_data(data) == Failure(Errors.one(ExpectedListError(data)))
 
 
 def test_from_data_failure_element():
