@@ -3,6 +3,8 @@ from ._date_time import DateTimeSerializer
 from ._dictionary import OrderedDictSerializer, RawDictSerializer
 from ._float import ExpectedFloatError, FloatSerializer
 from ._integer import (
+    ExpectedIntegerError,
+    IntegerOutOfRangeError,
     IntegerSerializer,
     NonnegativeIntegerSerializer,
     PositiveIntegerSerializer,

@@ -5,8 +5,10 @@ import pytest
 from serialite import (
     AccessPermissions,
     Errors,
+    ExpectedIntegerError,
     Failure,
     FieldsSerializer,
+    IntegerOutOfRangeError,
     MultiField,
     SingleField,
     Success,
@@ -83,7 +85,7 @@ def test_from_data_not_dict():
 def test_from_data_deserialization_failure(fields_serializer):
     data = {"a": "2.5"}
     assert fields_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid integer: '2.5'"), location=["a"])
+        Errors.one(ExpectedIntegerError("2.5"), location=["a"])
     )
 
 

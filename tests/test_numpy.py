@@ -8,10 +8,10 @@ except ImportError:
 from serialite import (
     ArraySerializer,
     Errors,
+    ExpectedIntegerError,
     Failure,
     IntegerSerializer,
     Success,
-    ValidationError,
     serializer,
 )
 
@@ -35,8 +35,8 @@ class TestArraySerializer:
         data = ["str1", 15, "str2"]
         actual = array_serializer.from_data(data)
         expected = Errors()
-        expected.add(ValidationError("Not a valid integer: 'str1'"), location=[0])
-        expected.add(ValidationError("Not a valid integer: 'str2'"), location=[2])
+        expected.add(ExpectedIntegerError("str1"), location=[0])
+        expected.add(ExpectedIntegerError("str2"), location=[2])
         assert actual == Failure(expected)
 
     def test_to_data_failure_not_array(self):
