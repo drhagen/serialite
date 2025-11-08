@@ -12,7 +12,7 @@ from ._integer import (
 from ._json import JsonSerializer
 from ._list import ExpectedListError, ListSerializer
 from ._literal import LiteralSerializer
-from ._none import NoneSerializer
+from ._none import ExpectedNoneError, NoneSerializer
 from ._path import PathSerializer
 from ._reserved import ReservedSerializer
 from ._set import SetSerializer

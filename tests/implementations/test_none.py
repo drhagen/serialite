@@ -1,6 +1,12 @@
 import pytest
 
-from serialite import Errors, Failure, NoneSerializer, Success, ValidationError
+from serialite import (
+    Errors,
+    ExpectedNoneError,
+    Failure,
+    NoneSerializer,
+    Success,
+)
 
 none_serializer = NoneSerializer()
 
@@ -15,9 +21,7 @@ def test_valid_inputs():
 @pytest.mark.parametrize("data", ["none", False, {}])
 def test_from_data_failure(data):
     data = "none"
-    assert none_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError(f"Not a null: {data!r}"))
-    )
+    assert none_serializer.from_data(data) == Failure(Errors.one(ExpectedNoneError(data)))
 
 
 def test_to_data_failure():
