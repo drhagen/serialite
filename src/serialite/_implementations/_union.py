@@ -22,8 +22,8 @@ class TryUnionSerializer(Serializer):
             match serializer.from_data(data):
                 case Failure(error):
                     # Use the serializer representation as the location so that
-                    # Errors can be composed.
-                    errors.extend(error, location=[str(serializer)])
+                    # Errors are more readable.
+                    errors.extend(error)
                 case Success(value):
                     return Success(value)
 
