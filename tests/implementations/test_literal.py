@@ -1,13 +1,6 @@
 import pytest
 
-from serialite import (
-    Errors,
-    ExpectedLiteralError,
-    Failure,
-    LiteralSerializer,
-    Success,
-    ValidationError,
-)
+from serialite import Errors, ExpectedLiteralError, Failure, LiteralSerializer, Success
 
 literal_serializer = LiteralSerializer("none", 1, 2, 3)
 
