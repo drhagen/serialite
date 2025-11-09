@@ -14,7 +14,7 @@ from ._integer import (
 )
 from ._json import JsonSerializer
 from ._list import ListSerializer
-from ._literal import ExpectedLiteralError, LiteralSerializer
+from ._literal import LiteralSerializer, UnknownValueError
 from ._none import NoneSerializer
 from ._path import PathSerializer
 from ._reserved import ReservedSerializer, ReservedValueError

@@ -1,4 +1,4 @@
-__all__ = ["ExpectedLiteralError", "LiteralSerializer"]
+__all__ = ["LiteralSerializer", "UnknownValueError"]
 
 from dataclasses import dataclass
 from typing import Any
@@ -18,7 +18,7 @@ class LiteralSerializer(Serializer):
         if data in self.possibilities:
             return Success(data)
         else:
-            return Failure(Errors.one(ExpectedLiteralError(list(self.possibilities), data)))
+            return Failure(Errors.one(UnknownValueError(list(self.possibilities), data)))
 
     def to_data(self, value):
         if value not in self.possibilities:
@@ -39,7 +39,7 @@ class LiteralSerializer(Serializer):
 
 @serializable
 @dataclass(frozen=True, slots=True)
-class ExpectedLiteralError(Exception):
+class UnknownValueError(Exception):
     possibilities: list[Any]
     actual: Any
 
