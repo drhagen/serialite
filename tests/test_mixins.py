@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from serialite import (
     AbstractSerializableMixin,
     Errors,
+    ExpectedDictionaryError,
     Failure,
     Success,
     ValidationError,
@@ -56,7 +57,7 @@ def test_from_data_no_type():
 def test_from_data_not_a_dict():
     data = "Boom"
     actual = DataAbstractSerializableClass.from_data(data)
-    expected = Failure(Errors.one(ValidationError("Not a dictionary: 'Boom'")))
+    expected = Failure(Errors.one(ExpectedDictionaryError("Boom")))
     assert actual == expected
 
 
@@ -97,5 +98,5 @@ def test_from_data_failure():
     # Deserialization failure
     data = {"dimension": 3, "value": 5.6, "name": "macrophage", "outputs": "Boom"}
     assert DataSerializableClass.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid dict: 'Boom'"), location=["outputs"])
+        Errors.one(ExpectedDictionaryError("Boom"), location=["outputs"])
     )

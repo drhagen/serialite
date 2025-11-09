@@ -8,7 +8,6 @@ from serialite import (
     ExpectedIntegerError,
     Failure,
     FieldsSerializer,
-    IntegerOutOfRangeError,
     MultiField,
     SingleField,
     Success,

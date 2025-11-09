@@ -85,7 +85,10 @@ class AbstractSerializableMixin(Serializable):
                 Errors.one(ValidationError("This field is required."), location=["_type"])
             )
         except TypeError:
-            return Failure(Errors.one(ValidationError(f"Not a dictionary: {data!r}")))
+            # Import locally to avoid circular import at module import time
+            from ._implementations import ExpectedDictionaryError
+
+            return Failure(Errors.one(ExpectedDictionaryError(data)))
 
         # The rest of data
         subclass_data = {key: value for key, value in data.items() if key != "_type"}
