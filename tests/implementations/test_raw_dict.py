@@ -62,3 +62,9 @@ def test_key_serializer_bad_inputs():
     )
     with pytest.raises(ValueError):
         _ = raw_dict_serializer_with_key.to_data(data)
+
+
+def test_error_to_data_and_to_string():
+    e = ExpectedDictionaryError(["a", 12.3])
+    assert e.to_data() == {"actual": ["a", 12.3]}
+    assert str(e) == "Expected dictionary, but got ['a', 12.3]"

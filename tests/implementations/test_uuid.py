@@ -36,3 +36,9 @@ def test_to_data_failure():
     with pytest.raises(ValueError):
         # string instead of UUID object
         _ = uuid_serializer.to_data("00112233-4455-6677-8899-aabbccddeeff")
+
+
+def test_uuid_error_to_data_and_to_string():
+    e = InvalidUuidError("Hello World")
+    assert e.to_data() == {"actual": "Hello World"}
+    assert str(e) == "Expected UUID, but got 'Hello World'"

@@ -54,3 +54,9 @@ def test_to_data_failure_top_level():
 def test_to_data_failure_element():
     with pytest.raises(ValueError):
         _ = set_serializer.to_data({12.5, "a"})
+
+
+def test_duplicate_error_to_data_and_to_string():
+    dup = DuplicatedValueError(12.3)
+    assert dup.to_data() == {"duplicate": 12.3}
+    assert str(dup) == "Expected a list of unique values, but got this duplicate 12.3"

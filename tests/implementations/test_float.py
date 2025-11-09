@@ -44,3 +44,9 @@ def test_from_data_failure():
 def test_to_data_failure():
     with pytest.raises(ValueError):
         _ = float_serializer.to_data("12.5")
+
+
+def test_error_to_data_and_to_string():
+    e = ExpectedFloatError("12.5")
+    assert e.to_data() == {"actual": "12.5"}
+    assert str(e) == "Expected float, but got '12.5'"

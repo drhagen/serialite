@@ -26,3 +26,9 @@ def test_reserved_inputs():
 def test_to_data_failure():
     with pytest.raises(ValueError):
         _ = reserved_serializer.to_data("true")
+
+
+def test_reserved_value_error_to_data_and_to_string():
+    r = ReservedValueError("null")
+    assert r.to_data() == {"actual": "null"}
+    assert str(r) == "This is a reserved value: 'null'"

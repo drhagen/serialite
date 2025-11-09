@@ -213,3 +213,27 @@ def test_empty_input():
 
     assert fields_serializer.from_data({}) == Success({})
     assert fields_serializer.to_data({}) == {}
+
+
+def test_unknown_field_error_to_data_and_to_string():
+    u = UnknownFieldError("c")
+    assert u.to_data() == {"field_name": "c"}
+    assert str(u) == "Expected valid field, but got 'c'"
+
+
+def test_conflicting_fields_error_to_data_and_to_string():
+    c = ConflictingFieldsError("c", ["b"])
+    assert c.to_data() == {"field_name": "c", "existing_fields": ["b"]}
+    assert str(c) == "Expected 'c' to be provided alone, but got conflicting fields ['b']"
+
+
+def test_required_field_error_to_data_and_to_string():
+    r = RequiredFieldError("myField")
+    assert r.to_data() == {"field_name": "myField"}
+    assert str(r) == "Expected field 'myField', but did not receive it"
+
+
+def test_required_one_of_fields_error_to_data_and_to_string():
+    o = RequiredOneOfFieldsError(["a", "b"])
+    assert o.to_data() == {"field_names": ["a", "b"]}
+    assert str(o) == "Expected one of the fields ['a', 'b'], but did not receive any"

@@ -53,3 +53,9 @@ def test_to_data_failure_wrong_length():
 def test_to_data_failure_element():
     with pytest.raises(ValueError):
         _ = tuple_serializer.to_data(["12.5", "a"])
+
+
+def test_tuple_length_error_to_data_and_to_string():
+    e = TupleLengthError(1, 2, [12.5])
+    assert e.to_data() == {"actual_length": 1, "expected_length": 2, "actual": [12.5]}
+    assert str(e) == "Expected tuple of length 2, but got length 1 tuple [12.5]"

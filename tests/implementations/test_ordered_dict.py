@@ -61,3 +61,9 @@ def test_from_data_failure_items():
 def test_to_data_failure():
     with pytest.raises(ValueError):
         _ = ordered_dict_serializer.to_data([12.34, 15.5])
+
+
+def test_length_2_error_to_data_and_to_string():
+    e = ExpectedLength2ListError(["B", 15.5, 18.9])
+    assert e.to_data() == {"actual": ["B", 15.5, 18.9]}
+    assert str(e) == "Expected length-2 list, but got length-3 list ['B', 15.5, 18.9]"

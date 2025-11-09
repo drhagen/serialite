@@ -42,3 +42,9 @@ def test_from_data_failure_invalid_string():
 def test_to_data_failure():
     with pytest.raises(ValueError):
         _ = date_time_serializer.to_data("1969")
+
+
+def test_datetime_error_to_data_and_to_string():
+    e = InvalidDateTimeError("Hello World")
+    assert e.to_data() == {"actual": "Hello World"}
+    assert str(e) == "Expected DateTime, but got 'Hello World'"

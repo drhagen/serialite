@@ -80,3 +80,15 @@ class TestPositiveIntegerSerializer:
     def test_to_data_failure(self, value):
         with pytest.raises(ValueError):
             _ = positive_integer_serializer.to_data(value)
+
+
+def test_error_to_data_and_to_string():
+    e = ExpectedIntegerError("12.5")
+    assert e.to_data() == {"actual": "12.5"}
+    assert str(e) == "Expected integer, but got '12.5'"
+
+
+def test_integer_out_of_range_error_to_data_and_str():
+    r = IntegerOutOfRangeError(actual=0, minimum=1)
+    assert r.to_data() == {"actual": 0, "minimum": 1}
+    assert str(r) == "Expected integer greater than or equal to 1, but got 0"

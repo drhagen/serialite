@@ -104,3 +104,18 @@ def test_from_data_failure():
     assert DataSerializableClass.from_data(data) == Failure(
         Errors.one(ExpectedDictionaryError("Boom"), location=["outputs"])
     )
+
+
+def test_required_type_field_error_to_data_and_to_string():
+    t = RequiredTypeFieldError()
+    assert t.to_data() == {}
+    assert str(t) == "Expected field '_type', but did not receive it"
+
+
+def test_unknown_class_error_to_data_and_to_string():
+    k = UnknownClassError("NotThere", ["DataSubClassSerializableA"])
+    assert k.to_data() == {"type_name": "NotThere", "known_types": ["DataSubClassSerializableA"]}
+    assert (
+        str(k)
+        == "Expected one of the known types ['DataSubClassSerializableA'], but got 'NotThere'"
+    )
