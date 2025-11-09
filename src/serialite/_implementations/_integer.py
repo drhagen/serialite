@@ -12,7 +12,7 @@ from .._decorators import serializable
 from .._errors import Errors
 from .._numeric_check import is_int
 from .._result import Failure, Result, Success
-from ._type_errors import ExpectedIntegerError
+from .._type_errors import ExpectedIntegerError
 
 
 class IntegerSerializer(Serializer[int]):

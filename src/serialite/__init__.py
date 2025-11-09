@@ -3,7 +3,7 @@ from ._dataclass import field
 from ._decorators import abstract_serializable, serializable
 from ._dispatcher import serializer
 from ._errors import Errors, ValidationError
-from ._exceptions import (
+from ._field_errors import (
     ConflictingFieldsError,
     RequiredFieldError,
     RequiredOneOfFieldsError,
@@ -31,6 +31,15 @@ from ._monkey_patches import (
 )
 from ._result import Failure, Result, Success
 from ._stable_set import StableSet
+from ._type_errors import (
+    ExpectedBooleanError,
+    ExpectedDictionaryError,
+    ExpectedFloatError,
+    ExpectedIntegerError,
+    ExpectedListError,
+    ExpectedNullError,
+    ExpectedStringError,
+)
 
 monkey_patch_pydantic_subclasscheck()
 monkey_patch_pydantic_instancecheck()

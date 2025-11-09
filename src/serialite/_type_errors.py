@@ -11,7 +11,7 @@ __all__ = [
 from dataclasses import dataclass
 from typing import Any
 
-from .._decorators import serializable
+from ._decorators import serializable
 
 
 @serializable

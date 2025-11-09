@@ -3,7 +3,7 @@ __all__ = ["BooleanSerializer"]
 from .._base import Serializer
 from .._errors import Errors
 from .._result import Failure, Result, Success
-from ._type_errors import ExpectedBooleanError
+from .._type_errors import ExpectedBooleanError
 
 
 class BooleanSerializer(Serializer[bool]):

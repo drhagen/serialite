@@ -248,7 +248,7 @@ class FieldsSerializer(Mapping):
         # Return early if the data isn't even a dict
         if not isinstance(data, dict):
             # Import locally to avoid circular import at module import time
-            from ._implementations import ExpectedDictionaryError
+            from ._type_errors import ExpectedDictionaryError
 
             return Failure(Errors.one(ExpectedDictionaryError(data)))
 
@@ -264,7 +264,7 @@ class FieldsSerializer(Mapping):
             ):
                 # This data field name is not understood
                 if not allow_unused:
-                    from ._exceptions import UnknownFieldError
+                    from ._field_errors import UnknownFieldError
 
                     errors.add(UnknownFieldError(key), location=[key])
                 else:
@@ -286,7 +286,7 @@ class FieldsSerializer(Mapping):
                     for field_key in multi_field.serializers.keys()
                     if field_key in data and field_key != key
                 ]
-                from ._exceptions import ConflictingFieldsError
+                from ._field_errors import ConflictingFieldsError
 
                 errors.add(
                     ConflictingFieldsError(key, preexisting_keys),
@@ -310,14 +310,14 @@ class FieldsSerializer(Mapping):
                 if serializer_field.default is no_default:
                     # This field is required
                     if isinstance(serializer_field, SingleField):
-                        from ._exceptions import RequiredFieldError
+                        from ._field_errors import RequiredFieldError
 
                         errors.add(
                             RequiredFieldError(object_field_name),
                             location=[object_field_name],
                         )
                     elif isinstance(serializer_field, MultiField):
-                        from ._exceptions import RequiredOneOfFieldsError
+                        from ._field_errors import RequiredOneOfFieldsError
 
                         field_names = list(serializer_field.serializers.keys())
                         errors.add(

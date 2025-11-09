@@ -6,7 +6,7 @@ from .._base import Serializer
 from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._stable_set import StableSet
-from ._type_errors import ExpectedListError
+from .._type_errors import ExpectedListError
 
 Element = TypeVar("Element")
 

@@ -27,15 +27,6 @@ from ._tuple import (
     TupleLengthError,
     TupleSerializer,
 )
-from ._type_errors import (
-    ExpectedBooleanError,
-    ExpectedDictionaryError,
-    ExpectedFloatError,
-    ExpectedIntegerError,
-    ExpectedListError,
-    ExpectedNullError,
-    ExpectedStringError,
-)
 from ._union import OptionalSerializer, TryUnionSerializer
 from ._uuid import InvalidUuidError, UuidSerializer
 

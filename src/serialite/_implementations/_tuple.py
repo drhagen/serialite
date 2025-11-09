@@ -9,7 +9,7 @@ from .._decorators import serializable
 from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._stable_set import StableSet
-from ._type_errors import ExpectedListError
+from .._type_errors import ExpectedListError
 
 TupleArguments = TypeVarTuple("TupleArguments")
 

@@ -81,12 +81,12 @@ class AbstractSerializableMixin(Serializable):
         try:
             type_name = data["_type"]
         except KeyError:
-            from ._exceptions import RequiredTypeFieldError
+            from ._field_errors import RequiredTypeFieldError
 
             return Failure(Errors.one(RequiredTypeFieldError(), location=["_type"]))
         except TypeError:
             # Import locally to avoid circular import at module import time
-            from ._implementations import ExpectedDictionaryError
+            from ._type_errors import ExpectedDictionaryError
 
             return Failure(Errors.one(ExpectedDictionaryError(data)))
 
@@ -95,7 +95,7 @@ class AbstractSerializableMixin(Serializable):
 
         subclass = cls.__subclass_serializers__.get(type_name)
         if subclass is None:
-            from ._exceptions import UnknownClassError
+            from ._field_errors import UnknownClassError
 
             return Failure(
                 Errors.one(

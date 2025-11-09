@@ -7,7 +7,7 @@ from .._base import Serializer
 from .._errors import Errors
 from .._numeric_check import is_real
 from .._result import Failure, Result, Success
-from ._type_errors import ExpectedFloatError
+from .._type_errors import ExpectedFloatError
 
 
 class FloatSerializer(Serializer[float]):

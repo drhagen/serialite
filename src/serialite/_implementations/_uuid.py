@@ -7,7 +7,7 @@ from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
 from .._result import Failure, Result, Success
-from ._type_errors import ExpectedStringError
+from .._type_errors import ExpectedStringError
 
 
 class UuidSerializer(Serializer[UUID]):

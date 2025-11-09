@@ -5,7 +5,7 @@ from pathlib import Path
 from .._base import Serializer
 from .._errors import Errors
 from .._result import Failure, Result, Success
-from ._type_errors import ExpectedStringError
+from .._type_errors import ExpectedStringError
 
 
 class PathSerializer(Serializer):
