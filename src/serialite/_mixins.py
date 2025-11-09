@@ -3,7 +3,7 @@ __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 from typing import ClassVar
 
 from ._base import Serializable, Serializer
-from ._errors import Errors, ValidationError
+from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
 from ._result import Failure, Success
 from ._stable_set import StableSet
@@ -81,9 +81,9 @@ class AbstractSerializableMixin(Serializable):
         try:
             type_name = data["_type"]
         except KeyError:
-            return Failure(
-                Errors.one(ValidationError("This field is required."), location=["_type"])
-            )
+            from ._exceptions import RequiredTypeFieldError
+
+            return Failure(Errors.one(RequiredTypeFieldError(), location=["_type"]))
         except TypeError:
             # Import locally to avoid circular import at module import time
             from ._implementations import ExpectedDictionaryError
@@ -95,8 +95,13 @@ class AbstractSerializableMixin(Serializable):
 
         subclass = cls.__subclass_serializers__.get(type_name)
         if subclass is None:
+            from ._exceptions import UnknownClassError
+
             return Failure(
-                Errors.one(ValidationError(f"Class not found: {type_name!r}"), location=["_type"])
+                Errors.one(
+                    UnknownClassError(type_name, list(cls.__subclass_serializers__.keys())),
+                    location=["_type"],
+                )
             )
         else:
             return subclass.from_data(subclass_data)

@@ -4,15 +4,19 @@ import pytest
 
 from serialite import (
     AccessPermissions,
+    ConflictingFieldsError,
     Errors,
+    ExpectedDictionaryError,
     ExpectedIntegerError,
     Failure,
     FieldsSerializer,
     MultiField,
+    RequiredFieldError,
+    RequiredOneOfFieldsError,
     SingleField,
     Success,
+    UnknownFieldError,
     UuidSerializer,
-    ValidationError,
     empty_default,
     serializer,
 )
@@ -69,9 +73,7 @@ def test_default_value(fields_serializer):
 
 def test_from_data_not_dict():
     fields_serializer = FieldsSerializer()
-    assert fields_serializer.from_data(1) == Failure(
-        Errors.one(ValidationError("Not a dictionary: 1"))
-    )
+    assert fields_serializer.from_data(1) == Failure(Errors.one(ExpectedDictionaryError(1)))
 
 
 @pytest.mark.parametrize(
@@ -91,7 +93,7 @@ def test_from_data_deserialization_failure(fields_serializer):
 def test_from_data_invalid_field():
     fields_serializer = FieldsSerializer(myField=str)
     assert fields_serializer.from_data({"c": 1, "myField": "Hello"}) == Failure(
-        Errors.one(ValidationError("This field is invalid."), location=["c"])
+        Errors.one(UnknownFieldError("c"), location=["c"])
     )
 
 
@@ -105,9 +107,7 @@ def test_from_data_invalid_field_allowed():
 def test_from_data_multi_field_repeated_fields():
     fields_serializer = FieldsSerializer(a=MultiField({"b": int, "c": str}))
     expected = Errors.one(
-        ValidationError(
-            "This field cannot be provided because these fields are already provided: b"
-        ),
+        ConflictingFieldsError("c", ["b"]),
         location=["c"],
     )
     assert fields_serializer.from_data({"b": 2, "c": "Boom"}) == Failure(expected)
@@ -130,7 +130,7 @@ def test_from_data_no_default_single_field():
     fields_serializer = FieldsSerializer(myField=SingleField(str))
     data = {}
     assert fields_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("This field is required."), location=["myField"])
+        Errors.one(RequiredFieldError("myField"), location=["myField"])
     )
 
 
@@ -138,7 +138,7 @@ def test_from_data_no_default_multi_field():
     fields_serializer = FieldsSerializer(myField=MultiField({"a": str, "b": int}))
     data = {}
     assert fields_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("One of these fields is required: a, b"), location=["myField"])
+        Errors.one(RequiredOneOfFieldsError(["a", "b"]), location=["myField"])
     )
 
 
@@ -149,7 +149,7 @@ def test_from_data_field_not_writable():
         myField=MultiField({"a": int, "b": str}, access=AccessPermissions.read_only)
     )
     assert fields_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("This field is invalid."), location=["b"])
+        Errors.one(UnknownFieldError("b"), location=["b"])
     )
 
     fields_serializer = FieldsSerializer(b=SingleField(str, access=AccessPermissions.read_only))

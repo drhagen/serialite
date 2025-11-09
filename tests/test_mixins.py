@@ -6,8 +6,10 @@ from serialite import (
     Errors,
     ExpectedDictionaryError,
     Failure,
+    RequiredFieldError,
+    RequiredTypeFieldError,
     Success,
-    ValidationError,
+    UnknownClassError,
     serializable,
 )
 
@@ -50,7 +52,7 @@ def test_from_data_valid():
 def test_from_data_no_type():
     data = {"value": 2.4}
     actual = DataAbstractSerializableClass.from_data(data)
-    expected = Failure(Errors.one(ValidationError("This field is required."), location=["_type"]))
+    expected = Failure(Errors.one(RequiredTypeFieldError(), location=["_type"]))
     assert actual == expected
 
 
@@ -65,7 +67,9 @@ def test_from_data_not_a_subclass():
     data = {"_type": "NotThere", "value": 2.4}
     actual = DataAbstractSerializableClass.from_data(data)
     expected = Failure(
-        Errors.one(ValidationError("Class not found: 'NotThere'"), location=["_type"])
+        Errors.one(
+            UnknownClassError("NotThere", ["DataSubClassSerializableA"]), location=["_type"]
+        )
     )
     assert actual == expected
 
@@ -92,7 +96,7 @@ def test_from_data_failure():
     # Missing required field: name
     data = {"dimension": 3, "value": 5.6, "outputs": {"a": 1.2, "b": 3.4}}
     assert DataSerializableClass.from_data(data) == Failure(
-        Errors.one(ValidationError("This field is required."), location=["name"])
+        Errors.one(RequiredFieldError("name"), location=["name"])
     )
 
     # Deserialization failure

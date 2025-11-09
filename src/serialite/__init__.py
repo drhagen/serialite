@@ -3,6 +3,14 @@ from ._dataclass import field
 from ._decorators import abstract_serializable, serializable
 from ._dispatcher import serializer
 from ._errors import Errors, ValidationError
+from ._exceptions import (
+    ConflictingFieldsError,
+    RequiredFieldError,
+    RequiredOneOfFieldsError,
+    RequiredTypeFieldError,
+    UnknownClassError,
+    UnknownFieldError,
+)
 from ._fields_serializer import (
     AccessPermissions,
     FieldsSerializer,
