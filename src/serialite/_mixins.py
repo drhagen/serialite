@@ -36,6 +36,8 @@ class SerializableMixin(Serializable):
             this_set = StableSet(cls)
             parent_models |= this_set
             return this_set | cls.__fields_serializer__.collect_openapi_models(parent_models)
+        else:
+            return StableSet()
 
     @classmethod
     def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False):
