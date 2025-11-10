@@ -146,77 +146,77 @@ def serializer(cls: type[Output]) -> Serializer[Output]:
 
 @serializer.register(type(None))
 def none_serializer(cls):
-    from ._implementations import NoneSerializer
+    from ._implementations._none import NoneSerializer
 
     return NoneSerializer()
 
 
 @serializer.register(bool)
 def boolean_serializer(cls):
-    from ._implementations import BooleanSerializer
+    from ._implementations._boolean import BooleanSerializer
 
     return BooleanSerializer()
 
 
 @serializer.register(int)
 def integer_serializer(cls):
-    from ._implementations import IntegerSerializer
+    from ._implementations._integer import IntegerSerializer
 
     return IntegerSerializer()
 
 
 @serializer.register(float)
 def float_serializer(cls):
-    from ._implementations import FloatSerializer
+    from ._implementations._float import FloatSerializer
 
     return FloatSerializer()
 
 
 @serializer.register(str)
 def string_serializer(cls):
-    from ._implementations import StringSerializer
+    from ._implementations._string import StringSerializer
 
     return StringSerializer()
 
 
 @serializer.register(datetime)
 def datetime_serializer(cls):
-    from ._implementations import DateTimeSerializer
+    from ._implementations._date_time import DateTimeSerializer
 
     return DateTimeSerializer()
 
 
 @serializer.register(UUID)
 def uuid_serializer(cls):
-    from ._implementations import UuidSerializer
+    from ._implementations._uuid import UuidSerializer
 
     return UuidSerializer()
 
 
 @serializer.register(list)
 def list_serializer(cls):
-    from ._implementations import ListSerializer
+    from ._implementations._list import ListSerializer
 
     return ListSerializer(serializer(cls.__args__[0]))
 
 
 @serializer.register(set)
 def set_serializer(cls):
-    from ._implementations import SetSerializer
+    from ._implementations._set import SetSerializer
 
     return SetSerializer(serializer(cls.__args__[0]))
 
 
 @serializer.register(tuple)
 def tuple_serializer(cls):
-    from ._implementations import TupleSerializer
+    from ._implementations._tuple import TupleSerializer
 
     return TupleSerializer(*(serializer(arg) for arg in cls.__args__))
 
 
 @serializer.register(dict)
 def dict_serializer(cls):
-    from ._implementations import OrderedDictSerializer, RawDictSerializer
+    from ._implementations._dictionary import OrderedDictSerializer, RawDictSerializer
 
     if cls.__args__[0] is str:
         return RawDictSerializer(serializer(cls.__args__[1]))
@@ -226,7 +226,7 @@ def dict_serializer(cls):
 
 @serializer.register(Path)
 def path_serializer(cls):
-    from ._implementations import PathSerializer
+    from ._implementations._path import PathSerializer
 
     return PathSerializer()
 
@@ -234,7 +234,7 @@ def path_serializer(cls):
 # Union disables subclassing so Optional cannot be used to dispatch
 # @serializer.register(Optional)
 def optional_serializer(cls):
-    from ._implementations import OptionalSerializer
+    from ._implementations._union import OptionalSerializer
 
     return OptionalSerializer(serializer(cls.__args__[0]))
 
@@ -242,21 +242,21 @@ def optional_serializer(cls):
 # Union disables subclassing so it cannot be used to dispatch
 # @serializer.register(Union)
 def union_serializer(cls):
-    from ._implementations import TryUnionSerializer
+    from ._implementations._union import TryUnionSerializer
 
     return TryUnionSerializer(*[serializer(type_arg) for type_arg in cls.__args__])
 
 
 # @serializer.register(Literal)
 def literal_serializer(cls):
-    from ._implementations import LiteralSerializer
+    from ._implementations._literal import LiteralSerializer
 
     return LiteralSerializer(*cls.__args__)
 
 
 # @serializer.register(Any)
 def any_serializer(cls):
-    from ._implementations import JsonSerializer
+    from ._implementations._json import JsonSerializer
 
     return JsonSerializer()
 
@@ -275,7 +275,7 @@ else:
 
     @serializer.register(np.ndarray)
     def array_serializer(cls):
-        from ._implementations import ArraySerializer
+        from ._implementations._array import ArraySerializer
 
         return ArraySerializer(dtype=float)
 
@@ -288,6 +288,6 @@ else:
 
     @serializer.register(OrderedSet)
     def ordered_set_serializer(cls):
-        from ._implementations import OrderedSetSerializer
+        from ._implementations._ordered_set import OrderedSetSerializer
 
         return OrderedSetSerializer(serializer(cls.__args__[0]))

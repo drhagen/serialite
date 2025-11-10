@@ -1,10 +1,12 @@
-__all__ = ["ReservedSerializer"]
+__all__ = ["ReservedSerializer", "ReservedValueError"]
 
 from collections.abc import Set
-from typing import Generic, TypeVar
+from dataclasses import dataclass
+from typing import Any, Generic, TypeVar
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._stable_set import StableSet
 
@@ -22,7 +24,7 @@ class ReservedSerializer(Generic[Element], Serializer[Element]):
                 return Failure(error)
             case Success(value):
                 if value in self.reserved:
-                    return Failure(Errors.one(ValidationError(f"Reserved value: {value!r}")))
+                    return Failure(Errors.one(ReservedValueError(value)))
                 return Success(value)
 
     def to_data(self, value):
@@ -38,3 +40,12 @@ class ReservedSerializer(Generic[Element], Serializer[Element]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return self.internal_serializer.to_openapi_schema(refs)
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class ReservedValueError(Exception):
+    actual: Any
+
+    def __str__(self) -> str:
+        return f"This is a reserved value: {self.actual!r}"

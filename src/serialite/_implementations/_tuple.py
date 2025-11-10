@@ -1,12 +1,15 @@
-__all__ = ["TupleSerializer"]
+__all__ = ["TupleLengthError", "TupleSerializer"]
 
-from typing import Generic
+from dataclasses import dataclass
+from typing import Any, Generic
 from typing_extensions import TypeVarTuple, Unpack
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._stable_set import StableSet
+from .._type_errors import ExpectedListError
 
 TupleArguments = TypeVarTuple("TupleArguments")
 
@@ -25,16 +28,12 @@ class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[T
     def from_data(self, data) -> Result[tuple[Unpack[TupleArguments]]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
-            return Failure(Errors.one(ValidationError(f"Not a valid list: {data!r}")))
+            return Failure(Errors.one(ExpectedListError(data)))
 
         # Return early if the list is not the correct length
         if len(data) != len(self.element_serializers):
             return Failure(
-                Errors.one(
-                    ValidationError(
-                        f"Has {len(data)} elements, not {len(self.element_serializers)}: {data!r}"
-                    )
-                )
+                Errors.one(TupleLengthError(len(data), len(self.element_serializers), data))
             )
 
         # Validate values
@@ -84,3 +83,14 @@ class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[T
             "minItems": n,
             "maxItems": n,
         }
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class TupleLengthError(Exception):
+    actual_length: int
+    expected_length: int
+    actual: list[Any]
+
+    def __str__(self) -> str:
+        return f"Expected tuple of length {self.expected_length}, but got length {len(self.actual)} tuple {self.actual!r}"

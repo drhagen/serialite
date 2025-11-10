@@ -2,7 +2,7 @@ from math import inf, isnan, nan
 
 import pytest
 
-from serialite import Errors, Failure, FloatSerializer, Success, ValidationError
+from serialite import Errors, ExpectedFloatError, Failure, FloatSerializer, Success
 
 float_serializer = FloatSerializer()
 
@@ -38,11 +38,15 @@ def test_nonfinite_inputs(data, value):
 
 def test_from_data_failure():
     data = "12.5"
-    assert float_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError("Not a valid float: '12.5'"))
-    )
+    assert float_serializer.from_data(data) == Failure(Errors.one(ExpectedFloatError(data)))
 
 
 def test_to_data_failure():
     with pytest.raises(ValueError):
         _ = float_serializer.to_data("12.5")
+
+
+def test_error_to_data_and_to_string():
+    e = ExpectedFloatError("12.5")
+    assert e.to_data() == {"actual": "12.5"}
+    assert str(e) == "Expected float, but got '12.5'"

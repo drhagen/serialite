@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from serialite import Errors, Failure, PathSerializer, Success, ValidationError
+from serialite import Errors, ExpectedStringError, Failure, PathSerializer, Success
 
 path_serializer = PathSerializer()
 
@@ -17,9 +17,7 @@ def test_valid_inputs():
 
 @pytest.mark.parametrize("data", [12.5, None, 123])
 def test_from_data_failure(data):
-    assert path_serializer.from_data(data) == Failure(
-        Errors.one(ValidationError(f"Not a valid string: {data!r}"))
-    )
+    assert path_serializer.from_data(data) == Failure(Errors.one(ExpectedStringError(data)))
 
 
 def test_to_data_failure():

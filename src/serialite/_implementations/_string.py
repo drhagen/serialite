@@ -1,10 +1,13 @@
-__all__ = ["StringSerializer"]
+__all__ = ["RegexMismatchError", "StringSerializer"]
 
 import re
+from dataclasses import dataclass
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._result import Failure, Result, Success
+from .._type_errors import ExpectedStringError
 
 
 class StringSerializer(Serializer[str]):
@@ -17,11 +20,9 @@ class StringSerializer(Serializer[str]):
             if self.accept is None or self.accept_regex.fullmatch(data):
                 return Success(data)
             else:
-                return Failure(
-                    Errors.one(ValidationError(f"Does not match regex r'{self.accept}': {data!r}"))
-                )
+                return Failure(Errors.one(RegexMismatchError(self.accept, data)))
         else:
-            return Failure(Errors.one(ValidationError(f"Not a valid string: {data!r}")))
+            return Failure(Errors.one(ExpectedStringError(data)))
 
     def to_data(self, value: str):
         if not isinstance(value, str):
@@ -32,3 +33,13 @@ class StringSerializer(Serializer[str]):
 
     def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
         return {"type": "string"}
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class RegexMismatchError(Exception):
+    pattern: str
+    actual: str
+
+    def __str__(self) -> str:
+        return f"Expected string matching {self.pattern!r}, but got {self.actual!r}"

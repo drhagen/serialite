@@ -1,7 +1,11 @@
-__all__ = ["LiteralSerializer"]
+__all__ = ["LiteralSerializer", "UnknownValueError"]
+
+from dataclasses import dataclass
+from typing import Any
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._decorators import serializable
+from .._errors import Errors
 from .._numeric_check import is_int, is_real
 from .._result import Failure, Success
 
@@ -14,9 +18,7 @@ class LiteralSerializer(Serializer):
         if data in self.possibilities:
             return Success(data)
         else:
-            return Failure(
-                Errors.one(ValidationError(f"Not one of {list(self.possibilities)!r}: {data!r}"))
-            )
+            return Failure(Errors.one(UnknownValueError(list(self.possibilities), data)))
 
     def to_data(self, value):
         if value not in self.possibilities:
@@ -33,3 +35,13 @@ class LiteralSerializer(Serializer):
             return {"type": "number", "enum": self.possibilities}
         else:
             return {"enum": self.possibilities}
+
+
+@serializable
+@dataclass(frozen=True, slots=True)
+class UnknownValueError(Exception):
+    possibilities: list[Any]
+    actual: Any
+
+    def __str__(self) -> str:
+        return f"Expected one of {self.possibilities!r}, but got {self.actual!r}"

@@ -4,9 +4,10 @@ from math import inf, isnan, nan
 from typing import Any, Sequence
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._errors import Errors
 from .._numeric_check import is_real
 from .._result import Failure, Result, Success
+from .._type_errors import ExpectedFloatError
 
 
 class FloatSerializer(Serializer[float]):
@@ -30,7 +31,7 @@ class FloatSerializer(Serializer[float]):
         elif is_real(data):
             return Success(float(data))
         else:
-            return Failure(Errors.one(ValidationError(f"Not a valid float: {data!r}")))
+            return Failure(Errors.one(ExpectedFloatError(data)))
 
     def to_data(self, value: float):
         if not is_real(value):

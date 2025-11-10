@@ -5,10 +5,11 @@ import pytest
 
 from serialite import (
     Errors,
+    ExpectedStringError,
     Failure,
+    IntegerOutOfRangeError,
     PositiveIntegerSerializer,
     Success,
-    ValidationError,
     abstract_serializable,
     field,
     serializable,
@@ -122,7 +123,7 @@ def test_field_serializer_is_serializer():
     assert value.to_data() == good_data
     assert Override.from_data(good_data) == Success(value)
     assert Override.from_data(bad_data) == Failure(
-        Errors.one(ValidationError("Not a valid positive integer: -1"), location=["a"])
+        Errors.one(IntegerOutOfRangeError(actual=-1, minimum=1), location=["a"])
     )
 
 
@@ -146,5 +147,5 @@ def test_field_serializer_is_type():
     assert IsType.from_data(data_default) == Success(value_default)
     assert IsType.from_data(good_data) == Success(value)
     assert IsType.from_data(bad_data) == Failure(
-        Errors.one(ValidationError("Not a valid string: 2"), location=["b", 1])
+        Errors.one(ExpectedStringError(2), location=["b", 1])
     )

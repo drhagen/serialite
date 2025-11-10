@@ -15,7 +15,7 @@ from enum import Enum, auto
 from typing import Any
 
 from ._base import Serializer
-from ._errors import Errors, ValidationError
+from ._errors import Errors
 from ._result import Failure, Result, Success
 from ._stable_set import StableSet
 
@@ -247,7 +247,10 @@ class FieldsSerializer(Mapping):
         """
         # Return early if the data isn't even a dict
         if not isinstance(data, dict):
-            return Failure(Errors.one(ValidationError(f"Not a dictionary: {data!r}")))
+            # Import locally to avoid circular import at module import time
+            from ._type_errors import ExpectedDictionaryError
+
+            return Failure(Errors.one(ExpectedDictionaryError(data)))
 
         values = {}
         errors = Errors()
@@ -261,7 +264,9 @@ class FieldsSerializer(Mapping):
             ):
                 # This data field name is not understood
                 if not allow_unused:
-                    errors.add(ValidationError("This field is invalid."), location=[key])
+                    from ._field_errors import UnknownFieldError
+
+                    errors.add(UnknownFieldError(key), location=[key])
                 else:
                     # Quietly ignore it
                     pass
@@ -281,11 +286,10 @@ class FieldsSerializer(Mapping):
                     for field_key in multi_field.serializers.keys()
                     if field_key in data and field_key != key
                 ]
+                from ._field_errors import ConflictingFieldsError
+
                 errors.add(
-                    ValidationError(
-                        "This field cannot be provided because these fields are already provided: "
-                        + ", ".join(preexisting_keys)
-                    ),
+                    ConflictingFieldsError(key, preexisting_keys),
                     location=[key],
                 )
                 continue
@@ -306,15 +310,19 @@ class FieldsSerializer(Mapping):
                 if serializer_field.default is no_default:
                     # This field is required
                     if isinstance(serializer_field, SingleField):
+                        from ._field_errors import RequiredFieldError
+
                         errors.add(
-                            ValidationError("This field is required."),
+                            RequiredFieldError(object_field_name),
                             location=[object_field_name],
                         )
                     elif isinstance(serializer_field, MultiField):
-                        error_message = "One of these fields is required: " + ", ".join(
-                            serializer_field.serializers.keys()
+                        from ._field_errors import RequiredOneOfFieldsError
+
+                        field_names = list(serializer_field.serializers.keys())
+                        errors.add(
+                            RequiredOneOfFieldsError(field_names), location=[object_field_name]
                         )
-                        errors.add(ValidationError(error_message), location=[object_field_name])
                     else:
                         raise TypeError(
                             f"Expected FieldsSerializerField, not {type(serializer_field)}"

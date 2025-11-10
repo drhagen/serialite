@@ -1,14 +1,15 @@
 __all__ = ["OrderedSetSerializer"]
 
-
 from typing import Generic, TypeVar
 
 from ordered_set import OrderedSet
 
 from .._base import Serializer
-from .._errors import Errors, ValidationError
+from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._stable_set import StableSet
+from .._type_errors import ExpectedListError
+from ._set import DuplicatedValueError
 
 Element = TypeVar("Element")
 
@@ -20,7 +21,7 @@ class OrderedSetSerializer(Generic[Element], Serializer[OrderedSet[Element]]):
     def from_data(self, data) -> Result[OrderedSet[Element]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
-            return Failure(Errors.one(ValidationError(f"Not a valid list: {data!r}")))
+            return Failure(Errors.one(ExpectedListError(data)))
 
         # Validate values
         errors = Errors()
@@ -31,12 +32,7 @@ class OrderedSetSerializer(Generic[Element], Serializer[OrderedSet[Element]]):
                     errors.extend(error, location=[i])
                 case Success(value):
                     if value in values:
-                        errors.add(
-                            ValidationError(
-                                f"Duplicated value found: {value!r}. Expected a list of unique values."
-                            ),
-                            location=[i],
-                        )
+                        errors.add(DuplicatedValueError(value), location=[i])
                     else:
                         values.add(value)
 

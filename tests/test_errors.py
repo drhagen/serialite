@@ -25,12 +25,12 @@ def test_add_single_equals_one():
 
 
 def test_extend_prefixes_location():
-    child = Errors.one(ValidationError("child"))
+    child = Errors.one(ValidationError("error"), location=["child"])
     parent = Errors()
     parent.extend(child, location=["parent"])
 
     expected = Errors()
-    expected.add(ValidationError("child"), location=["parent"])
+    expected.add(ValidationError("error"), location=["parent", "child"])
 
     assert parent == expected
 

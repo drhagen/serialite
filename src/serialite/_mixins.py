@@ -3,7 +3,7 @@ __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 from typing import ClassVar
 
 from ._base import Serializable, Serializer
-from ._errors import Errors, ValidationError
+from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
 from ._result import Failure, Success
 from ._stable_set import StableSet
@@ -81,19 +81,27 @@ class AbstractSerializableMixin(Serializable):
         try:
             type_name = data["_type"]
         except KeyError:
-            return Failure(
-                Errors.one(ValidationError("This field is required."), location=["_type"])
-            )
+            from ._field_errors import RequiredTypeFieldError
+
+            return Failure(Errors.one(RequiredTypeFieldError(), location=["_type"]))
         except TypeError:
-            return Failure(Errors.one(ValidationError(f"Not a dictionary: {data!r}")))
+            # Import locally to avoid circular import at module import time
+            from ._type_errors import ExpectedDictionaryError
+
+            return Failure(Errors.one(ExpectedDictionaryError(data)))
 
         # The rest of data
         subclass_data = {key: value for key, value in data.items() if key != "_type"}
 
         subclass = cls.__subclass_serializers__.get(type_name)
         if subclass is None:
+            from ._field_errors import UnknownClassError
+
             return Failure(
-                Errors.one(ValidationError(f"Class not found: {type_name!r}"), location=["_type"])
+                Errors.one(
+                    UnknownClassError(type_name, list(cls.__subclass_serializers__.keys())),
+                    location=["_type"],
+                )
             )
         else:
             return subclass.from_data(subclass_data)
