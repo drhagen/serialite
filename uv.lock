@@ -470,7 +470,6 @@ version = "0.4.0"
 source = { editable = "." }
 dependencies = [
     { name = "returns" },
-    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -504,8 +503,7 @@ requires-dist = [
     { name = "numpy", marker = "extra == 'numpy'", specifier = ">=1.25,<3" },
     { name = "ordered-set", marker = "extra == 'ordered-set'", specifier = "~=4.1" },
     { name = "pydantic", marker = "extra == 'fastapi'", specifier = "~=1.10" },
-    { name = "returns", specifier = "~=0.26" },
-    { name = "typing-extensions", specifier = "~=4.3" },
+    { name = "returns", specifier = ">=0.20,<0.27" },
 ]
 provides-extras = ["fastapi", "numpy", "ordered-set"]
 
