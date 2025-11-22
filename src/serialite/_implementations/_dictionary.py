@@ -137,10 +137,10 @@ class RawDictSerializer(Generic[Value], Serializer[dict[str, Value]]):
     ) -> StableSet[Serializer]:
         return self.value_serializer.collect_openapi_models(parent_models)
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {
             "type": "object",
-            "additionalProperties": self.value_serializer.to_openapi_schema(refs),
+            "additionalProperties": self.value_serializer.to_openapi_schema(),
         }
 
 

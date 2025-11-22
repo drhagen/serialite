@@ -73,12 +73,12 @@ class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[T
             models |= serializer.collect_openapi_models(parent_models)
         return models
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         n = len(self.element_serializers)
         return {
             "type": "array",
             "prefixItems": [
-                serializer.to_openapi_schema(refs) for serializer in self.element_serializers
+                serializer.to_openapi_schema() for serializer in self.element_serializers
             ],
             "minItems": n,
             "maxItems": n,

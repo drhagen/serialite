@@ -50,9 +50,9 @@ class TryUnionSerializer(Serializer):
             models |= serializer.collect_openapi_models(parent_models)
         return models
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {
-            "oneOf": [serializer.to_openapi_schema(refs) for serializer in self.serializers],
+            "oneOf": [serializer.to_openapi_schema() for serializer in self.serializers],
         }
 
 
@@ -78,5 +78,5 @@ class OptionalSerializer(Generic[Element], Serializer[Element | None]):
     ) -> StableSet[Serializer]:
         return self.element_serializer.collect_openapi_models(parent_models)
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
-        return self.element_serializer.to_openapi_schema(refs) | {"nullable": True}
+    def to_openapi_schema(self, force: bool = False):
+        return self.element_serializer.to_openapi_schema() | {"nullable": True}

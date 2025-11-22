@@ -31,7 +31,7 @@ class StringSerializer(Serializer[str]):
             raise ValueError(f"Does not match regex r'{self.accept}': {value!r}")
         return value
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {"type": "string"}
 
 

@@ -40,9 +40,9 @@ class SerializableMixin(Serializable):
             return StableSet()
 
     @classmethod
-    def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False):
-        if force or cls not in refs:
-            schema = cls.__fields_serializer__.to_openapi_schema(refs)
+    def to_openapi_schema(cls, force: bool = False):
+        if force:
+            schema = cls.__fields_serializer__.to_openapi_schema()
 
             if hasattr(cls, "__subclass_serializers__"):
                 # It is not possible in OpenAPI to have the discriminator field
@@ -56,7 +56,7 @@ class SerializableMixin(Serializable):
 
             return schema
         else:
-            return refs[cls]
+            return {"$ref": f"#/$defs/{cls.__name__}"}
 
 
 class AbstractSerializableMixin(Serializable):
@@ -135,15 +135,15 @@ class AbstractSerializableMixin(Serializable):
             return StableSet()
 
     @classmethod
-    def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False):
-        if force or cls not in refs:
+    def to_openapi_schema(cls, force: bool = False):
+        if force:
             return {
                 "type": "object",
                 "discriminator": {"propertyName": "_type"},
                 "oneOf": [
-                    subclass.to_openapi_schema(refs)
+                    subclass.to_openapi_schema()
                     for subclass in cls.__subclass_serializers__.values()
                 ],
             }
         else:
-            return refs[cls]
+            return {"$ref": f"#/$defs/{cls.__name__}"}

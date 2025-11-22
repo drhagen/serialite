@@ -26,7 +26,7 @@ class LiteralSerializer(Serializer):
 
         return value
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         if all(isinstance(x, str) for x in self.possibilities):
             return {"type": "string", "enum": self.possibilities}
         elif all(is_int(x) for x in self.possibilities):

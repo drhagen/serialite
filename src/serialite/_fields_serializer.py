@@ -391,12 +391,12 @@ class FieldsSerializer(Mapping):
             models |= serializer.collect_openapi_models(parent_models)
         return models
 
-    def to_openapi_schema(self, refs: dict[Serializer, str]) -> dict[str, Any]:
+    def to_openapi_schema(self) -> dict[str, Any]:
         required = []
         properties = {}
         for name, field in self.object_field_serializers.items():
             if isinstance(field, SingleField):
-                property = field.serializer.to_openapi_schema(refs)
+                property = field.serializer.to_openapi_schema()
 
                 if field.default is not no_default and field.default is not None:
                     # OpenAPI generator 5 crashes if the default is null

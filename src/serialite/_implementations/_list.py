@@ -54,5 +54,5 @@ class ListSerializer(Generic[Element], Serializer[list[Element]]):
     ) -> StableSet[Serializer]:
         return self.element_serializer.collect_openapi_models(parent_models)
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
-        return {"type": "array", "items": self.element_serializer.to_openapi_schema(refs)}
+    def to_openapi_schema(self, force: bool = False):
+        return {"type": "array", "items": self.element_serializer.to_openapi_schema()}

@@ -46,5 +46,5 @@ class FloatSerializer(Serializer[float]):
         else:
             return float(value)
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {"type": "number"}

@@ -43,13 +43,12 @@ class Serializer(Generic[Output]):
         """
         return StableSet()
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False) -> Any:
+    def to_openapi_schema(self, force: bool = False) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
-        Each serializer should check if its fully qualified name exists in
-        `refs` and return a '$ref', unless `force` is true, in which case it
-        should return its full schema, but not pass `force` to its child
-        serializers.
+        If `force` is False and this serializer represents a model, it should
+        return a '$ref'. If `force` is True, it should return its full schema,
+        but not pass `force` to its child serializers.
 
         The default is no schema.
         """
@@ -76,7 +75,7 @@ class Serializable(Serializer[SerializableOutput]):
         return StableSet()
 
     @classmethod
-    def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False) -> Any:
+    def to_openapi_schema(cls, force: bool = False) -> Any:
         return {}
 
     # All attributes and methods below this point are for Pydantic v2
@@ -130,15 +129,10 @@ class Serializable(Serializer[SerializableOutput]):
         # Pydantic v2 uses __get_pydantic_json_schema__ to generate OpenAPI
         # schemas.
 
-        # Models are collected via the monkey-patched get_flat_models_from_model
-        # but they are not passed into this function, so we have to re-fetch
-        # them all.
-        refs = {
-            model: {"$ref": f"#/$defs/{model.__name__}"}
-            for model in cls.collect_openapi_models(StableSet())
-        }
-
-        return cls.to_openapi_schema(refs, force=True)
+        # Models are collected via the monkey-patched
+        # get_flat_models_from_model, but they are not used here. The refs must
+        # be consistently generated.
+        return cls.to_openapi_schema(force=True)
 
     @classproperty
     def model_config(cls):

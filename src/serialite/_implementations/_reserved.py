@@ -38,8 +38,8 @@ class ReservedSerializer(Generic[Element], Serializer[Element]):
     ) -> StableSet[Serializer]:
         return self.internal_serializer.collect_openapi_models(parent_models)
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
-        return self.internal_serializer.to_openapi_schema(refs)
+    def to_openapi_schema(self, force: bool = False):
+        return self.internal_serializer.to_openapi_schema()
 
 
 @serializable
