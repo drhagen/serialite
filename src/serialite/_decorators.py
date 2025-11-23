@@ -136,9 +136,6 @@ def serializable(cls):
         if "to_data" not in cls.__dict__:
             cls.to_data = SerializableMixin.__dict__["to_data"]
 
-        if "collect_openapi_models" not in cls.__dict__:
-            cls.collect_openapi_models = SerializableMixin.__dict__["collect_openapi_models"]
-
         if "to_openapi_schema" not in cls.__dict__:
             cls.to_openapi_schema = SerializableMixin.__dict__["to_openapi_schema"]
 
@@ -168,7 +165,7 @@ def serializable(cls):
             cls.model_dump = Serializable.__dict__["model_dump"]
 
         if "model_fields" not in cls.__dict__:
-            cls.model_fields = Serializable.__dict__["model_fields"]
+            cls.model_fields = SerializableMixin.__dict__["model_fields"]
 
         if "__processed__" not in cls.__dict__:
             cls.__processed__ = Serializable.__dict__["__processed__"]
@@ -230,11 +227,6 @@ def abstract_serializable(cls):
                 "__subclass_serializers__"
             ]
 
-        if "collect_openapi_models" not in cls.__dict__:
-            cls.collect_openapi_models = AbstractSerializableMixin.__dict__[
-                "collect_openapi_models"
-            ]
-
         if "to_openapi_schema" not in cls.__dict__:
             cls.to_openapi_schema = AbstractSerializableMixin.__dict__["to_openapi_schema"]
 
@@ -264,7 +256,7 @@ def abstract_serializable(cls):
             cls.model_dump = Serializable.__dict__["model_dump"]
 
         if "model_fields" not in cls.__dict__:
-            cls.model_fields = Serializable.__dict__["model_fields"]
+            cls.model_fields = SerializableMixin.__dict__["model_fields"]
 
         if "__processed__" not in cls.__dict__:
             cls.__processed__ = Serializable.__dict__["__processed__"]

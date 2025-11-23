@@ -7,8 +7,8 @@ from typing_extensions import TypeVarTuple, Unpack
 from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
+from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
-from .._stable_set import StableSet
 from .._type_errors import ExpectedListError
 
 TupleArguments = TypeVarTuple("TupleArguments")
@@ -65,13 +65,12 @@ class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[T
             for item, serializer in zip(value, self.element_serializers, strict=True)
         ]
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        models = StableSet()
-        for serializer in self.element_serializers:
-            models |= serializer.collect_openapi_models(parent_models)
-        return models
+    def child_components(self):
+        components = {}
+        for i, serializer in enumerate(self.element_serializers):
+            if is_openapi_component(serializer):
+                components[str(i)] = serializer
+        return components
 
     def to_openapi_schema(self, force: bool = False):
         n = len(self.element_serializers)

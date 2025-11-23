@@ -17,7 +17,6 @@ from typing import Any
 from ._base import Serializer
 from ._errors import Errors
 from ._result import Failure, Result, Success
-from ._stable_set import StableSet
 
 # A sentinel object to indicate that a default is not available,
 # so an error should be raised if the item is not found
@@ -382,14 +381,6 @@ class FieldsSerializer(Mapping):
             data[data_field_name] = serializer.to_data(value)
 
         return data
-
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        models = StableSet()
-        for serializer in self.data_field_deserializers.values():
-            models |= serializer.collect_openapi_models(parent_models)
-        return models
 
     def to_openapi_schema(self) -> dict[str, Any]:
         required = []

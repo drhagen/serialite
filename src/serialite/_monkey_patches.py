@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-__all__ = [
-    "monkey_patch_pydantic_subclasscheck",
-    "monkey_patch_pydantic_v2_get_flat_models_from_model",
-]
-
-from ._stable_set import StableSet
+__all__ = ["monkey_patch_pydantic_subclasscheck"]
 
 
 def __subclasscheck__(cls: type, sub: type) -> bool:  # noqa: N807
@@ -38,38 +33,3 @@ def monkey_patch_pydantic_subclasscheck() -> None:
     else:
         metaclass = type(BaseModel)
         metaclass.__subclasscheck__ = __subclasscheck__
-
-
-def monkey_patch_pydantic_v2_get_flat_models_from_model() -> None:
-    # For Pydantic v2 / FastAPI compatibility, we need to monkey patch the
-    # function that collects all models from a root model.
-
-    try:
-        from fastapi._compat import v2
-        from fastapi._compat.v2 import TypeModelSet
-        from fastapi._compat.v2 import (
-            get_flat_models_from_model as original_get_flat_models_from_model,
-        )
-    except ImportError:
-        pass
-    else:
-        from typing import Union
-
-        def get_flat_models_from_model(
-            model: type, known_models: Union[TypeModelSet, None] = None
-        ) -> TypeModelSet:
-            if hasattr(model, "collect_openapi_models"):
-                if known_models is None:
-                    known_models = set()
-
-                new_models = model.collect_openapi_models(StableSet())
-
-                # Mutate known_models to include all collected models
-                # This is important because the caller expects known_models to be updated
-                known_models.update(new_models)
-
-                return known_models
-            else:
-                return original_get_flat_models_from_model(model, known_models)
-
-        v2.get_flat_models_from_model = get_flat_models_from_model

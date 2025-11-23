@@ -6,8 +6,8 @@ from ordered_set import OrderedSet
 
 from .._base import Serializer
 from .._errors import Errors
+from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
-from .._stable_set import StableSet
 from .._type_errors import ExpectedListError
 from ._set import DuplicatedValueError
 
@@ -47,10 +47,11 @@ class OrderedSetSerializer(Generic[Element], Serializer[OrderedSet[Element]]):
 
         return [self.element_serializer.to_data(item) for item in value]
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        return self.element_serializer.collect_openapi_models(parent_models)
+    def child_components(self):
+        if is_openapi_component(self.element_serializer):
+            return {"element": self.element_serializer}
+        else:
+            return {}
 
     def to_openapi_schema(self, force: bool = False):
         return {"type": "array", "items": self.element_serializer.to_openapi_schema()}

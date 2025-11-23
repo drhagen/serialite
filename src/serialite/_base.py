@@ -7,7 +7,6 @@ from typing import Any, Generic, TypeVar
 
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
-from ._stable_set import StableSet
 
 Output = TypeVar("Output")
 SerializableOutput = TypeVar("SerializableOutput", bound="Serializable")
@@ -25,23 +24,6 @@ class Serializer(Generic[Output]):
     def to_data(self, value: Output) -> Any:
         """Serialize an object to data."""
         raise NotImplementedError()
-
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        """Collect the set of OpenAPI models required for this Serializer.
-
-        `Serializer`s that represent models should return a set containing
-        themselves.
-
-        `Serializer`s with child `Serializer`s that may be models should add
-        themselves to `parent_models` and pass that to all children's
-        `collect_openapi_models` method. The parent `Serializer` and all models
-        received from children should be combined and returned.
-
-        The default is to return no models.
-        """
-        return StableSet()
 
     def to_openapi_schema(self, force: bool = False) -> Any:
         """Generate the OpenAPI schema representation for this class.
@@ -69,10 +51,6 @@ class Serializable(Serializer[SerializableOutput]):
     @abstractmethod
     def to_data(self: SerializableOutput) -> Any:
         pass
-
-    @classmethod
-    def collect_openapi_models(cls, parent_models: StableSet[Serializer]) -> StableSet[Serializer]:
-        return StableSet()
 
     @classmethod
     def to_openapi_schema(cls, force: bool = False) -> Any:
@@ -127,11 +105,7 @@ class Serializable(Serializer[SerializableOutput]):
     @classmethod
     def __get_pydantic_json_schema__(cls, _core_schema_obj, _handler):
         # Pydantic v2 uses __get_pydantic_json_schema__ to generate OpenAPI
-        # schemas.
-
-        # Models are collected via the monkey-patched
-        # get_flat_models_from_model, but they are not used here. The refs must
-        # be consistently generated.
+        # schemas. We return the full schema here (force=True).
         return cls.to_openapi_schema(force=True)
 
     @classproperty

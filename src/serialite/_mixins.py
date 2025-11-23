@@ -1,12 +1,12 @@
 __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
-from ._base import Serializable, Serializer
+from ._base import Serializable
+from ._descriptors import classproperty
 from ._errors import Errors
-from ._fields_serializer import FieldsSerializer
+from ._fields_serializer import FieldsSerializer, no_default
 from ._result import Failure, Success
-from ._stable_set import StableSet
 
 
 class SerializableMixin(Serializable):
@@ -30,16 +30,6 @@ class SerializableMixin(Serializable):
         return self.__fields_serializer__.to_data(self, source="object")
 
     @classmethod
-    def collect_openapi_models(cls, parent_models: StableSet[Serializer]) -> StableSet[Serializer]:
-        # Every class that uses AbstractSerializableMixin gets put into the OpenAPI models.
-        if cls not in parent_models:
-            this_set = StableSet(cls)
-            parent_models |= this_set
-            return this_set | cls.__fields_serializer__.collect_openapi_models(parent_models)
-        else:
-            return StableSet()
-
-    @classmethod
     def to_openapi_schema(cls, force: bool = False):
         if force:
             schema = cls.__fields_serializer__.to_openapi_schema()
@@ -57,6 +47,49 @@ class SerializableMixin(Serializable):
             return schema
         else:
             return {"$ref": f"#/$defs/{cls.__name__}"}
+
+    @classproperty
+    def model_fields(cls) -> dict[str, Any]:
+        """Build Pydantic FieldInfo objects from __fields_serializer__.
+
+        This allows Pydantic's get_flat_models_from_model to discover
+        nested Serializable types.
+        """
+        from pydantic.fields import FieldInfo
+        from pydantic_core import PydanticUndefined
+
+        if not hasattr(cls, "__fields_serializer__"):
+            return {}
+
+        fields = {}
+        # Get type annotations from the class
+        annotations = getattr(cls, "__annotations__", {})
+
+        for name, field in cls.__fields_serializer__.object_field_serializers.items():
+            # Try to get the annotation from __annotations__ first
+            if name in annotations:
+                annotation = annotations[name]
+            # If the serializer is itself a type (e.g. a Serializable class),
+            # use that as the annotation
+            elif isinstance(field.serializer, type):
+                annotation = field.serializer
+            # Otherwise fall back to Any
+            else:
+                annotation = Any
+
+            # Determine the default value
+            if field.default is no_default:
+                default = PydanticUndefined
+            else:
+                default = field.default
+
+            # Create a FieldInfo for this field
+            fields[name] = FieldInfo(
+                annotation=annotation,
+                default=default,
+            )
+
+        return fields
 
 
 class AbstractSerializableMixin(Serializable):
@@ -122,19 +155,6 @@ class AbstractSerializableMixin(Serializable):
         return {"_type": value.__class__.__name__} | value.to_data()
 
     @classmethod
-    def collect_openapi_models(cls, parent_models: StableSet[Serializer]) -> StableSet[Serializer]:
-        # Every class that uses AbstractSerializableMixin gets put into the OpenAPI models.
-        if cls not in parent_models:
-            this_set = StableSet(cls)
-            parent_models |= this_set
-            models = StableSet()
-            for subclass in cls.__subclass_serializers__.values():
-                models |= subclass.collect_openapi_models(parent_models)
-            return this_set | models
-        else:
-            return StableSet()
-
-    @classmethod
     def to_openapi_schema(cls, force: bool = False):
         if force:
             return {
@@ -147,3 +167,40 @@ class AbstractSerializableMixin(Serializable):
             }
         else:
             return {"$ref": f"#/$defs/{cls.__name__}"}
+
+    @classproperty
+    def model_fields(cls) -> dict[str, Any]:
+        """Build Pydantic FieldInfo objects from __subclass_serializers__.
+
+        For abstract classes, we create a discriminated union field that
+        references all the subclasses. This allows Pydantic to discover
+        all subclasses.
+        """
+        from typing import Union
+
+        from pydantic.fields import FieldInfo
+
+        if not hasattr(cls, "__subclass_serializers__"):
+            return {}
+
+        # Create a Union type of all subclasses
+        subclass_types = list(cls.__subclass_serializers__.values())
+        if not subclass_types:
+            return {}
+
+        # For a discriminated union, we need a field for the discriminator
+        # and the value can be any of the subclasses
+        if len(subclass_types) == 1:
+            union_type = subclass_types[0]
+        else:
+            union_type = Union[tuple(subclass_types)]
+
+        # Return a synthetic field that represents the discriminated union
+        # The _type field is the discriminator, but we model this as a single
+        # field that can be any of the subclasses
+        return {
+            "_value": FieldInfo(
+                annotation=union_type,
+                default=...,  # Required field
+            )
+        }
