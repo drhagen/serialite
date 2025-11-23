@@ -101,7 +101,7 @@ class Serializable(Serializer[SerializableOutput]):
         return cls.to_data(value)
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, _handler):
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler):
         # Pydantic v2 uses __get_pydantic_core_schema__ to package custom
         # validation and serialization.
         from pydantic_core import core_schema
@@ -115,7 +115,7 @@ class Serializable(Serializer[SerializableOutput]):
         )
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, _core_schema_obj, _handler):
+    def __get_pydantic_json_schema__(cls, core_schema_obj, handler):
         # Pydantic v2 uses __get_pydantic_json_schema__ to generate OpenAPI
         # schemas. We return the full schema here (force=True).
         return cls.to_openapi_schema(force=True)
