@@ -109,12 +109,7 @@ class Serializable(Serializer[SerializableOutput]):
 
     @classmethod
     def _pydantic_serialize(cls, value: Any) -> Any:
-        # FastAPI passes in both an object to be serialized and
-        # already-serialized data
-        if isinstance(value, cls):
-            return cls.to_data(value)
-        else:
-            return value
+        return cls.to_data(value)
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, _handler):
