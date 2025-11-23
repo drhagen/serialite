@@ -3,14 +3,11 @@ from __future__ import annotations
 __all__ = ["Serializable", "Serializer"]
 
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
 from ._stable_set import StableSet
-
-if TYPE_CHECKING:
-    from pydantic.typing import AbstractSetIntStr, MappingIntStrAny
 
 Output = TypeVar("Output")
 SerializableOutput = TypeVar("SerializableOutput", bound="Serializable")
@@ -82,9 +79,10 @@ class Serializable(Serializer[SerializableOutput]):
     def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False) -> Any:
         return {}
 
-    # All attributes and methods below this point are for Pydantic
-    # compatibility. These methods along with the appropriate monkey patching
-    # allow all Serialite Serializables to be used as Pydantic BaseModels.
+    # All attributes and methods below this point are for Pydantic v2
+    # compatibility. These methods allow all Serialite Serializables to be used
+    # as type annotations in FastAPI. The full Pydantic interface is not
+    # implemented, only that which is necessary for FastAPI to work.
 
     # This flag is used by the issubclass(_, BaseModel) monkey patch to identify
     # classes that claim to be subclasses of BaseModel.
@@ -94,14 +92,8 @@ class Serializable(Serializer[SerializableOutput]):
     __processed__ = True
 
     @classmethod
-    def validate(cls, value: Any, values, field, config):
-        # This is the canonical name for the main Pydantic validator. It does
-        # not have to have this name as long as it is returned by
-        # __get_validators__.
-
+    def _pydantic_validate(cls, value: Any) -> SerializableOutput:
         # FastAPI passes in both data to be parsed and instances of the object
-        # itself for some reason. Politely return the object if we get an
-        # instance of this class.
         if isinstance(value, cls):
             return value
 
@@ -112,58 +104,70 @@ class Serializable(Serializer[SerializableOutput]):
                 # ValidationError.
                 # https://docs.pydantic.dev/latest/concepts/validators/
                 raise ValueError(error)
-            case Success(value):
-                return value
+            case Success(validated_value):
+                return validated_value
 
     @classmethod
-    def __get_validators__(cls):
-        # FastAPI uses pydantic.fields.ModelField to convert a type hint into a
-        # Pydantic parser. ModelField relies on this field to get the parser.
-        # The call chain is here: APIRoute > get_dependant > get_param_field >
-        # create_response_field > ModelField > prepare > populate_validators >
-        # __get_validators__
+    def _pydantic_serialize(cls, value: Any) -> Any:
+        return cls.to_data(value)
 
-        yield cls.validate
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, _handler):
+        # Pydantic v2 uses __get_pydantic_core_schema__ to package custom
+        # validation and serialization.
+        from pydantic_core import core_schema
+
+        return core_schema.no_info_plain_validator_function(
+            cls._pydantic_validate,
+            ref=f"{cls.__module__}.{cls.__name__}",
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                cls._pydantic_serialize
+            ),
+        )
+
+    @classmethod
+    def __get_pydantic_json_schema__(cls, _core_schema_obj, _handler):
+        # Pydantic v2 uses __get_pydantic_json_schema__ to generate OpenAPI
+        # schemas.
+
+        # Models are collected via the monkey-patched get_flat_models_from_model
+        # but they are not passed into this function, so we have to re-fetch
+        # them all.
+        refs = {
+            model: {"$ref": f"#/$defs/{model.__name__}"}
+            for model in cls.collect_openapi_models(StableSet())
+        }
+
+        return cls.to_openapi_schema(refs, force=True)
 
     @classproperty
-    def __config__(cls):
-        # FastAPI accesses this attribute in a few places. It does not matter.
-        try:
-            from pydantic import BaseConfig
+    def model_config(cls):
+        # A place where Pydantic puts various metadata and options. Serialite
+        # is not configurable in this way, so return a default configuration.
+        from pydantic import ConfigDict
 
-            return BaseConfig
-        except ImportError:
-            # Protect against auto-documentation programs trying to get all
-            # properties.
-            return None
+        return ConfigDict()
 
-    def dict(
+    @classproperty
+    def model_fields(cls):
+        # FastAPI expects model_fields for OpenAPI schema generation
+        # Return an empty dict since our schema is handled through
+        # __get_pydantic_core_schema__
+        return {}
+
+    def model_dump(
         self,
-        include: AbstractSetIntStr | MappingIntStrAny = None,
-        exclude: AbstractSetIntStr | MappingIntStrAny = None,
+        *,
+        mode: str = "python",
+        include: Any = None,
+        exclude: Any = None,
         by_alias: bool = False,
-        skip_defaults: bool = None,  # noqa: RUF013
         exclude_unset: bool = False,
         exclude_defaults: bool = False,
         exclude_none: bool = False,
+        round_trip: bool = False,
+        warnings: bool = True,
     ):
-        # FastAPI and Pydantic can only serialize instances of the validator,
-        # which is why dict is implemented on Serializable instead of plain Serializer.
-        # Serialite Serializers simply cannot be passed directly to FastAPI.
-
-        data = self.to_data()
-        if exclude is not None:
-            data = {key: value for key, value in data.items() if key not in exclude}
-
-        if hasattr(self, "__subclass_serializers__"):
-            # Pydantic has no concept of algebraic data types. It does not use
-            # the field to determine how to serialize an object. It purely asks
-            # the object itself how it should be serialized via the dict
-            # method. This implementation of dict assumes that anytime a
-            # subclass of an abstract serializable is serialized, it was
-            # supposed to be serialized with the abstract serializer, not the
-            # concrete class. This is not a good assumption, but Pydantic is not
-            # expressive enough to have two serializers for the same object.
-            return {"_type": self.__class__.__name__} | data
-        else:
-            return data
+        # FastAPI does not call this function, but it does require that it be
+        # here.
+        raise NotImplementedError()

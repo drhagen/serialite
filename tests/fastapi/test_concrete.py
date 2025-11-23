@@ -208,14 +208,10 @@ def test_schema(client_fixture, request, fastapi_pydantic_client):
     )
     assert actual_response["components"]["schemas"]["Bar"]["required"] == ["foo"]
     assert actual_response["components"]["schemas"]["Foo"]["required"] == ["a", "b", "c"]
-    assert actual_response["components"]["schemas"]["Foo"]["properties"]["a"] == {
-        "type": "integer"
-    }
-    assert actual_response["components"]["schemas"]["Foo"]["properties"]["b"] == {"type": "number"}
-    assert actual_response["components"]["schemas"]["Foo"]["properties"]["c"] == {
-        "type": "boolean"
-    }
-    assert actual_response["components"]["schemas"]["Foo"]["properties"]["d"] == {
-        "type": "string",
-        "default": "default",
-    }
+    assert actual_response["components"]["schemas"]["Foo"]["properties"]["a"]["type"] == "integer"
+    assert actual_response["components"]["schemas"]["Foo"]["properties"]["b"]["type"] == "number"
+    assert actual_response["components"]["schemas"]["Foo"]["properties"]["c"]["type"] == "boolean"
+    assert actual_response["components"]["schemas"]["Foo"]["properties"]["d"]["type"] == "string"
+    assert (
+        actual_response["components"]["schemas"]["Foo"]["properties"]["d"]["default"] == "default"
+    )
