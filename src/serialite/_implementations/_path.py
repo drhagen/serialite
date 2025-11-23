@@ -19,3 +19,6 @@ class PathSerializer(Serializer):
         if not isinstance(value, Path):
             raise ValueError(f"Not a Path: {value!r}")
         return value.as_posix()
+
+    def to_openapi_schema(self, force: bool = False):
+        return {"type": "string"}

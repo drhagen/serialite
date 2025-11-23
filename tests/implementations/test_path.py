@@ -24,3 +24,9 @@ def test_to_data_failure():
     # to_data expects a pathlib.Path instance
     with pytest.raises(ValueError):
         _ = path_serializer.to_data("a/b/c.txt")
+
+
+def test_to_openapi_schema():
+    schema = path_serializer.to_openapi_schema()
+    expected_schema = {"type": "string"}
+    assert schema == expected_schema

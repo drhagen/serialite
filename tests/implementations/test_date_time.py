@@ -48,3 +48,9 @@ def test_datetime_error_to_data_and_to_string():
     e = InvalidDateTimeError("Hello World")
     assert e.to_data() == {"actual": "Hello World"}
     assert str(e) == "Expected DateTime, but got 'Hello World'"
+
+
+def test_to_openapi_schema():
+    schema = date_time_serializer.to_openapi_schema()
+    expected_schema = {"type": "string", "format": "date-time"}
+    assert schema == expected_schema

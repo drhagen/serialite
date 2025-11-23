@@ -92,3 +92,21 @@ def test_integer_out_of_range_error_to_data_and_str():
     r = IntegerOutOfRangeError(actual=0, minimum=1)
     assert r.to_data() == {"actual": 0, "minimum": 1}
     assert str(r) == "Expected integer greater than or equal to 1, but got 0"
+
+
+def test_to_openapi_schema():
+    schema = integer_serializer.to_openapi_schema()
+    expected_schema = {"type": "integer"}
+    assert schema == expected_schema
+
+
+def test_nonnegative_to_openapi_schema():
+    schema = nonnegative_integer_serializer.to_openapi_schema()
+    expected_schema = {"type": "integer", "minimum": 0}
+    assert schema == expected_schema
+
+
+def test_positive_to_openapi_schema():
+    schema = positive_integer_serializer.to_openapi_schema()
+    expected_schema = {"type": "integer", "minimum": 1}
+    assert schema == expected_schema

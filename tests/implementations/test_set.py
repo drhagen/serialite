@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 
 from serialite import (
@@ -9,6 +11,7 @@ from serialite import (
     FloatSerializer,
     SetSerializer,
     Success,
+    serializable,
 )
 
 set_serializer = SetSerializer(FloatSerializer())
@@ -60,3 +63,25 @@ def test_duplicate_error_to_data_and_to_string():
     dup = DuplicatedValueError(12.3)
     assert dup.to_data() == {"duplicate": 12.3}
     assert str(dup) == "Expected a list of unique values, but got this duplicate 12.3"
+
+
+def test_child_components_uncollected():
+    components = set_serializer.child_components()
+    assert components == {}
+
+
+def test_child_components_collected():
+    @serializable
+    @dataclass
+    class Foo:
+        bar: int
+
+    set_foo_serializer = SetSerializer(Foo)
+    components = set_foo_serializer.child_components()
+    assert components == {"element": Foo}
+
+
+def test_to_openapi_schema():
+    schema = set_serializer.to_openapi_schema()
+    expected_schema = {"type": "array", "items": {"type": "number"}}
+    assert schema == expected_schema

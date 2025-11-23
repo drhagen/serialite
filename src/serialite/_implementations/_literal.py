@@ -27,14 +27,16 @@ class LiteralSerializer(Serializer):
         return value
 
     def to_openapi_schema(self, force: bool = False):
-        if all(isinstance(x, str) for x in self.possibilities):
-            return {"type": "string", "enum": self.possibilities}
-        elif all(is_int(x) for x in self.possibilities):
-            return {"type": "integer", "enum": self.possibilities}
-        elif all(is_real(x) for x in self.possibilities):
-            return {"type": "number", "enum": self.possibilities}
+        possibilities = list(self.possibilities)
+
+        if all(isinstance(x, str) for x in possibilities):
+            return {"type": "string", "enum": possibilities}
+        elif all(is_int(x) for x in possibilities):
+            return {"type": "integer", "enum": possibilities}
+        elif all(is_real(x) for x in possibilities):
+            return {"type": "number", "enum": possibilities}
         else:
-            return {"enum": self.possibilities}
+            return {"enum": possibilities}
 
 
 @serializable

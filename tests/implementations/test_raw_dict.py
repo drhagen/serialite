@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 
 from serialite import (
@@ -11,6 +13,7 @@ from serialite import (
     ReservedValueError,
     StringSerializer,
     Success,
+    serializable,
 )
 
 raw_dict_serializer = RawDictSerializer(FloatSerializer())
@@ -68,3 +71,25 @@ def test_error_to_data_and_to_string():
     e = ExpectedDictionaryError(["a", 12.3])
     assert e.to_data() == {"actual": ["a", 12.3]}
     assert str(e) == "Expected dictionary, but got ['a', 12.3]"
+
+
+def test_child_components_uncollected():
+    components = raw_dict_serializer.child_components()
+    assert components == {}
+
+
+def test_child_components_collected():
+    @serializable
+    @dataclass
+    class Foo:
+        bar: int
+
+    raw_dict_foo_serializer = RawDictSerializer(Foo)
+    components = raw_dict_foo_serializer.child_components()
+    assert components == {"value": Foo}
+
+
+def test_to_openapi_schema():
+    schema = raw_dict_serializer.to_openapi_schema()
+    expected_schema = {"type": "object", "additionalProperties": {"type": "number"}}
+    assert schema == expected_schema
