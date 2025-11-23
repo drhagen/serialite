@@ -33,3 +33,9 @@ def test_error_to_data_and_to_string():
     e = ExpectedNullError("none")
     assert e.to_data() == {"actual": "none"}
     assert str(e) == "Expected null, but got 'none'"
+
+
+def test_to_openapi_schema():
+    schema = none_serializer.to_openapi_schema()
+    expected_schema = {"nullable": True}
+    assert schema == expected_schema

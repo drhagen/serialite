@@ -50,3 +50,9 @@ def test_error_to_data_and_to_string():
     e = ExpectedFloatError("12.5")
     assert e.to_data() == {"actual": "12.5"}
     assert str(e) == "Expected float, but got '12.5'"
+
+
+def test_to_openapi_schema():
+    schema = float_serializer.to_openapi_schema()
+    expected_schema = {"type": "number"}
+    assert schema == expected_schema

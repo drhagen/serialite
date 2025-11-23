@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 
 from serialite import (
@@ -7,6 +9,7 @@ from serialite import (
     IntegerSerializer,
     Success,
     TryUnionSerializer,
+    serializable,
 )
 
 try_union_serializer = TryUnionSerializer(
@@ -30,3 +33,30 @@ def test_from_data_failure():
 def test_to_data_failure():
     with pytest.raises(ValueError):
         _ = try_union_serializer.to_data("invalid")
+
+
+def test_child_components_uncollected():
+    components = try_union_serializer.child_components()
+    assert components == {}
+
+
+def test_child_components_collected():
+    @serializable
+    @dataclass
+    class Foo:
+        bar: int
+
+    @serializable
+    @dataclass
+    class Bar:
+        baz: str
+
+    try_union_foo_bar_serializer = TryUnionSerializer(Foo, Bar, IntegerSerializer())
+    components = try_union_foo_bar_serializer.child_components()
+    assert components == {"0": Foo, "1": Bar}
+
+
+def test_to_openapi_schema():
+    schema = try_union_serializer.to_openapi_schema()
+    expected_schema = {"oneOf": [{"type": "number"}, {"type": "integer"}, {"type": "boolean"}]}
+    assert schema == expected_schema

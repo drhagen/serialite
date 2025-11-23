@@ -28,3 +28,9 @@ def test_error_to_data_and_to_string():
     expected = {"actual": 1}
     assert error.to_data() == expected
     assert str(error) == "Expected boolean, but got 1"
+
+
+def test_to_openapi_schema():
+    schema = boolean_serializer.to_openapi_schema()
+    expected_schema = {"type": "boolean"}
+    assert schema == expected_schema

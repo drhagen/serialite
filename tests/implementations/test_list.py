@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 
 from serialite import (
@@ -8,6 +10,7 @@ from serialite import (
     FloatSerializer,
     ListSerializer,
     Success,
+    serializable,
 )
 
 list_serializer = ListSerializer(FloatSerializer())
@@ -48,3 +51,25 @@ def test_error_to_data_and_to_string():
     e = ExpectedListError("12.5")
     assert e.to_data() == {"actual": "12.5"}
     assert str(e) == "Expected list, but got '12.5'"
+
+
+def test_child_components_uncollected():
+    components = list_serializer.child_components()
+    assert components == {}
+
+
+def test_child_components_collected():
+    @serializable
+    @dataclass
+    class Foo:
+        bar: int
+
+    list_foo_serializer = ListSerializer(Foo)
+    components = list_foo_serializer.child_components()
+    assert components == {"element": Foo}
+
+
+def test_to_openapi_schema():
+    schema = list_serializer.to_openapi_schema()
+    expected_schema = {"type": "array", "items": {"type": "number"}}
+    assert schema == expected_schema

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 
 from serialite import (
@@ -10,6 +12,7 @@ from serialite import (
     Success,
     TupleLengthError,
     TupleSerializer,
+    serializable,
 )
 
 tuple_serializer = TupleSerializer(FloatSerializer(), StringSerializer())
@@ -59,3 +62,30 @@ def test_tuple_length_error_to_data_and_to_string():
     e = TupleLengthError(1, 2, [12.5])
     assert e.to_data() == {"actual_length": 1, "expected_length": 2, "actual": [12.5]}
     assert str(e) == "Expected tuple of length 2, but got length 1 tuple [12.5]"
+
+
+def test_child_components_uncollected():
+    components = tuple_serializer.child_components()
+    assert components == {}
+
+
+def test_child_components_collected():
+    @serializable
+    @dataclass
+    class Foo:
+        bar: int
+
+    tuple_foo_serializer = TupleSerializer(Foo, StringSerializer())
+    components = tuple_foo_serializer.child_components()
+    assert components == {"0": Foo}
+
+
+def test_to_openapi_schema():
+    schema = tuple_serializer.to_openapi_schema()
+    expected_schema = {
+        "type": "array",
+        "prefixItems": [{"type": "number"}, {"type": "string"}],
+        "minItems": 2,
+        "maxItems": 2,
+    }
+    assert schema == expected_schema

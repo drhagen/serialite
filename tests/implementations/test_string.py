@@ -53,3 +53,9 @@ def test_regex_error_to_data_and_to_string():
     regex_err = RegexMismatchError(r"[a-zA-Z]+", " foo")
     assert regex_err.to_data() == {"pattern": r"[a-zA-Z]+", "actual": " foo"}
     assert str(regex_err) == "Expected string matching '[a-zA-Z]+', but got ' foo'"
+
+
+def test_to_openapi_schema():
+    schema = string_serializer.to_openapi_schema()
+    expected_schema = {"type": "string"}
+    assert schema == expected_schema

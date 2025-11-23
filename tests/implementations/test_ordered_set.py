@@ -5,6 +5,8 @@ try:
 except ImportError:
     pytest.skip("ordered-set not available", allow_module_level=True)
 
+from dataclasses import dataclass
+
 from serialite import (
     DuplicatedValueError,
     Errors,
@@ -14,6 +16,7 @@ from serialite import (
     FloatSerializer,
     OrderedSetSerializer,
     Success,
+    serializable,
 )
 
 ordered_set_serializer = OrderedSetSerializer(FloatSerializer())
@@ -57,3 +60,25 @@ def test_to_data_failure_top_level():
 def test_to_data_failure_element():
     with pytest.raises(ValueError):
         _ = ordered_set_serializer.to_data(OrderedSet([12.5, "a"]))
+
+
+def test_child_components_uncollected():
+    components = ordered_set_serializer.child_components()
+    assert components == {}
+
+
+def test_child_components_collected():
+    @serializable
+    @dataclass
+    class Foo:
+        bar: int
+
+    ordered_set_foo_serializer = OrderedSetSerializer(Foo)
+    components = ordered_set_foo_serializer.child_components()
+    assert components == {"element": Foo}
+
+
+def test_to_openapi_schema():
+    schema = ordered_set_serializer.to_openapi_schema()
+    expected_schema = {"type": "array", "items": {"type": "number"}}
+    assert schema == expected_schema
