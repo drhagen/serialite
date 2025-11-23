@@ -174,7 +174,7 @@ class FieldsSerializer(Mapping):
 
         # Raw serializers are wrapped in `SingleField`s,
         # other objects get a lookup for their serializer
-        cleaned_object_field_serializers = {}
+        cleaned_object_field_serializers: dict[str, FieldsSerializerField] = {}
         for name, field in object_field_serializers.items():
             if isinstance(field, FieldsSerializerField):
                 cleaned_object_field_serializers[name] = field
@@ -187,8 +187,8 @@ class FieldsSerializer(Mapping):
 
         self.object_field_serializers = cleaned_object_field_serializers
 
-        data_field_deserializers = {}
-        data_name_to_object_name = {}
+        data_field_deserializers: dict[str, Serializer] = {}
+        data_name_to_object_name: dict[str, str] = {}
         for object_field_name, field_serializer in self.object_field_serializers.items():
             if isinstance(field_serializer, SingleField):
                 if object_field_name in data_field_deserializers:

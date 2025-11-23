@@ -6,11 +6,11 @@ __all__ = ["monkey_patch_pydantic_subclasscheck"]
 def __subclasscheck__(cls: type, sub: type) -> bool:  # noqa: N807
     from pydantic import BaseModel
 
-    if cls is BaseModel and hasattr(sub, "_is_pydantic_base_model"):
+    if cls is BaseModel and hasattr(sub, "is_openapi_component"):
         # To minimize the blast radius, only change how subclassing works on
         # exactly BaseModel. Hypothetical subtypes of BaseModel will not be
         # affected by this method.
-        return sub._is_pydantic_base_model
+        return sub.is_openapi_component
     else:
         return super(type(BaseModel), cls).__subclasscheck__(sub)
 
@@ -21,7 +21,7 @@ def monkey_patch_pydantic_subclasscheck() -> None:
     # methods. The call to issubclass must be intercepted and rewritten.
     # Fortunately, BaseModel has its own metaclass, so we can attach a new
     # definition of __subclasscheck__ to it that will cause
-    # issubclass(cls, BaseModel) to return the value of _is_pydantic_base_model
+    # issubclass(cls, BaseModel) to return the value of is_openapi_component
     # if it exists. We cannot look for __get_validators__ because some non-Base
     # Model classes in Pydantic have this method and FastAPI treats them very
     # differently.

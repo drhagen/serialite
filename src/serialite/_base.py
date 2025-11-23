@@ -25,12 +25,25 @@ class Serializer(Generic[Output]):
         """Serialize an object to data."""
         raise NotImplementedError()
 
+    # Flag indicating whether this serializer represents an OpenAPI component
+    # (a model that should appear in the components/schemas section)
+    is_openapi_component: bool = False
+
+    @classmethod
+    def child_components(cls) -> dict[str, type[Serializer]]:
+        """Return child serializers that are OpenAPI components.
+
+        This method should return the immediate child serializers that are also
+        OpenAPI components.
+        """
+        return {}
+
     def to_openapi_schema(self, force: bool = False) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
-        If `force` is False and this serializer represents a model, it should
-        return a '$ref'. If `force` is True, it should return its full schema,
-        but not pass `force` to its child serializers.
+        If `force` is False and this serializer represents a component, it
+        should return a '$ref'. If `force` is True, it should return its full
+        schema, but not pass `force` to its child serializers.
 
         The default is no schema.
         """
@@ -52,18 +65,10 @@ class Serializable(Serializer[SerializableOutput]):
     def to_data(self: SerializableOutput) -> Any:
         pass
 
-    @classmethod
-    def to_openapi_schema(cls, force: bool = False) -> Any:
-        return {}
-
     # All attributes and methods below this point are for Pydantic v2
     # compatibility. These methods allow all Serialite Serializables to be used
     # as type annotations in FastAPI. The full Pydantic interface is not
     # implemented, only that which is necessary for FastAPI to work.
-
-    # This flag is used by the issubclass(_, BaseModel) monkey patch to identify
-    # classes that claim to be subclasses of BaseModel.
-    _is_pydantic_base_model = True
 
     # This flag protects dataclasses from conversion
     __processed__ = True
@@ -109,19 +114,29 @@ class Serializable(Serializer[SerializableOutput]):
         return cls.to_openapi_schema(force=True)
 
     @classproperty
+    def model_fields(cls):
+        # FastAPI invokes this to collect all the components. We only fill in
+        # enough information for that purpose and even hack it for additional
+        # purposes.
+        from pydantic.fields import FieldInfo
+
+        # Get child components from the class
+        components = cls.child_components()
+
+        # Build FieldInfo objects for each component
+        fields: dict[str, FieldInfo] = {}
+        for name, component_cls in components.items():
+            fields[name] = FieldInfo(annotation=component_cls)
+
+        return fields
+
+    @classproperty
     def model_config(cls):
         # A place where Pydantic puts various metadata and options. Serialite
         # is not configurable in this way, so return a default configuration.
         from pydantic import ConfigDict
 
         return ConfigDict()
-
-    @classproperty
-    def model_fields(cls):
-        # FastAPI expects model_fields for OpenAPI schema generation
-        # Return an empty dict since our schema is handled through
-        # __get_pydantic_core_schema__
-        return {}
 
     def model_dump(
         self,
