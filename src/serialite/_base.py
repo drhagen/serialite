@@ -7,7 +7,6 @@ from typing import Any, Generic, TypeVar
 
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
-from ._stable_set import StableSet
 
 Output = TypeVar("Output")
 SerializableOutput = TypeVar("SerializableOutput", bound="Serializable")
@@ -26,30 +25,24 @@ class Serializer(Generic[Output]):
         """Serialize an object to data."""
         raise NotImplementedError()
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        """Collect the set of OpenAPI models required for this Serializer.
+    # Flag indicating whether this serializer represents an OpenAPI component
+    # (a model that should appear in the components/schemas section)
+    is_openapi_component: bool = False
 
-        `Serializer`s that represent models should return a set containing
-        themselves.
+    def child_components(self) -> dict[str, type[Serializer]]:
+        """Return child serializers that are OpenAPI components.
 
-        `Serializer`s with child `Serializer`s that may be models should add
-        themselves to `parent_models` and pass that to all children's
-        `collect_openapi_models` method. The parent `Serializer` and all models
-        received from children should be combined and returned.
-
-        The default is to return no models.
+        This method should return the immediate child serializers that are also
+        OpenAPI components.
         """
-        return StableSet()
+        return {}
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False) -> Any:
+    def to_openapi_schema(self, force: bool = False) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
-        Each serializer should check if its fully qualified name exists in
-        `refs` and return a '$ref', unless `force` is true, in which case it
-        should return its full schema, but not pass `force` to its child
-        serializers.
+        If `force` is False and this serializer represents a component, it
+        should return a '$ref'. If `force` is True, it should return its full
+        schema, but not pass `force` to its child serializers.
 
         The default is no schema.
         """
@@ -72,21 +65,17 @@ class Serializable(Serializer[SerializableOutput]):
         pass
 
     @classmethod
-    def collect_openapi_models(cls, parent_models: StableSet[Serializer]) -> StableSet[Serializer]:
-        return StableSet()
+    def child_components(cls) -> dict[str, type[Serializable]]:
+        return {}
 
     @classmethod
-    def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False) -> Any:
+    def to_openapi_schema(cls, force: bool = False) -> Any:
         return {}
 
     # All attributes and methods below this point are for Pydantic v2
     # compatibility. These methods allow all Serialite Serializables to be used
     # as type annotations in FastAPI. The full Pydantic interface is not
     # implemented, only that which is necessary for FastAPI to work.
-
-    # This flag is used by the issubclass(_, BaseModel) monkey patch to identify
-    # classes that claim to be subclasses of BaseModel.
-    _is_pydantic_base_model = True
 
     # This flag protects dataclasses from conversion
     __processed__ = True
@@ -112,7 +101,7 @@ class Serializable(Serializer[SerializableOutput]):
         return cls.to_data(value)
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, _handler):
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler):
         # Pydantic v2 uses __get_pydantic_core_schema__ to package custom
         # validation and serialization.
         from pydantic_core import core_schema
@@ -126,19 +115,27 @@ class Serializable(Serializer[SerializableOutput]):
         )
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, _core_schema_obj, _handler):
+    def __get_pydantic_json_schema__(cls, core_schema_obj, handler):
         # Pydantic v2 uses __get_pydantic_json_schema__ to generate OpenAPI
-        # schemas.
+        # schemas. We return the full schema here (force=True).
+        return cls.to_openapi_schema(force=True)
 
-        # Models are collected via the monkey-patched get_flat_models_from_model
-        # but they are not passed into this function, so we have to re-fetch
-        # them all.
-        refs = {
-            model: {"$ref": f"#/$defs/{model.__name__}"}
-            for model in cls.collect_openapi_models(StableSet())
-        }
+    @classproperty
+    def model_fields(cls):
+        # FastAPI invokes this to collect all the components. We only fill in
+        # enough information for that purpose and even hack it for additional
+        # purposes.
+        from pydantic.fields import FieldInfo
 
-        return cls.to_openapi_schema(refs, force=True)
+        # Get child components from the class
+        components = cls.child_components()
+
+        # Build FieldInfo objects for each component
+        fields: dict[str, FieldInfo] = {}
+        for name, component_cls in components.items():
+            fields[name] = FieldInfo(annotation=component_cls)
+
+        return fields
 
     @classproperty
     def model_config(cls):
@@ -147,13 +144,6 @@ class Serializable(Serializer[SerializableOutput]):
         from pydantic import ConfigDict
 
         return ConfigDict()
-
-    @classproperty
-    def model_fields(cls):
-        # FastAPI expects model_fields for OpenAPI schema generation
-        # Return an empty dict since our schema is handled through
-        # __get_pydantic_core_schema__
-        return {}
 
     def model_dump(
         self,

@@ -2,11 +2,11 @@ __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
 from typing import ClassVar
 
-from ._base import Serializable, Serializer
+from ._base import Serializable
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
+from ._openapi import is_openapi_component
 from ._result import Failure, Success
-from ._stable_set import StableSet
 
 
 class SerializableMixin(Serializable):
@@ -29,20 +29,17 @@ class SerializableMixin(Serializable):
     def to_data(self):
         return self.__fields_serializer__.to_data(self, source="object")
 
-    @classmethod
-    def collect_openapi_models(cls, parent_models: StableSet[Serializer]) -> StableSet[Serializer]:
-        # Every class that uses AbstractSerializableMixin gets put into the OpenAPI models.
-        if cls not in parent_models:
-            this_set = StableSet(cls)
-            parent_models |= this_set
-            return this_set | cls.__fields_serializer__.collect_openapi_models(parent_models)
-        else:
-            return StableSet()
+    is_openapi_component: bool = True
 
     @classmethod
-    def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False):
-        if force or cls not in refs:
-            schema = cls.__fields_serializer__.to_openapi_schema(refs)
+    def child_components(cls) -> dict[str, type[Serializable]]:
+        """Return all child component classes in __fields_serializer__."""
+        return cls.__fields_serializer__.child_components()
+
+    @classmethod
+    def to_openapi_schema(cls, force: bool = False):
+        if force:
+            schema = cls.__fields_serializer__.to_openapi_schema()
 
             if hasattr(cls, "__subclass_serializers__"):
                 # It is not possible in OpenAPI to have the discriminator field
@@ -56,7 +53,7 @@ class SerializableMixin(Serializable):
 
             return schema
         else:
-            return refs[cls]
+            return {"$ref": f"#/$defs/{cls.__name__}"}
 
 
 class AbstractSerializableMixin(Serializable):
@@ -121,29 +118,30 @@ class AbstractSerializableMixin(Serializable):
 
         return {"_type": value.__class__.__name__} | value.to_data()
 
-    @classmethod
-    def collect_openapi_models(cls, parent_models: StableSet[Serializer]) -> StableSet[Serializer]:
-        # Every class that uses AbstractSerializableMixin gets put into the OpenAPI models.
-        if cls not in parent_models:
-            this_set = StableSet(cls)
-            parent_models |= this_set
-            models = StableSet()
-            for subclass in cls.__subclass_serializers__.values():
-                models |= subclass.collect_openapi_models(parent_models)
-            return this_set | models
-        else:
-            return StableSet()
+    is_openapi_component: bool = True
 
     @classmethod
-    def to_openapi_schema(cls, refs: dict[Serializer, str], force: bool = False):
-        if force or cls not in refs:
+    def child_components(cls) -> dict[str, type[Serializable]]:
+        """Return all child component classes in __subclass_serializers__."""
+
+        # Return all subclass types that are OpenAPI components
+        components = {}
+        for name, subclass in cls.__subclass_serializers__.items():
+            if is_openapi_component(subclass):
+                components[name] = subclass
+
+        return components
+
+    @classmethod
+    def to_openapi_schema(cls, force: bool = False):
+        if force:
             return {
                 "type": "object",
                 "discriminator": {"propertyName": "_type"},
                 "oneOf": [
-                    subclass.to_openapi_schema(refs)
+                    subclass.to_openapi_schema()
                     for subclass in cls.__subclass_serializers__.values()
                 ],
             }
         else:
-            return refs[cls]
+            return {"$ref": f"#/$defs/{cls.__name__}"}

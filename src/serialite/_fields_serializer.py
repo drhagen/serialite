@@ -17,7 +17,6 @@ from typing import Any
 from ._base import Serializer
 from ._errors import Errors
 from ._result import Failure, Result, Success
-from ._stable_set import StableSet
 
 # A sentinel object to indicate that a default is not available,
 # so an error should be raised if the item is not found
@@ -175,7 +174,7 @@ class FieldsSerializer(Mapping):
 
         # Raw serializers are wrapped in `SingleField`s,
         # other objects get a lookup for their serializer
-        cleaned_object_field_serializers = {}
+        cleaned_object_field_serializers: dict[str, FieldsSerializerField] = {}
         for name, field in object_field_serializers.items():
             if isinstance(field, FieldsSerializerField):
                 cleaned_object_field_serializers[name] = field
@@ -188,8 +187,8 @@ class FieldsSerializer(Mapping):
 
         self.object_field_serializers = cleaned_object_field_serializers
 
-        data_field_deserializers = {}
-        data_name_to_object_name = {}
+        data_field_deserializers: dict[str, Serializer] = {}
+        data_name_to_object_name: dict[str, str] = {}
         for object_field_name, field_serializer in self.object_field_serializers.items():
             if isinstance(field_serializer, SingleField):
                 if object_field_name in data_field_deserializers:
@@ -383,20 +382,23 @@ class FieldsSerializer(Mapping):
 
         return data
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        models = StableSet()
-        for serializer in self.data_field_deserializers.values():
-            models |= serializer.collect_openapi_models(parent_models)
-        return models
+    def child_components(self) -> dict[str, Serializer]:
+        """Return all child serializers that are OpenAPI components."""
+        from ._openapi import is_openapi_component
 
-    def to_openapi_schema(self, refs: dict[Serializer, str]) -> dict[str, Any]:
+        components = {}
+        for name, field in self.data_field_deserializers.items():
+            if is_openapi_component(field):
+                components[name] = field
+
+        return components
+
+    def to_openapi_schema(self) -> dict[str, Any]:
         required = []
         properties = {}
         for name, field in self.object_field_serializers.items():
             if isinstance(field, SingleField):
-                property = field.serializer.to_openapi_schema(refs)
+                property = field.serializer.to_openapi_schema()
 
                 if field.default is not no_default and field.default is not None:
                     # OpenAPI generator 5 crashes if the default is null

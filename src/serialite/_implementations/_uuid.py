@@ -27,7 +27,7 @@ class UuidSerializer(Serializer[UUID]):
             raise ValueError(f"Not a UUID: {value!r}")
         return str(value)
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {"type": "string", "format": "uuid"}
 
 

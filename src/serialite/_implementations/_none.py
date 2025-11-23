@@ -18,5 +18,5 @@ class NoneSerializer(Serializer[None]):
             raise ValueError(f"Not an None: {value!r}")
         return value
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {"nullable": True}

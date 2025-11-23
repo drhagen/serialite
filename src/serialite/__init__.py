@@ -22,12 +22,8 @@ from ._fields_serializer import (
 )
 from ._implementations import *  # noqa: F403
 from ._mixins import AbstractSerializableMixin, SerializableMixin
-from ._monkey_patches import (
-    monkey_patch_pydantic_subclasscheck,
-    monkey_patch_pydantic_v2_get_flat_models_from_model,
-)
+from ._monkey_patches import monkey_patch_pydantic_subclasscheck
 from ._result import Failure, Result, Success
-from ._stable_set import StableSet
 from ._type_errors import (
     ExpectedBooleanError,
     ExpectedDictionaryError,
@@ -39,4 +35,3 @@ from ._type_errors import (
 )
 
 monkey_patch_pydantic_subclasscheck()
-monkey_patch_pydantic_v2_get_flat_models_from_model()

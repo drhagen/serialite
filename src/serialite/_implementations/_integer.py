@@ -27,7 +27,7 @@ class IntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an int: {value!r}")
         return value
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {"type": "integer"}
 
 
@@ -46,7 +46,7 @@ class NonnegativeIntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an nonnegative int: {value!r}")
         return value
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {"type": "integer", "minimum": 0}
 
 
@@ -65,7 +65,7 @@ class PositiveIntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an positive int: {value!r}")
         return value
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {"type": "integer", "minimum": 1}
 
 

@@ -4,8 +4,8 @@ from typing import Generic, TypeVar
 
 from .._base import Serializer
 from .._errors import Errors
+from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
-from .._stable_set import StableSet
 
 Element = TypeVar("Element")
 
@@ -42,17 +42,16 @@ class TryUnionSerializer(Serializer):
             "All available serializers failed: " + ", ".join(map(str, self.serializers)), errors
         )
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        models = StableSet()
-        for serializer in self.serializers:
-            models |= serializer.collect_openapi_models(parent_models)
-        return models
+    def child_components(self):
+        components = {}
+        for i, serializer in enumerate(self.serializers):
+            if is_openapi_component(serializer):
+                components[str(i)] = serializer
+        return components
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
+    def to_openapi_schema(self, force: bool = False):
         return {
-            "oneOf": [serializer.to_openapi_schema(refs) for serializer in self.serializers],
+            "oneOf": [serializer.to_openapi_schema() for serializer in self.serializers],
         }
 
 
@@ -73,10 +72,11 @@ class OptionalSerializer(Generic[Element], Serializer[Element | None]):
         else:
             return self.element_serializer.to_data(value)
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        return self.element_serializer.collect_openapi_models(parent_models)
+    def child_components(self):
+        if is_openapi_component(self.element_serializer):
+            return {"element": self.element_serializer}
+        else:
+            return {}
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
-        return self.element_serializer.to_openapi_schema(refs) | {"nullable": True}
+    def to_openapi_schema(self, force: bool = False):
+        return self.element_serializer.to_openapi_schema() | {"nullable": True}

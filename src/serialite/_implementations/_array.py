@@ -6,8 +6,8 @@ import numpy as np
 
 from .._base import Serializer
 from .._dispatcher import serializer
+from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
-from .._stable_set import StableSet
 from ._list import ListSerializer
 
 Element = TypeVar("Element")
@@ -42,10 +42,11 @@ class ArraySerializer(Generic[Element], Serializer[np.ndarray]):
 
         return self.list_serializer.to_data(value.tolist())
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        return self.element_serializer.collect_openapi_models(parent_models)
+    def child_components(self):
+        if is_openapi_component(self.element_serializer):
+            return {"element": self.element_serializer}
+        else:
+            return {}
 
-    def to_openapi_schema(self, refs: dict[Serializer, str], force: bool = False):
-        return {"type": "array", "items": self.element_serializer.to_openapi_schema(refs)}
+    def to_openapi_schema(self, force: bool = False):
+        return {"type": "array", "items": self.element_serializer.to_openapi_schema()}
