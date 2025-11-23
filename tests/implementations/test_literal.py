@@ -45,3 +45,10 @@ def test_to_openapi_schema_integer():
     schema = integer_literal.to_openapi_schema()
     expected_schema = {"type": "integer", "enum": [1, 2, 3]}
     assert schema == expected_schema
+
+
+def test_to_openapi_schema_number():
+    number_literal = LiteralSerializer(1.5, 2.5, 3.5)
+    schema = number_literal.to_openapi_schema()
+    expected_schema = {"type": "number", "enum": [1.5, 2.5, 3.5]}
+    assert schema == expected_schema
