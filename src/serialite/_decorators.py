@@ -136,20 +136,23 @@ def serializable(cls):
         if "to_data" not in cls.__dict__:
             cls.to_data = SerializableMixin.__dict__["to_data"]
 
-        if "collect_openapi_models" not in cls.__dict__:
-            cls.collect_openapi_models = SerializableMixin.__dict__["collect_openapi_models"]
+        if "is_openapi_component" not in cls.__dict__:
+            cls.is_openapi_component = SerializableMixin.__dict__["is_openapi_component"]
+
+        if "child_components" not in cls.__dict__:
+            cls.child_components = SerializableMixin.__dict__["child_components"]
 
         if "to_openapi_schema" not in cls.__dict__:
             cls.to_openapi_schema = SerializableMixin.__dict__["to_openapi_schema"]
+
+        if "__processed__" not in cls.__dict__:
+            cls.__processed__ = Serializable.__dict__["__processed__"]
 
         if "_pydantic_validate" not in cls.__dict__:
             cls._pydantic_validate = Serializable.__dict__["_pydantic_validate"]
 
         if "_pydantic_serialize" not in cls.__dict__:
             cls._pydantic_serialize = Serializable.__dict__["_pydantic_serialize"]
-
-        if "_is_pydantic_base_model" not in cls.__dict__:
-            cls._is_pydantic_base_model = Serializable.__dict__["_is_pydantic_base_model"]
 
         if "__get_pydantic_core_schema__" not in cls.__dict__:
             cls.__get_pydantic_core_schema__ = Serializable.__dict__[
@@ -161,17 +164,14 @@ def serializable(cls):
                 "__get_pydantic_json_schema__"
             ]
 
+        if "model_fields" not in cls.__dict__:
+            cls.model_fields = Serializable.__dict__["model_fields"]
+
         if "model_config" not in cls.__dict__:
             cls.model_config = Serializable.__dict__["model_config"]
 
         if "model_dump" not in cls.__dict__:
             cls.model_dump = Serializable.__dict__["model_dump"]
-
-        if "model_fields" not in cls.__dict__:
-            cls.model_fields = Serializable.__dict__["model_fields"]
-
-        if "__processed__" not in cls.__dict__:
-            cls.__processed__ = Serializable.__dict__["__processed__"]
 
     return cls
 
@@ -230,16 +230,17 @@ def abstract_serializable(cls):
                 "__subclass_serializers__"
             ]
 
-        if "collect_openapi_models" not in cls.__dict__:
-            cls.collect_openapi_models = AbstractSerializableMixin.__dict__[
-                "collect_openapi_models"
-            ]
+        if "is_openapi_component" not in cls.__dict__:
+            cls.is_openapi_component = AbstractSerializableMixin.__dict__["is_openapi_component"]
+
+        if "child_components" not in cls.__dict__:
+            cls.child_components = AbstractSerializableMixin.__dict__["child_components"]
 
         if "to_openapi_schema" not in cls.__dict__:
             cls.to_openapi_schema = AbstractSerializableMixin.__dict__["to_openapi_schema"]
 
-        if "_is_pydantic_base_model" not in cls.__dict__:
-            cls._is_pydantic_base_model = Serializable.__dict__["_is_pydantic_base_model"]
+        if "__processed__" not in cls.__dict__:
+            cls.__processed__ = Serializable.__dict__["__processed__"]
 
         if "_pydantic_validate" not in cls.__dict__:
             cls._pydantic_validate = Serializable.__dict__["_pydantic_validate"]
@@ -257,16 +258,13 @@ def abstract_serializable(cls):
                 "__get_pydantic_json_schema__"
             ]
 
+        if "model_fields" not in cls.__dict__:
+            cls.model_fields = Serializable.__dict__["model_fields"]
+
         if "model_config" not in cls.__dict__:
             cls.model_config = Serializable.__dict__["model_config"]
 
         if "model_dump" not in cls.__dict__:
             cls.model_dump = Serializable.__dict__["model_dump"]
-
-        if "model_fields" not in cls.__dict__:
-            cls.model_fields = Serializable.__dict__["model_fields"]
-
-        if "__processed__" not in cls.__dict__:
-            cls.__processed__ = Serializable.__dict__["__processed__"]
 
     return cls

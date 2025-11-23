@@ -7,8 +7,8 @@ from typing import Any, Generic, TypeVar
 from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
+from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
-from .._stable_set import StableSet
 
 Element = TypeVar("Element")
 
@@ -33,10 +33,11 @@ class ReservedSerializer(Generic[Element], Serializer[Element]):
 
         return self.internal_serializer.to_data(value)
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        return self.internal_serializer.collect_openapi_models(parent_models)
+    def child_components(self):
+        if is_openapi_component(self.internal_serializer):
+            return {"internal": self.internal_serializer}
+        else:
+            return {}
 
     def to_openapi_schema(self, force: bool = False):
         return self.internal_serializer.to_openapi_schema()

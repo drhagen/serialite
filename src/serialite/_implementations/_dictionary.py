@@ -6,8 +6,8 @@ from typing import Any, Generic, TypeVar
 from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
+from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
-from .._stable_set import StableSet
 from .._type_errors import ExpectedDictionaryError, ExpectedListError
 from ._string import StringSerializer
 
@@ -132,10 +132,13 @@ class RawDictSerializer(Generic[Value], Serializer[dict[str, Value]]):
             for key, value in value.items()
         }
 
-    def collect_openapi_models(
-        self, parent_models: StableSet[Serializer]
-    ) -> StableSet[Serializer]:
-        return self.value_serializer.collect_openapi_models(parent_models)
+    def child_components(self):
+        components = {}
+        if is_openapi_component(self.key_serializer):
+            components["key"] = self.key_serializer
+        if is_openapi_component(self.value_serializer):
+            components["value"] = self.value_serializer
+        return components
 
     def to_openapi_schema(self, force: bool = False):
         return {
