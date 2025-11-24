@@ -1,7 +1,8 @@
 __all__ = ["FloatSerializer"]
 
+from collections.abc import Sequence
 from math import inf, isnan, nan
-from typing import Any, Sequence
+from typing import Any
 
 from .._base import Serializer
 from .._errors import Errors

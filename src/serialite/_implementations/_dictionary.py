@@ -1,7 +1,7 @@
 __all__ = ["ExpectedLength2ListError", "OrderedDictSerializer", "RawDictSerializer"]
 
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -11,11 +11,8 @@ from .._result import Failure, Result, Success
 from .._type_errors import ExpectedDictionaryError, ExpectedListError
 from ._string import StringSerializer
 
-Key = TypeVar("Key")
-Value = TypeVar("Value")
 
-
-class OrderedDictSerializer(Generic[Key, Value], Serializer[dict[Key, Value]]):
+class OrderedDictSerializer[Key, Value](Serializer[dict[Key, Value]]):
     """Serializing a dictionary as a list of items.
 
     The fields of a JSON object is inherently unordered. Also, the keys cannot
@@ -73,7 +70,7 @@ class OrderedDictSerializer(Generic[Key, Value], Serializer[dict[Key, Value]]):
         ]
 
 
-class RawDictSerializer(Generic[Value], Serializer[dict[str, Value]]):
+class RawDictSerializer[Value](Serializer[dict[str, Value]]):
     """Serializing a dictionary to a dictionary rather than a list of tuples.
 
     OpenAPI does not understand tuples and therefore cannot capture the

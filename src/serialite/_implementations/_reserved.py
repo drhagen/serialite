@@ -2,7 +2,7 @@ __all__ = ["ReservedSerializer", "ReservedValueError"]
 
 from collections.abc import Set
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -10,10 +10,8 @@ from .._errors import Errors
 from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
 
-Element = TypeVar("Element")
 
-
-class ReservedSerializer(Generic[Element], Serializer[Element]):
+class ReservedSerializer[Element](Serializer[Element]):
     def __init__(self, internal_serializer: Serializer[Element], *, reserved: Set[Element]):
         self.internal_serializer = internal_serializer
         self.reserved = reserved

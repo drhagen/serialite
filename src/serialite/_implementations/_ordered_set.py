@@ -1,7 +1,5 @@
 __all__ = ["OrderedSetSerializer"]
 
-from typing import Generic, TypeVar
-
 from ordered_set import OrderedSet
 
 from .._base import Serializer
@@ -11,10 +9,8 @@ from .._result import Failure, Result, Success
 from .._type_errors import ExpectedListError
 from ._set import DuplicatedValueError
 
-Element = TypeVar("Element")
 
-
-class OrderedSetSerializer(Generic[Element], Serializer[OrderedSet[Element]]):
+class OrderedSetSerializer[Element](Serializer[OrderedSet[Element]]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
 

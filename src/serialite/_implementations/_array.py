@@ -1,7 +1,5 @@
 __all__ = ["ArraySerializer"]
 
-from typing import Generic, TypeVar
-
 import numpy as np
 
 from .._base import Serializer
@@ -10,10 +8,8 @@ from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
 from ._list import ListSerializer
 
-Element = TypeVar("Element")
 
-
-class ArraySerializer(Generic[Element], Serializer[np.ndarray]):
+class ArraySerializer[Element](Serializer[np.ndarray]):
     def __init__(
         self,
         element_serializer: Serializer[Element] | None = None,
