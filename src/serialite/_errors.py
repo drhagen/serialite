@@ -2,8 +2,9 @@ from __future__ import annotations
 
 __all__ = ["Errors", "ValidationError"]
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Sequence, TypedDict
+from typing import Any, TypedDict
 
 
 @dataclass(frozen=True, slots=True)

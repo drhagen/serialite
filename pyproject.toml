@@ -105,9 +105,6 @@ extend-ignore = ["F402", "PT011"]
 # F401: unused-import; Allow unused imports in __init__.py files
 "__init__.py" = ["F401"]
 
-[tool.ruff.lint.isort]
-extra-standard-library = ["typing_extensions"]
-
 [tool.ruff.lint.pep8-naming]
 classmethod-decorators = ["serialite._descriptors.classproperty"]
 

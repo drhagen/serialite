@@ -1,8 +1,7 @@
 __all__ = ["TupleLengthError", "TupleSerializer"]
 
 from dataclasses import dataclass
-from typing import Any, Generic
-from typing_extensions import TypeVarTuple, Unpack
+from typing import Any, Generic, TypeVarTuple, Unpack
 
 from .._base import Serializer
 from .._decorators import serializable
