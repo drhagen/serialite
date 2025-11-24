@@ -4,12 +4,10 @@ from abc import get_cache_token
 from datetime import datetime
 from pathlib import Path
 from types import GenericAlias, UnionType
-from typing import Any, Literal, TypeAliasType, TypeVar, Union, get_origin
+from typing import Any, Literal, TypeAliasType, Union, get_origin
 from uuid import UUID
 
 from ._base import Serializer
-
-Output = TypeVar("Output")
 
 
 def subclassdispatch(func):
@@ -139,7 +137,7 @@ def subclassdispatch(func):
 
 
 @subclassdispatch
-def serializer(cls: type[Output]) -> Serializer[Output]:
+def serializer[Output](cls: type[Output]) -> Serializer[Output]:
     """Given a class, return a serializer of instances of that class."""
     return cls
 

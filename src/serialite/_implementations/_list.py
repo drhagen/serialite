@@ -1,14 +1,10 @@
 __all__ = ["ListSerializer"]
 
-from typing import Generic, TypeVar
-
 from .._base import Serializer
 from .._errors import Errors
 from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
 from .._type_errors import ExpectedListError
-
-Element = TypeVar("Element")
 
 try:
     from numpy import ndarray
@@ -18,7 +14,7 @@ except ImportError:
         pass
 
 
-class ListSerializer(Generic[Element], Serializer[list[Element]]):
+class ListSerializer[Element](Serializer[list[Element]]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
 

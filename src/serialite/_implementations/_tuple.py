@@ -1,7 +1,7 @@
 __all__ = ["TupleLengthError", "TupleSerializer"]
 
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVarTuple, Unpack
+from typing import Any, Unpack
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -9,8 +9,6 @@ from .._errors import Errors
 from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
 from .._type_errors import ExpectedListError
-
-TupleArguments = TypeVarTuple("TupleArguments")
 
 try:
     from numpy import ndarray
@@ -20,7 +18,7 @@ except ImportError:
         pass
 
 
-class TupleSerializer(Generic[Unpack[TupleArguments]], Serializer[tuple[Unpack[TupleArguments]]]):
+class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]):
     def __init__(self, *element_serializers: Unpack[TupleArguments]):
         self.element_serializers = element_serializers
 

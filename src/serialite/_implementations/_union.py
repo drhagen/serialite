@@ -1,13 +1,9 @@
 __all__ = ["OptionalSerializer", "TryUnionSerializer"]
 
-from typing import Generic, TypeVar
-
 from .._base import Serializer
 from .._errors import Errors
 from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
-
-Element = TypeVar("Element")
 
 
 class TryUnionSerializer(Serializer):
@@ -55,7 +51,7 @@ class TryUnionSerializer(Serializer):
         }
 
 
-class OptionalSerializer(Generic[Element], Serializer[Element | None]):
+class OptionalSerializer[Element](Serializer[Element | None]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
 

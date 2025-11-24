@@ -3,16 +3,13 @@ from __future__ import annotations
 __all__ = ["Serializable", "Serializer"]
 
 from abc import abstractmethod
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
 
-Output = TypeVar("Output")
-SerializableOutput = TypeVar("SerializableOutput", bound="Serializable")
 
-
-class Serializer(Generic[Output]):
+class Serializer[Output]:
     """Serialize and deserialize a particular object."""
 
     @abstractmethod
@@ -49,7 +46,7 @@ class Serializer(Generic[Output]):
         return {}
 
 
-class Serializable(Serializer[SerializableOutput]):
+class Serializable[SerializableOutput](Serializer[SerializableOutput]):
     """Classes that serialize instances of themselves."""
 
     # There is no way to indicate in Python's type system that
@@ -57,7 +54,7 @@ class Serializable(Serializer[SerializableOutput]):
     # appear inconsistent with the base class.
     @classmethod
     @abstractmethod
-    def from_data(cls, data: Any) -> Result[Output]:
+    def from_data(cls, data: Any) -> Result[SerializableOutput]:
         pass
 
     @abstractmethod

@@ -1,7 +1,7 @@
 __all__ = ["DuplicatedValueError", "SetSerializer"]
 
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -10,10 +10,8 @@ from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
 from .._type_errors import ExpectedListError
 
-Element = TypeVar("Element")
 
-
-class SetSerializer(Generic[Element], Serializer[set[Element]]):
+class SetSerializer[Element](Serializer[set[Element]]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
 
