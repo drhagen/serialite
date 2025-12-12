@@ -2,6 +2,7 @@ __all__ = ["serializer"]
 
 from abc import get_cache_token
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from types import GenericAlias, UnionType
 from typing import Any, Literal, NewType, TypeAliasType, Union, get_origin
@@ -243,6 +244,13 @@ def path_serializer(cls):
     from ._implementations._path import PathSerializer
 
     return PathSerializer()
+
+
+@serializer.register(Enum)
+def enum_serializer(cls):
+    from ._implementations._enum import EnumSerializer
+
+    return EnumSerializer(cls)
 
 
 # Union disables subclassing so Optional cannot be used to dispatch
