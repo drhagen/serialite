@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, NewType, Optional, Tuple, Union
 from uuid import UUID
 
 import pytest
@@ -83,3 +83,22 @@ def test_dispatch_type_alias():
     assert scale_serializer.from_data("linear") == Success("linear")
     assert scale_serializer.to_data("log") == "log"
     assert scale_serializer.to_data("linear") == "linear"
+
+
+def test_dispatch_newtype():
+    UserId = NewType("UserId", int)
+
+    user_id = UserId(42)
+    user_id_serializer = serializer(UserId)
+    assert user_id_serializer.from_data(42) == Success(user_id)
+    assert user_id_serializer.to_data(user_id) == 42
+
+
+def test_dispatch_nested_newtype():
+    UserId = NewType("UserId", int)
+    ProUserId = NewType("ProUserId", UserId)
+
+    pro_user_id = ProUserId(42)
+    pro_user_id_serializer = serializer(ProUserId)
+    assert pro_user_id_serializer.from_data(42) == Success(pro_user_id)
+    assert pro_user_id_serializer.to_data(pro_user_id) == 42

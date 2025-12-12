@@ -4,7 +4,7 @@ from abc import get_cache_token
 from datetime import datetime
 from pathlib import Path
 from types import GenericAlias, UnionType
-from typing import Any, Literal, TypeAliasType, Union, get_origin
+from typing import Any, Literal, NewType, TypeAliasType, Union, get_origin
 from uuid import UUID
 
 from ._base import Serializer
@@ -68,6 +68,10 @@ def subclassdispatch(func):
         if isinstance(cls, TypeAliasType):
             # Hash is not defined on TypeAliasType, so it cannot be used in WeakKeyDictionary
             return type_alias_type_serializer
+
+        if isinstance(cls, NewType):
+            # NewType wraps another type, delegate to the supertype's serializer
+            return newtype_serializer
 
         origin = get_origin(cls)
         if origin in {Union, UnionType}:
@@ -263,6 +267,11 @@ def any_serializer(cls):
 # @serializer.register(TypeAliasType)
 def type_alias_type_serializer(cls):
     return serializer(cls.__value__)
+
+
+# NewType wraps another type, so delegate to the supertype's serializer
+def newtype_serializer(cls):
+    return serializer(cls.__supertype__)
 
 
 try:
