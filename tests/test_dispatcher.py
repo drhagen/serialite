@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum, IntEnum, StrEnum
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 from uuid import UUID
 
@@ -83,3 +84,33 @@ def test_dispatch_type_alias():
     assert scale_serializer.from_data("linear") == Success("linear")
     assert scale_serializer.to_data("log") == "log"
     assert scale_serializer.to_data("linear") == "linear"
+
+
+def test_dispatch_enum():
+    class Color(Enum):
+        RED = "red"
+        GREEN = "green"
+
+    color_serializer = serializer(Color)
+    assert color_serializer.from_data("red") == Success(Color.RED)
+    assert color_serializer.to_data(Color.GREEN) == "green"
+
+
+def test_dispatch_int_enum():
+    class Priority(IntEnum):
+        LOW = 1
+        HIGH = 2
+
+    priority_serializer = serializer(Priority)
+    assert priority_serializer.from_data(1) == Success(Priority.LOW)
+    assert priority_serializer.to_data(Priority.HIGH) == 2
+
+
+def test_dispatch_str_enum():
+    class Status(StrEnum):
+        ACTIVE = "active"
+        INACTIVE = "inactive"
+
+    status_serializer = serializer(Status)
+    assert status_serializer.from_data("active") == Success(Status.ACTIVE)
+    assert status_serializer.to_data(Status.INACTIVE) == "inactive"

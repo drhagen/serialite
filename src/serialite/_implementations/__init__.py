@@ -5,6 +5,7 @@ from ._dictionary import (
     OrderedDictSerializer,
     RawDictSerializer,
 )
+from ._enum import EnumSerializer, InvalidEnumValueError
 from ._float import FloatSerializer
 from ._integer import (
     IntegerOutOfRangeError,
