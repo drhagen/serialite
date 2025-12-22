@@ -1,7 +1,17 @@
 from dataclasses import dataclass
 
-from serialite import Errors, ValidationError
-from serialite._decorators import serializable
+import pytest
+
+from serialite import (
+    ErrorElement,
+    Errors,
+    ExpectedFloatError,
+    ValidationError,
+    ValidationExceptionGroup,
+    raise_errors,
+    serializable,
+    serializer,
+)
 
 
 def test_is_empty():
@@ -81,3 +91,68 @@ def test_to_data_validation_error():
     assert actual == [
         {"location": [], "type": "ValidationError", "message": "Not allowed", "context": None}
     ]
+
+
+def test_raise_on_errors_empty():
+    e = Errors()
+    result = e.raise_on_errors()
+    assert result is None
+
+
+def test_raise_on_errors_catchable_as_single_error():
+    e = Errors()
+    e.add(ValidationError("Invalid value"), location=["field1"])
+
+    with pytest.raises(ValidationExceptionGroup) as exc_info:
+        e.raise_on_errors()
+
+    assert exc_info.value == ValidationExceptionGroup(
+        (
+            ErrorElement(
+                ValidationError("Invalid value"),
+                location=("field1",),
+            ),
+        )
+    )
+
+
+def test_raise_on_errors_catchable_as_exception_group():
+    e = Errors()
+    e.add(ValueError("Invalid value"))
+    e.add(TypeError("Wrong type"))
+
+    caught_value_error = False
+    caught_type_error = False
+
+    try:
+        e.raise_on_errors()
+    except* ValueError as err:
+        caught_value_error = True
+        assert err.exceptions[0].args[0] == "Invalid value"  # noqa: PT017
+    except* TypeError as err:
+        caught_type_error = True
+        assert err.exceptions[0].args[0] == "Wrong type"  # noqa: PT017
+
+    assert caught_value_error
+    assert caught_type_error
+
+
+def test_raise_errors_in_alt():
+    failure = serializer(float).from_data("not a float")
+
+    with pytest.raises(ValidationExceptionGroup) as exc_info:
+        _ = failure.alt(raise_errors)
+
+    assert exc_info.value == ValidationExceptionGroup(
+        (
+            ErrorElement(
+                ExpectedFloatError(actual="not a float"),
+                location=(),
+            ),
+        )
+    )
+
+
+def test_raise_errors_on_empty():
+    with pytest.raises(ValueError):
+        raise_errors(Errors())

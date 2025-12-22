@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-__all__ = ["Errors", "ValidationError"]
+__all__ = ["ErrorElement", "Errors", "ValidationError", "ValidationExceptionGroup", "raise_errors"]
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, TypedDict
+from typing import Any, NoReturn, Self, TypedDict
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,6 +22,29 @@ class ValidationError(Exception):
 
     def __str__(self) -> str:
         return self.message
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class ValidationExceptionGroup(ExceptionGroup):
+    """An ExceptionGroup raised by Errors.raise_on_errors.
+
+    This exception wraps multiple validation errors, maintaining the location
+    context for each error through the `ErrorElement` structure. It is an
+    immutable, non-empty mirror of the `Errors` data structure.
+
+    Attributes:
+        errors: A tuple of `ErrorElement` objects.
+    """
+
+    errors: tuple[ErrorElement, ...]
+
+    def __new__(cls, errors: Sequence[ErrorElement]) -> Self:
+        message = "Validation errors"
+        exceptions = [error.error for error in errors]
+        return ExceptionGroup.__new__(cls, message, exceptions)
+
+    def __init__(self, errors: Sequence[ErrorElement]) -> None:
+        object.__setattr__(self, "errors", tuple(errors))
 
 
 class ErrorData(TypedDict):
@@ -63,6 +86,17 @@ class ErrorElement:
 
 @dataclass(slots=True)
 class Errors:
+    """A collection of errors that occurred during deserialization.
+
+    This is a mutable object for accumulating validation errors that are found
+    and their locations in the data structure. The constructor should not be
+    used directly, but rather the static method `Errors.one` or the instance
+    methods `add` and `extend`.
+
+    Attributes:
+        errors: The list of `ErrorElement` objects.
+    """
+
     errors: list[ErrorElement] = field(default_factory=list)
 
     @staticmethod
@@ -88,6 +122,17 @@ class Errors:
             bool: True if there are no errors, False otherwise.
         """
         return len(self.errors) == 0
+
+    def raise_on_errors(self) -> None:
+        """Raise an exception if there are any errors.
+
+        Raises:
+            ValidationExceptionGroup: If there are errors, raises a
+                ValidationExceptionGroup containing all the errors with
+                their location information preserved.
+        """
+        if not self.is_empty():
+            raise ValidationExceptionGroup(self.errors)
 
     def add(self, error: Exception, *, location: Sequence[str | int] = ()) -> None:
         """Add an error with its location in the data structure.
@@ -130,3 +175,15 @@ class Errors:
                 "context": Serialization of the error
         """
         return [element.to_data() for element in self.errors]
+
+
+def raise_errors(errors: Errors) -> NoReturn:
+    """Raise the errors contained in an Errors object.
+
+    This is intended as a utility for use in the `Result.alt` method to raise an
+    exception on `Failure`. Only non-empty `Errors` should be in the `Failure`.
+    This function will raise a `ValueError` if applied to an empty `Errors`
+    object.
+    """
+    errors.raise_on_errors()
+    raise ValueError("Expected Errors object with at least one error, but it was empty.")
