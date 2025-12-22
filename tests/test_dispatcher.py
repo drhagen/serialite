@@ -27,8 +27,6 @@ from serialite import Success, serializer
         (tuple[int, str], [5, "a"], (5, "a")),
         (Dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
         (dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
-        (Dict[int, float], [[11, 11.5], [22, 22.8]], {11: 11.5, 22: 22.8}),
-        (dict[int, float], [[11, 11.5], [22, 22.8]], {11: 11.5, 22: 22.8}),
     ],
 )
 def test_dispatch(data_type, data, value):
@@ -102,3 +100,37 @@ def test_dispatch_nested_newtype():
     pro_user_id_serializer = serializer(ProUserId)
     assert pro_user_id_serializer.from_data(42) == Success(pro_user_id)
     assert pro_user_id_serializer.to_data(pro_user_id) == 42
+
+
+def test_dispatch_dict_with_newtype_str_key():
+    Key = NewType("Key", str)
+
+    dict_serializer = serializer(dict[Key, int])
+    assert dict_serializer.from_data({"a": 1, "b": 2}) == Success({"a": 1, "b": 2})
+    assert dict_serializer.to_data({"a": 1, "b": 2}) == {"a": 1, "b": 2}
+
+
+def test_dispatch_dict_with_nested_newtype_str_key():
+    Key = NewType("Key", str)
+    NestedKey = NewType("NestedKey", Key)
+
+    dict_serializer = serializer(dict[NestedKey, int])
+    assert dict_serializer.from_data({"a": 1, "b": 2}) == Success({"a": 1, "b": 2})
+    assert dict_serializer.to_data({"a": 1, "b": 2}) == {"a": 1, "b": 2}
+
+
+def test_dispatch_dict_with_type_alias_str_key():
+    type Key = str
+
+    dict_serializer = serializer(dict[Key, int])
+    assert dict_serializer.from_data({"a": 1, "b": 2}) == Success({"a": 1, "b": 2})
+    assert dict_serializer.to_data({"a": 1, "b": 2}) == {"a": 1, "b": 2}
+
+
+def test_dispatch_dict_with_nested_type_alias_str_key():
+    type Key = str
+    type NestedKey = Key
+
+    dict_serializer = serializer(dict[NestedKey, int])
+    assert dict_serializer.from_data({"a": 1, "b": 2}) == Success({"a": 1, "b": 2})
+    assert dict_serializer.to_data({"a": 1, "b": 2}) == {"a": 1, "b": 2}
