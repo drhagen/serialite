@@ -2,7 +2,7 @@ from ._base import Serializable, Serializer
 from ._dataclass import field
 from ._decorators import abstract_serializable, serializable
 from ._dispatcher import serializer
-from ._errors import Errors, ValidationError
+from ._errors import ErrorElement, Errors, ValidationError, ValidationExceptionGroup, raise_errors
 from ._field_errors import (
     ConflictingFieldsError,
     RequiredFieldError,
