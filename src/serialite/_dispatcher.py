@@ -216,14 +216,26 @@ def tuple_serializer(cls):
     return TupleSerializer(*(serializer(arg) for arg in cls.__args__))
 
 
+def _is_str(type_annotation):
+    """Recursively check if type is str after unwrapping NewType and TypeAlias."""
+    if isinstance(type_annotation, NewType):
+        return _is_str(type_annotation.__supertype__)
+    elif isinstance(type_annotation, TypeAliasType):
+        return _is_str(type_annotation.__value__)
+    else:
+        return type_annotation is str
+
+
 @serializer.register(dict)
 def dict_serializer(cls):
-    from ._implementations._dictionary import OrderedDictSerializer, RawDictSerializer
+    from ._implementations._dictionary import RawDictSerializer
 
-    if cls.__args__[0] is str:
+    if _is_str(cls.__args__[0]):
+        # Only a simple string key can be inferrred, so accept the default
+        # StringSerializer for keys.
         return RawDictSerializer(serializer(cls.__args__[1]))
     else:
-        return OrderedDictSerializer(serializer(cls.__args__[0]), serializer(cls.__args__[1]))
+        return cls
 
 
 @serializer.register(Path)
