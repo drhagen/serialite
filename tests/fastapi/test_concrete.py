@@ -161,6 +161,28 @@ def test_fastapi_strict(client_fixture, request):
 
 
 @pytest.mark.parametrize("client_fixture", all_clients)
+def test_fastapi_error_messages(client_fixture, request):
+    client = request.getfixturevalue(client_fixture)
+
+    response = client.post("/", json={"foo": {"a": "1", "b": 2.0, "c": 1, "d": "anything"}})
+
+    messages = response.json()["detail"]
+    assert len(messages) == 2
+
+    message1 = messages[0]
+    assert message1["type"] == "ExpectedIntegerError"
+    assert message1["loc"] == ["body", "foo", "a"]
+    assert message1["ctx"] == {"actual": "1"}
+    assert message1["msg"] == "Expected integer, but got '1'"
+
+    message2 = messages[1]
+    assert message2["type"] == "ExpectedBooleanError"
+    assert message2["loc"] == ["body", "foo", "c"]
+    assert message2["ctx"] == {"actual": 1}
+    assert message2["msg"] == "Expected boolean, but got 1"
+
+
+@pytest.mark.parametrize("client_fixture", all_clients)
 def test_fastapi_not_too_strict(client_fixture, request):
     client = request.getfixturevalue(client_fixture)
 

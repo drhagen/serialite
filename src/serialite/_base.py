@@ -84,12 +84,35 @@ class Serializable[SerializableOutput](Serializer[SerializableOutput]):
             return value
 
         match cls.from_data(value):
-            case Failure(error):
-                # Must raise ValueError, TypeError, or AssertionError for
-                # Pydantic to catch it. Or we could construct a Pydantic
-                # ValidationError.
-                # https://docs.pydantic.dev/latest/concepts/validators/
-                raise ValueError(error)
+            case Failure(errors):
+                # Convert Serialite Errors to Pydantic ValidationError
+                # This preserves as much error information as possible
+                # (location, type, message, context), making errors look like
+                # native Pydantic validation errors
+                from pydantic_core import PydanticCustomError
+                from pydantic_core import ValidationError as PydanticValidationError
+
+                line_errors = []
+                for element in errors.errors:
+                    # Create a PydanticCustomError from the Serialite error
+                    serialite_error = element.error
+                    pydantic_custom_error = PydanticCustomError(
+                        type(serialite_error).__name__,
+                        str(serialite_error),
+                        serialite_error.to_data() if hasattr(serialite_error, "to_data") else {},
+                    )
+
+                    line_errors.append(
+                        {
+                            "type": pydantic_custom_error,
+                            "loc": element.location,
+                        }
+                    )
+
+                raise PydanticValidationError.from_exception_data(
+                    title=cls.__name__,
+                    line_errors=line_errors,
+                )
             case Success(validated_value):
                 return validated_value
 
