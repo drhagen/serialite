@@ -30,7 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi == 0.121.*",
+    "fastapi >=0.121,<0.129",
     "pydantic == 2.*",
 ]
 
@@ -47,10 +47,10 @@ Repository = "https://github.com/drhagen/serialite"
 
 [dependency-groups]
 nox = [
-    "nox-uv == 0.6.*",
+    "nox-uv == 0.7.*",
 ]
 test = [
-    "pytest == 8.*",
+    "pytest == 9.*",
     "coverage == 7.*",
     "httpx", # Needed by starlette testclient
 ]
