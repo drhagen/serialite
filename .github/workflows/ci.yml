@@ -7,7 +7,7 @@ on:
       - master
 
 env:
-  uv-version: "0.9.11"
+  uv-version: "0.9.26"
 
 jobs:
   test:
@@ -20,9 +20,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.uv-version }}
       - name: Test with Nox
@@ -33,7 +33,7 @@ jobs:
           test_numpy-${{ matrix.python }}
           test_ordered_set-${{ matrix.python }}
       - name: Store coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-${{ matrix.python }}
           path: .coverage.*
@@ -45,20 +45,20 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.uv-version }}
       - name: Fetch coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: coverage-*
           merge-multiple: true
       - name: Combine coverage and generate report
         run: uv run --locked nox -s coverage
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -67,9 +67,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.uv-version }}
       - name: Run code quality checks

@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  uv-version: "0.9.11"
+  uv-version: "0.9.26"
 
 jobs:
   pypi-publish:
@@ -17,9 +17,9 @@ jobs:
       id-token: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.uv-version }}
       - name: Build release with uv
