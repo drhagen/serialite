@@ -74,3 +74,15 @@ jobs:
           version: ${{ env.uv-version }}
       - name: Run code quality checks
         run: uv run --locked nox -s lint
+
+  typecheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: ${{ env.uv-version }}
+      - name: Run type checking
+        run: uv run --locked nox -s typecheck

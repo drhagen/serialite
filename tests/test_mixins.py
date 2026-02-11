@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from dataclasses import dataclass
 
+import pytest
+
 from serialite import (
     AbstractSerializableMixin,
     Errors,
@@ -8,8 +10,11 @@ from serialite import (
     Failure,
     RequiredFieldError,
     RequiredTypeFieldError,
+    SerializableMixin,
+    StringSerializer,
     Success,
     UnknownClassError,
+    field,
     serializable,
 )
 
@@ -119,3 +124,43 @@ def test_unknown_class_error_to_data_and_to_string():
         str(k)
         == "Expected one of the known types ['DataSubClassSerializableA'], but got 'NotThere'"
     )
+
+
+# Tests for SerializableMixin with @dataclass
+@dataclass(frozen=True, kw_only=True, slots=True)
+class MixinDataclass(SerializableMixin):
+    age: int
+    name: str = "anonymous"
+    nickname: str = field(serializer=StringSerializer())
+
+
+def test_mixin_dataclass_valid_inputs():
+    data = {"age": 30, "name": "Alice", "nickname": "ace"}
+    value = MixinDataclass(age=30, name="Alice", nickname="ace")
+
+    assert MixinDataclass.from_data(data) == Success(value)
+    assert value.to_data() == data
+
+
+def test_mixin_dataclass_default():
+    data = {"age": 30, "nickname": "ace"}
+    value = MixinDataclass(age=30, nickname="ace")
+
+    assert MixinDataclass.from_data(data) == Success(value)
+    assert value.to_data() == data
+
+
+def test_mixin_dataclass_from_data_failure():
+    data = {"age": 30}
+    assert MixinDataclass.from_data(data) == Failure(
+        Errors.one(RequiredFieldError("nickname"), location=["nickname"])
+    )
+
+
+class NotADataclass(SerializableMixin):
+    pass
+
+
+def test_mixin_not_a_dataclass_raises():
+    with pytest.raises(TypeError, match="not a dataclass"):
+        NotADataclass.from_data({})

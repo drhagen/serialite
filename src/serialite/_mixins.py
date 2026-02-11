@@ -1,12 +1,14 @@
 __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
-from typing import ClassVar
+import dataclasses
+from typing import Any, ClassVar, Self
 
 from ._base import Serializable
+from ._descriptors import classproperty
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
 from ._openapi import is_openapi_component
-from ._result import Failure, Success
+from ._result import Failure, Result, Success
 
 
 class SerializableMixin(Serializable):
@@ -16,17 +18,31 @@ class SerializableMixin(Serializable):
     implementation for `Serializable`.
     """
 
-    __fields_serializer__: ClassVar[FieldsSerializer]
+    @classproperty
+    def __fields_serializer__(cls) -> FieldsSerializer:
+        if "__fields_serializer__" in cls.__dict__:
+            return cls.__dict__["__fields_serializer__"]
+
+        if not dataclasses.is_dataclass(cls):
+            raise TypeError(
+                f"Class '{cls.__name__}' inherits from SerializableMixin but is not a dataclass"
+                " and does not define __fields_serializer__."
+            )
+
+        from ._decorators import infer_fields_serializer
+
+        infer_fields_serializer(cls)
+        return cls.__dict__["__fields_serializer__"]
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: Any) -> Result[Self]:
         match cls.__fields_serializer__.from_data(data):
             case Failure(error):
                 return Failure(error)
             case Success(value):
                 return Success(cls(**value))
 
-    def to_data(self):
+    def to_data(self) -> dict:
         return self.__fields_serializer__.to_data(self, source="object")
 
     is_openapi_component: bool = True

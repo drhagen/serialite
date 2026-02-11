@@ -57,6 +57,9 @@ test = [
 lint = [
     "ruff == 0.14.*"
 ]
+typecheck = [
+    "ty == 0.0.*",
+]
 
 [tool.uv]
 default-groups = "all"
@@ -79,6 +82,9 @@ source = [
     "src/",
     "**/site-packages/",
 ]
+
+[tool.pytest.ini_options]
+norecursedirs = ["tests/type_checking"]
 
 [tool.ruff]
 src = ["src"]
