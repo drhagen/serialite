@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import assert_type
 
-from serialite import SerializableMixin, StringSerializer, field
+from serialite import Serializable, StringSerializer, field, serializable
 
 
+@serializable
 @dataclass(frozen=True, kw_only=True, slots=True)
-class UserProfile(SerializableMixin):
+class UserProfile(Serializable):
     age: int
     name: str = "anonymous"
     nickname: str = field(serializer=StringSerializer())

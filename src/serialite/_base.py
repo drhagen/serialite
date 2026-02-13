@@ -3,7 +3,7 @@ from __future__ import annotations
 __all__ = ["Serializable", "Serializer"]
 
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Self
 
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
@@ -46,20 +46,18 @@ class Serializer[Output]:
         return {}
 
 
-class Serializable[SerializableOutput](Serializer[SerializableOutput]):
+class Serializable(Serializer):
     """Classes that serialize instances of themselves."""
 
     # There is no way to indicate in Python's type system that
     # type[Serializable] is an instance of Serializer. So these signatures
     # appear inconsistent with the base class.
     @classmethod
-    @abstractmethod
-    def from_data(cls, data: Any) -> Result[SerializableOutput]:
-        pass
+    def from_data(cls, data: Any) -> Result[Self]:
+        raise NotImplementedError()
 
-    @abstractmethod
-    def to_data(self: SerializableOutput) -> Any:
-        pass
+    def to_data(self) -> dict:
+        raise NotImplementedError()
 
     @classmethod
     def child_components(cls) -> dict[str, type[Serializable]]:
@@ -78,7 +76,7 @@ class Serializable[SerializableOutput](Serializer[SerializableOutput]):
     __processed__ = True
 
     @classmethod
-    def _pydantic_validate(cls, value: Any) -> SerializableOutput:
+    def _pydantic_validate(cls, value: Any) -> Self:
         # FastAPI passes in both data to be parsed and instances of the object
         if isinstance(value, cls):
             return value

@@ -9,7 +9,8 @@ from returns import result
 from ._errors import Errors
 
 if TYPE_CHECKING:
-    # TODO: remove this when https://github.com/astral-sh/ty/issues/2788 is resolved
+    # TODO: remove this when https://github.com/astral-sh/ty/issues/136 is resolved
+    # See https://github.com/astral-sh/ty/issues/2788
     _T = TypeVar("_T")
 
     class Result(Generic[_T]):
