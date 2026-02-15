@@ -1,12 +1,12 @@
 __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
-from typing import ClassVar
+from typing import Any, ClassVar, Self
 
 from ._base import Serializable
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
 from ._openapi import is_openapi_component
-from ._result import Failure, Success
+from ._result import Failure, Result, Success
 
 
 class SerializableMixin(Serializable):
@@ -19,14 +19,14 @@ class SerializableMixin(Serializable):
     __fields_serializer__: ClassVar[FieldsSerializer]
 
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data: Any) -> Result[Self]:
         match cls.__fields_serializer__.from_data(data):
             case Failure(error):
                 return Failure(error)
             case Success(value):
                 return Success(cls(**value))
 
-    def to_data(self):
+    def to_data(self) -> dict[str, Any]:
         return self.__fields_serializer__.to_data(self, source="object")
 
     is_openapi_component: bool = True

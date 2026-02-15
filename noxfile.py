@@ -2,7 +2,15 @@ from nox import Session, options, parametrize
 from nox_uv import session
 
 options.default_venv_backend = "uv"
-options.sessions = ["test", "test_fastapi", "test_numpy", "test_ordered_set", "coverage", "lint"]
+options.sessions = [
+    "test",
+    "test_fastapi",
+    "test_numpy",
+    "test_ordered_set",
+    "coverage",
+    "lint",
+    "test_typing",
+]
 
 
 @session(python=["3.12", "3.13", "3.14"], uv_groups=["test"])
@@ -35,6 +43,11 @@ def test_ordered_set(s: Session):
         "pytest",
         "tests/implementations/test_ordered_set.py",
     )
+
+
+@session(venv_backend="none")
+def test_typing(s: Session):
+    s.run("ty", "check", "tests/type_checking")
 
 
 @session(venv_backend="none")
