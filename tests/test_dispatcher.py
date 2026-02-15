@@ -8,6 +8,21 @@ import pytest
 from serialite import Success, serializer
 
 
+class Color(Enum):
+    RED = "red"
+    GREEN = "green"
+
+
+class Priority(IntEnum):
+    LOW = 1
+    HIGH = 2
+
+
+class Status(StrEnum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+
 @pytest.mark.parametrize(
     ("data_type", "data", "value"),
     [
@@ -28,6 +43,9 @@ from serialite import Success, serializer
         (tuple[int, str], [5, "a"], (5, "a")),
         (Dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
         (dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
+        (Color, "RED", Color.RED),
+        (Priority, "LOW", Priority.LOW),
+        (Status, "ACTIVE", Status.ACTIVE),
     ],
 )
 def test_dispatch(data_type, data, value):
@@ -135,33 +153,3 @@ def test_dispatch_dict_with_nested_type_alias_str_key():
     dict_serializer = serializer(dict[NestedKey, int])
     assert dict_serializer.from_data({"a": 1, "b": 2}) == Success({"a": 1, "b": 2})
     assert dict_serializer.to_data({"a": 1, "b": 2}) == {"a": 1, "b": 2}
-
-
-def test_dispatch_enum():
-    class Color(Enum):
-        RED = "red"
-        GREEN = "green"
-
-    color_serializer = serializer(Color)
-    assert color_serializer.from_data("red") == Success(Color.RED)
-    assert color_serializer.to_data(Color.GREEN) == "green"
-
-
-def test_dispatch_int_enum():
-    class Priority(IntEnum):
-        LOW = 1
-        HIGH = 2
-
-    priority_serializer = serializer(Priority)
-    assert priority_serializer.from_data(1) == Success(Priority.LOW)
-    assert priority_serializer.to_data(Priority.HIGH) == 2
-
-
-def test_dispatch_str_enum():
-    class Status(StrEnum):
-        ACTIVE = "active"
-        INACTIVE = "inactive"
-
-    status_serializer = serializer(Status)
-    assert status_serializer.from_data("active") == Success(Status.ACTIVE)
-    assert status_serializer.to_data(Status.INACTIVE) == "inactive"

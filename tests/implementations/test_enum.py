@@ -13,16 +13,6 @@ from serialite import (
     Success,
 )
 
-DATE = datetime(2024, 1, 1, 12, 0, 0)
-
-
-def serializer_from_enum(enum) -> EnumSerializer:
-    return EnumSerializer(enum)
-
-
-def serializer_from_enum_member(enum_member) -> EnumSerializer:
-    return serializer_from_enum(type(enum_member))
-
 
 class Color(Enum):
     RED = "red"
@@ -39,17 +29,12 @@ class Status(StrEnum):
     INACTIVE = auto()
 
 
-class CaseInsensitiveStatus(StrEnum):
-    ACTIVE = "active"
-    INACTIVE = "inactive"
+class AutoEnum(Enum):
+    A = auto()
+    B = auto()
 
-    @classmethod
-    def _missing_(cls, value):
-        if isinstance(value, str):
-            for member in cls:
-                if member.value.lower() == value.lower():
-                    return member
-        return None
+
+DATE = datetime(2024, 1, 1, 12, 0, 0)
 
 
 class MixedEnum(Enum):
@@ -58,84 +43,110 @@ class MixedEnum(Enum):
     DATE = DATE
 
 
+# By name (default)
 @pytest.mark.parametrize(
-    ("enum_member", "value"),
+    ("enum_class", "name", "member"),
     [
-        (Color.RED, "red"),
-        (Color.GREEN, "green"),
-        (Priority.LOW, 1),
-        (Priority.HIGH, 2),
-        (Status.ACTIVE, "active"),
-        (Status.INACTIVE, "inactive"),
-        (MixedEnum.STRING, "hello"),
-        (MixedEnum.NUMBER, 42),
-        (MixedEnum.DATE, DATE),
+        (Color, "RED", Color.RED),
+        (Color, "GREEN", Color.GREEN),
+        (Priority, "LOW", Priority.LOW),
+        (Priority, "HIGH", Priority.HIGH),
+        (Status, "ACTIVE", Status.ACTIVE),
+        (Status, "INACTIVE", Status.INACTIVE),
+        (AutoEnum, "A", AutoEnum.A),
+        (AutoEnum, "B", AutoEnum.B),
+        (MixedEnum, "STRING", MixedEnum.STRING),
+        (MixedEnum, "DATE", MixedEnum.DATE),
     ],
 )
-def test_valid_inputs(enum_member, value):
-    serializer = serializer_from_enum_member(enum_member)
-    assert serializer.from_data(value) == Success(enum_member)
-    assert serializer.to_data(enum_member) == value
+def test_by_name(enum_class, name, member):
+    s = EnumSerializer(enum_class)
+    assert s.from_data(name) == Success(member)
+    assert s.to_data(member) == name
+
+
+@pytest.mark.parametrize("data", [123, True, None, ["a"]])
+def test_by_name_rejects_non_string_data(data):
+    s = EnumSerializer(Color)
+    expected = ExpectedStringError(data)
+    assert s.from_data(data) == Failure(Errors.one(expected))
+
+
+def test_by_name_rejects_unknown_name():
+    s = EnumSerializer(Color)
+    expected = InvalidEnumValueError("Color", ["RED", "GREEN"], "BLUE")
+    assert s.from_data("BLUE") == Failure(Errors.one(expected))
+
+
+def test_by_name_to_data_raises_on_non_member():
+    s = EnumSerializer(Color)
+    with pytest.raises(ValueError):
+        s.to_data("RED")
 
 
 @pytest.mark.parametrize(
-    ("enum", "data", "expected"),
+    ("enum_class", "expected"),
+    [
+        (Color, {"type": "string", "enum": ["RED", "GREEN"]}),
+        (Priority, {"type": "string", "enum": ["LOW", "HIGH"]}),
+        (Status, {"type": "string", "enum": ["ACTIVE", "INACTIVE"]}),
+        (AutoEnum, {"type": "string", "enum": ["A", "B"]}),
+        (MixedEnum, {"type": "string", "enum": ["STRING", "NUMBER", "DATE"]}),
+    ],
+)
+def test_by_name_openapi_schema(enum_class, expected):
+    s = EnumSerializer(enum_class)
+    assert s.to_openapi_schema() == expected
+
+
+# By value
+@pytest.mark.parametrize(
+    ("enum_class", "value", "member"),
+    [
+        (Color, "red", Color.RED),
+        (Color, "green", Color.GREEN),
+        (Priority, 1, Priority.LOW),
+        (Priority, 2, Priority.HIGH),
+        (Status, "active", Status.ACTIVE),
+        (Status, "inactive", Status.INACTIVE),
+        (MixedEnum, "hello", MixedEnum.STRING),
+        (MixedEnum, 42, MixedEnum.NUMBER),
+        (MixedEnum, DATE, MixedEnum.DATE),
+    ],
+)
+def test_by_value(enum_class, value, member):
+    s = EnumSerializer(enum_class, by="value")
+    assert s.from_data(value) == Success(member)
+    assert s.to_data(member) == value
+
+
+@pytest.mark.parametrize(
+    ("enum_class", "data", "expected"),
     [
         (Priority, "1", ExpectedIntegerError("1")),
         (Priority, True, ExpectedIntegerError(True)),
         (Status, 123, ExpectedStringError(123)),
     ],
 )
-def test_wrong_type(enum, data, expected):
-    serializer = serializer_from_enum(enum)
-    assert serializer.from_data(data) == Failure(Errors.one(expected))
+def test_by_value_rejects_wrong_type(enum_class, data, expected):
+    s = EnumSerializer(enum_class, by="value")
+    assert s.from_data(data) == Failure(Errors.one(expected))
 
 
-@pytest.mark.parametrize(
-    ("data", "enum"),
-    [("invalid", Color), (99, Priority), ("invalid", Status), ("invalid", CaseInsensitiveStatus)],
-)
-def test_invalid_value(data, enum):
-    serializer = serializer_from_enum(enum)
-    values = [m.value for m in enum]
-    enum_name = enum.__name__
-
-    expected = Failure(Errors.one(InvalidEnumValueError(enum_name, values, data)))
-    assert serializer.from_data(data) == expected
+def test_by_value_rejects_unknown_value():
+    s = EnumSerializer(Color, by="value")
+    expected = InvalidEnumValueError("Color", ["red", "green"], "blue")
+    assert s.from_data("blue") == Failure(Errors.one(expected))
 
 
-def test_to_data_invalid():
-    serializer = serializer_from_enum(Color)
-
+def test_by_value_to_data_raises_on_non_member():
+    s = EnumSerializer(Color, by="value")
     with pytest.raises(ValueError):
-        serializer.to_data("invalid")
+        s.to_data("red")
 
 
 @pytest.mark.parametrize(
-    ("data", "expected"),
-    [
-        ("AcTiVe", CaseInsensitiveStatus.ACTIVE),
-        ("active", CaseInsensitiveStatus.ACTIVE),
-        ("INACTIVE", CaseInsensitiveStatus.INACTIVE),
-    ],
-)
-def test_missing_method(data, expected):
-    serializer = serializer_from_enum(CaseInsensitiveStatus)
-    assert serializer.from_data(data) == Success(expected)
-
-
-def test_invalid_enum_value_error_string():
-    e = InvalidEnumValueError("Color", ["red", "green"], "invalid")
-    assert e.to_data() == {
-        "enum_name": "Color",
-        "values": ["red", "green"],
-        "actual": "invalid",
-    }
-    assert str(e) == "Expected one of ['red', 'green'] for Color, but got 'invalid'"
-
-
-@pytest.mark.parametrize(
-    ("enum", "expected"),
+    ("enum_class", "expected"),
     [
         (Color, {"type": "string", "enum": ["red", "green"]}),
         (Priority, {"type": "integer", "enum": [1, 2]}),
@@ -143,6 +154,17 @@ def test_invalid_enum_value_error_string():
         (MixedEnum, {"enum": ["hello", 42, DATE]}),
     ],
 )
-def test_to_openapi_schema(enum, expected):
-    serializer = serializer_from_enum(enum)
-    assert serializer.to_openapi_schema() == expected
+def test_by_value_openapi_schema(enum_class, expected):
+    s = EnumSerializer(enum_class, by="value")
+    assert s.to_openapi_schema() == expected
+
+
+# Error
+def test_invalid_enum_value_error():
+    error = InvalidEnumValueError("Color", ["RED", "GREEN"], "BLUE")
+    assert error.to_data() == {
+        "enum_name": "Color",
+        "values": ["RED", "GREEN"],
+        "actual": "BLUE",
+    }
+    assert str(error) == "Expected one of ['RED', 'GREEN'] for Color, but got 'BLUE'"
