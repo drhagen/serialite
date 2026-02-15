@@ -11,8 +11,8 @@ from ._errors import Errors
 if TYPE_CHECKING:
     # TODO: remove this when https://github.com/astral-sh/ty/issues/136 is resolved
     # See https://github.com/astral-sh/ty/issues/2788
-    class Result[_T]:
-        def unwrap(self) -> _T: ...
+    class Result[Output]:
+        def unwrap(self) -> Output: ...
 else:
     type Result[Output] = result.Result[Output, Errors]
 

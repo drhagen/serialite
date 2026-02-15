@@ -15,43 +15,43 @@ from ._base import Serializer
 
 # default provided
 @overload
-def field[_T](
+def field[T](
     *,
-    default: _T,
+    default: T,
     default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
-    serializer: Serializer | type = ...,
+    serializer: Serializer[T] = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,
     compare: bool = ...,
     metadata: Mapping[Any, Any] | None = ...,
     kw_only: bool = ...,
-) -> _T: ...
+) -> T: ...
 
 
 # default_factory provided
 @overload
-def field[_T](
+def field[T](
     *,
     default: Literal[_MISSING_TYPE.MISSING] = ...,
-    default_factory: Callable[[], _T] = ...,
-    serializer: Serializer | type = ...,
+    default_factory: Callable[[], T] = ...,
+    serializer: Serializer[T] = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,
     compare: bool = ...,
     metadata: Mapping[Any, Any] | None = ...,
     kw_only: bool = ...,
-) -> _T: ...
+) -> T: ...
 
 
 # neither default nor default_factory
 @overload
-def field(
+def field[T](
     *,
     default: Literal[_MISSING_TYPE.MISSING] = ...,
     default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
-    serializer: Serializer | type = ...,
+    serializer: Serializer[T] = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,

@@ -46,7 +46,7 @@ class Serializer[Output]:
         return {}
 
 
-class Serializable(Serializer):
+class Serializable(Serializer[Self]):
     """Classes that serialize instances of themselves."""
 
     # There is no way to indicate in Python's type system that

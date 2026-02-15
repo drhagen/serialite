@@ -46,6 +46,11 @@ def test_ordered_set(s: Session):
 
 
 @session(venv_backend="none")
+def test_typing(s: Session):
+    s.run("ty", "check", "tests/type_checking")
+
+
+@session(venv_backend="none")
 def coverage(s: Session):
     s.run("coverage", "combine")
     s.run("coverage", "html")
@@ -62,8 +67,3 @@ def lint(s: Session, command: list[str]):
 def format(s: Session) -> None:
     s.run("ruff", "check", ".", "--select", "I", "--fix")
     s.run("ruff", "format", ".")
-
-
-@session(venv_backend="none")
-def test_typing(s: Session):
-    s.run("ty", "check", "tests/type_checking")
