@@ -178,7 +178,15 @@ def serializable(cls):
 
 @classproperty
 def __subclass_serializers__(cls) -> dict[str, Serializer]:  # noqa: N807
-    return {subclass.__name__: subclass for subclass in cls.__subclasses__()}
+    result = {}
+    for subclass in cls.__subclasses__():
+        if "__subclass_serializers__" in subclass.__dict__:
+            # Abstract intermediate — recurse to collect its concrete descendants
+            result.update(subclass.__subclass_serializers__)
+        else:
+            # Concrete leaf — include directly
+            result[subclass.__name__] = subclass
+    return result
 
 
 def infer_subclass_serializers(cls):
