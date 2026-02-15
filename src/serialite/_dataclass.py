@@ -5,9 +5,9 @@ __all__ = ["field"]
 import dataclasses
 from collections.abc import Callable, Mapping
 from dataclasses import _MISSING_TYPE, MISSING
-from typing import Any, Literal, TypeVar, overload
+from typing import Any, Literal, overload
 
-_T = TypeVar("_T")
+from ._base import Serializer
 
 # Overload signatures based on typeshed's dataclasses.field stub.
 # They let type checkers preserve the declared field type instead of collapsing it to Field.
@@ -15,11 +15,11 @@ _T = TypeVar("_T")
 
 # default provided
 @overload
-def field(
+def field[_T](
     *,
     default: _T,
     default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
-    serializer=...,
+    serializer: Serializer | type = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,
@@ -31,11 +31,11 @@ def field(
 
 # default_factory provided
 @overload
-def field(
+def field[_T](
     *,
     default: Literal[_MISSING_TYPE.MISSING] = ...,
     default_factory: Callable[[], _T] = ...,
-    serializer=...,
+    serializer: Serializer | type = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,
@@ -51,7 +51,7 @@ def field(
     *,
     default: Literal[_MISSING_TYPE.MISSING] = ...,
     default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
-    serializer=...,
+    serializer: Serializer | type = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,

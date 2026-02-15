@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import assert_type
+from typing import Any, assert_type
 
 from serialite import Serializable, StringSerializer, field, serializable
 
@@ -17,4 +17,4 @@ assert_type(profile, UserProfile)
 assert_type(profile.age, int)
 assert_type(profile.name, str)
 assert_type(profile.nickname, str)
-assert_type(profile.to_data(), dict)
+assert_type(profile.to_data(), Any)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 __all__ = ["Failure", "Result", "Success"]
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING
 
 from returns import result
 
@@ -11,9 +11,7 @@ from ._errors import Errors
 if TYPE_CHECKING:
     # TODO: remove this when https://github.com/astral-sh/ty/issues/136 is resolved
     # See https://github.com/astral-sh/ty/issues/2788
-    _T = TypeVar("_T")
-
-    class Result(Generic[_T]):
+    class Result[_T]:
         def unwrap(self) -> _T: ...
 else:
     type Result[Output] = result.Result[Output, Errors]

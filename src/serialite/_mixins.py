@@ -26,7 +26,7 @@ class SerializableMixin(Serializable):
             case Success(value):
                 return Success(cls(**value))
 
-    def to_data(self) -> dict:
+    def to_data(self) -> dict[str, Any]:
         return self.__fields_serializer__.to_data(self, source="object")
 
     is_openapi_component: bool = True

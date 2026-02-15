@@ -56,7 +56,7 @@ class Serializable(Serializer):
     def from_data(cls, data: Any) -> Result[Self]:
         raise NotImplementedError()
 
-    def to_data(self) -> dict:
+    def to_data(self) -> Any:
         raise NotImplementedError()
 
     @classmethod

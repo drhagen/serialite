@@ -9,7 +9,7 @@ options.sessions = [
     "test_ordered_set",
     "coverage",
     "lint",
-    "typecheck",
+    "test_typing",
 ]
 
 
@@ -65,5 +65,5 @@ def format(s: Session) -> None:
 
 
 @session(venv_backend="none")
-def typecheck(s: Session):
+def test_typing(s: Session):
     s.run("ty", "check", "tests/type_checking")
