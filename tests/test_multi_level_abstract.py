@@ -42,12 +42,6 @@ class WildAnimal(Animal):
     habitat: str
 
 
-# Starting in Python 3.10, classes can get garbage collected and not show up in
-# __subclasses__ anymore. This is a place to put such objects to prevent them
-# from being garbage collected.
-garbage_collection_protection = [Dog, Cat, WildAnimal]
-
-
 @pytest.mark.parametrize(
     ("cls", "data", "value"),
     [
