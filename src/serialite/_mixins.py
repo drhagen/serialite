@@ -53,7 +53,7 @@ class SerializableMixin(Serializable):
 
             return schema
         else:
-            return {"$ref": f"#/$defs/{cls.__name__}"}
+            return {"$ref": f"#/components/schemas/{cls.__name__}"}
 
 
 class AbstractSerializableMixin(Serializable):
@@ -144,4 +144,4 @@ class AbstractSerializableMixin(Serializable):
                 ],
             }
         else:
-            return {"$ref": f"#/$defs/{cls.__name__}"}
+            return {"$ref": f"#/components/schemas/{cls.__name__}"}

@@ -30,8 +30,8 @@ dependencies = [
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi >=0.121,<0.129",
-    "pydantic == 2.*",
+    "fastapi >=0.121,<0.130",
+    "pydantic >= 2.12,<3",
 ]
 
 numpy = [
@@ -52,7 +52,7 @@ nox = [
 test = [
     "pytest == 9.*",
     "coverage == 7.*",
-    "httpx", # Needed by starlette testclient
+    "httpx >= 0.25.2", # Needed by starlette testclient
 ]
 lint = [
     "ruff == 0.14.*"
