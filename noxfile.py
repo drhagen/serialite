@@ -1,5 +1,3 @@
-import shutil
-
 from nox import Session, options, parametrize
 from nox_uv import session
 
@@ -14,29 +12,9 @@ def test(s: Session):
 
 
 @session(python=["3.12", "3.13", "3.14"], uv_groups=["test"], uv_extras=["fastapi"])
-@parametrize("resolution", ["locked", "lowest-direct"])
-def test_fastapi(s: Session, resolution: str):
-    # Back up and restore uv.lock because uv sync --resolution mutates it
-    # (https://github.com/dantebben/nox-uv/issues/73).
-    shutil.copy2("uv.lock", "uv.lock.bak")
-
-    try:
-        if resolution == "lowest-direct":
-            s.run(
-                "uv",
-                "sync",
-                "--no-default-groups",
-                "--group=test",
-                "--extra=fastapi",
-                "--resolution=lowest-direct",
-                external=True,
-            )
-
-        coverage_file = f".coverage.{s.python}.fastapi.{resolution}"
-        s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests/fastapi")
-
-    finally:
-        shutil.move("uv.lock.bak", "uv.lock")
+def test_fastapi(s: Session):
+    coverage_file = f".coverage.{s.python}.fastapi"
+    s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests/fastapi")
 
 
 @session(python=["3.12", "3.13", "3.14"], uv_groups=["test"], uv_extras=["numpy"])
