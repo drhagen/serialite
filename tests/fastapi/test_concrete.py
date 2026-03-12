@@ -237,3 +237,85 @@ def test_schema(client_fixture, request, fastapi_pydantic_client):
     assert (
         actual_response["components"]["schemas"]["Foo"]["properties"]["d"]["default"] == "default"
     )
+
+
+@pytest.fixture
+def fastapi_list_mixin_client():
+    app = FastAPI()
+
+    class Foo(SerializableMixin):
+        __fields_serializer__ = FieldsSerializer(
+            a=int, b=float, c=bool, d=SingleField(str, default="default")
+        )
+
+        def __init__(self, a: int, b: float, c: bool, d: str = "default"):
+            self.a = a
+            self.b = b
+            self.c = c
+            self.d = d
+
+    class Bar(SerializableMixin):
+        __fields_serializer__ = FieldsSerializer(foo=list[Foo])
+
+        def __init__(self, foo: list[Foo]):
+            self.foo = foo
+
+    @app.post("/", response_model=Bar)
+    def extract_foo(bar: Bar) -> Bar:
+        if not isinstance(bar, Bar):
+            raise TypeError
+        return bar
+
+    return TestClient(app)
+
+
+@pytest.fixture
+def fastapi_list_dataclass_client():
+    app = FastAPI()
+
+    @serializable
+    @dataclass(frozen=True)
+    class Foo:
+        a: int
+        b: float
+        c: bool
+        d: str = "default"
+
+    @serializable
+    @dataclass(frozen=True)
+    class Bar:
+        foo: list[Foo]
+
+    @app.post("/", response_model=Bar)
+    def extract_foo(bar: Bar) -> Bar:
+        if not isinstance(bar, Bar):
+            raise TypeError
+        return bar
+
+    return TestClient(app)
+
+
+list_clients = [
+    "fastapi_list_mixin_client",
+    "fastapi_list_dataclass_client",
+]
+
+
+@pytest.mark.parametrize("client_fixture", list_clients)
+def test_schema_list_field(client_fixture, request):
+    """Types nested inside list[T] must appear in components/schemas."""
+    client = request.getfixturevalue(client_fixture)
+
+    schema = client.get("/openapi.json").json()
+    schemas = schema["components"]["schemas"]
+
+    assert "Bar" in schemas
+    assert schemas["Bar"]["type"] == "object"
+    assert schemas["Bar"]["required"] == ["foo"]
+    bar_foo = schemas["Bar"]["properties"]["foo"]
+    assert bar_foo["type"] == "array"
+    assert bar_foo["items"] == {"$ref": "#/components/schemas/Foo"}
+
+    assert "Foo" in schemas
+    assert schemas["Foo"]["type"] == "object"
+    assert schemas["Foo"]["required"] == ["a", "b", "c"]

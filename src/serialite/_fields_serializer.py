@@ -390,6 +390,10 @@ class FieldsSerializer(Mapping):
         for name, field in self.data_field_deserializers.items():
             if is_openapi_component(field):
                 components[name] = field
+            elif hasattr(field, "child_components"):
+                for child_name, child in field.child_components().items():
+                    if is_openapi_component(child):
+                        components.setdefault(child_name, child)
 
         return components
 
