@@ -254,11 +254,18 @@ def fastapi_list_mixin_client():
             self.c = c
             self.d = d
 
-    class Bar(SerializableMixin):
-        __fields_serializer__ = FieldsSerializer(foo=list[Foo])
+    class Baz(SerializableMixin):
+        __fields_serializer__ = FieldsSerializer(x=str)
 
-        def __init__(self, foo: list[Foo]):
+        def __init__(self, x: str):
+            self.x = x
+
+    class Bar(SerializableMixin):
+        __fields_serializer__ = FieldsSerializer(foo=list[Foo], baz=list[Baz])
+
+        def __init__(self, foo: list[Foo], baz: list[Baz]):
             self.foo = foo
+            self.baz = baz
 
     @app.post("/", response_model=Bar)
     def extract_foo(bar: Bar) -> Bar:
@@ -283,8 +290,14 @@ def fastapi_list_dataclass_client():
 
     @serializable
     @dataclass(frozen=True)
+    class Baz:
+        x: str
+
+    @serializable
+    @dataclass(frozen=True)
     class Bar:
         foo: list[Foo]
+        baz: list[Baz]
 
     @app.post("/", response_model=Bar)
     def extract_foo(bar: Bar) -> Bar:
@@ -311,11 +324,18 @@ def test_schema_list_field(client_fixture, request):
 
     assert "Bar" in schemas
     assert schemas["Bar"]["type"] == "object"
-    assert schemas["Bar"]["required"] == ["foo"]
+    assert schemas["Bar"]["required"] == ["foo", "baz"]
     bar_foo = schemas["Bar"]["properties"]["foo"]
     assert bar_foo["type"] == "array"
     assert bar_foo["items"] == {"$ref": "#/components/schemas/Foo"}
+    bar_baz = schemas["Bar"]["properties"]["baz"]
+    assert bar_baz["type"] == "array"
+    assert bar_baz["items"] == {"$ref": "#/components/schemas/Baz"}
 
     assert "Foo" in schemas
     assert schemas["Foo"]["type"] == "object"
     assert schemas["Foo"]["required"] == ["a", "b", "c"]
+
+    assert "Baz" in schemas
+    assert schemas["Baz"]["type"] == "object"
+    assert schemas["Baz"]["required"] == ["x"]

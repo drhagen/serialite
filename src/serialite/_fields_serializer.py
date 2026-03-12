@@ -393,7 +393,8 @@ class FieldsSerializer(Mapping):
             elif hasattr(field, "child_components"):
                 for child_name, child in field.child_components().items():
                     if is_openapi_component(child):
-                        components.setdefault(child_name, child)
+                        key = getattr(child, "__name__", child_name)
+                        components.setdefault(key, child)
 
         return components
 
