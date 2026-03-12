@@ -53,7 +53,8 @@ def test_child_components_collected():
 
     try_union_foo_bar_serializer = TryUnionSerializer(Foo, Bar, IntegerSerializer())
     components = try_union_foo_bar_serializer.child_components()
-    assert components == {"0": Foo, "1": Bar}
+    assert set(components.values()) == {Foo, Bar}
+    assert len(components) == 2
 
 
 def test_to_openapi_schema():

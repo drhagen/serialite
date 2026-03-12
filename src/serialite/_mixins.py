@@ -5,7 +5,7 @@ from typing import Any, ClassVar, Self
 from ._base import Serializable
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
-from ._openapi import is_openapi_component
+from ._openapi import is_openapi_component, openapi_schema_name
 from ._result import Failure, Result, Success
 
 
@@ -53,7 +53,7 @@ class SerializableMixin(Serializable):
 
             return schema
         else:
-            return {"$ref": f"#/components/schemas/{cls.__name__}"}
+            return {"$ref": f"#/components/schemas/{openapi_schema_name(cls)}"}
 
 
 class AbstractSerializableMixin(Serializable):
@@ -144,4 +144,4 @@ class AbstractSerializableMixin(Serializable):
                 ],
             }
         else:
-            return {"$ref": f"#/components/schemas/{cls.__name__}"}
+            return {"$ref": f"#/components/schemas/{openapi_schema_name(cls)}"}

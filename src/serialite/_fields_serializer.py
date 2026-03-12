@@ -384,16 +384,16 @@ class FieldsSerializer(Mapping):
 
     def child_components(self) -> dict[str, Serializer]:
         """Return all child serializers that are OpenAPI components."""
-        from ._openapi import is_openapi_component
+        from ._openapi import is_openapi_component, openapi_schema_name
 
         components = {}
         for name, field in self.data_field_deserializers.items():
             if is_openapi_component(field):
                 components[name] = field
             elif hasattr(field, "child_components"):
-                for child_name, child in field.child_components().items():
+                for _, child in field.child_components().items():
                     if is_openapi_component(child):
-                        key = getattr(child, "__name__", child_name)
+                        key = openapi_schema_name(child)
                         components.setdefault(key, child)
 
         return components

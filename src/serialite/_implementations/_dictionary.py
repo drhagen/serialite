@@ -133,8 +133,12 @@ class RawDictSerializer[Value](Serializer[dict[str, Value]]):
         components = {}
         if is_openapi_component(self.key_serializer):
             components["key"] = self.key_serializer
+        elif hasattr(self.key_serializer, "child_components"):
+            components.update(self.key_serializer.child_components())
         if is_openapi_component(self.value_serializer):
             components["value"] = self.value_serializer
+        elif hasattr(self.value_serializer, "child_components"):
+            components.update(self.value_serializer.child_components())
         return components
 
     def to_openapi_schema(self, force: bool = False):

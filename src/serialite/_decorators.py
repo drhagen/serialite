@@ -9,6 +9,7 @@ from ._base import Serializable, Serializer
 from ._descriptors import classproperty
 from ._fields_serializer import FieldsSerializer, SingleField, no_default
 from ._mixins import AbstractSerializableMixin, SerializableMixin
+from ._openapi import register_component
 
 # Allow commented out code in this file because it is important documentation
 # ruff: noqa: ERA001
@@ -173,6 +174,7 @@ def serializable(cls):
         if "model_dump" not in cls.__dict__:
             cls.model_dump = Serializable.__dict__["model_dump"]
 
+    register_component(cls)
     return cls
 
 
@@ -275,4 +277,5 @@ def abstract_serializable(cls):
         if "model_dump" not in cls.__dict__:
             cls.model_dump = Serializable.__dict__["model_dump"]
 
+    register_component(cls)
     return cls

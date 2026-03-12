@@ -48,6 +48,8 @@ class ListSerializer[Element](Serializer[list[Element]]):
     def child_components(self):
         if is_openapi_component(self.element_serializer):
             return {"element": self.element_serializer}
+        elif hasattr(self.element_serializer, "child_components"):
+            return self.element_serializer.child_components()
         else:
             return {}
 
