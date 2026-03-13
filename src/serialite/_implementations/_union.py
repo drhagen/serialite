@@ -2,7 +2,7 @@ __all__ = ["OptionalSerializer", "TryUnionSerializer"]
 
 from .._base import Serializer
 from .._errors import Errors
-from .._openapi import is_openapi_component, openapi_schema_name
+from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
 
 
@@ -40,10 +40,10 @@ class TryUnionSerializer(Serializer):
 
     def child_components(self):
         components = {}
-        for serializer in self.serializers:
+        for i, serializer in enumerate(self.serializers):
             if is_openapi_component(serializer):
-                components[openapi_schema_name(serializer)] = serializer
-            elif hasattr(serializer, "child_components"):
+                components[str(i)] = serializer
+            else:
                 components.update(serializer.child_components())
         return components
 
@@ -73,10 +73,8 @@ class OptionalSerializer[Element](Serializer[Element | None]):
     def child_components(self):
         if is_openapi_component(self.element_serializer):
             return {"element": self.element_serializer}
-        elif hasattr(self.element_serializer, "child_components"):
-            return self.element_serializer.child_components()
         else:
-            return {}
+            return self.element_serializer.child_components()
 
     def to_openapi_schema(self, force: bool = False):
         return self.element_serializer.to_openapi_schema() | {"nullable": True}

@@ -67,7 +67,7 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
         for i, serializer in enumerate(self.element_serializers):
             if is_openapi_component(serializer):
                 components[str(i)] = serializer
-            elif hasattr(serializer, "child_components"):
+            else:
                 components.update(serializer.child_components())
         return components
 

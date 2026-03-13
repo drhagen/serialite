@@ -5,14 +5,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
 
-from serialite import (
-    FieldsSerializer,
-    SerializableMixin,
-    SingleField,
-    detect_collisions,
-    fix_openapi_refs,
-    serializable,
-)
+from serialite import FieldsSerializer, SerializableMixin, SingleField, serializable
 
 # If a Serialite class is passed directly to FastAPI, its deserialization and
 # serialization is handled directly by FastAPI. If a Serialite class is a member
@@ -346,59 +339,3 @@ def test_schema_list_field(client_fixture, request):
     assert "Baz" in schemas
     assert schemas["Baz"]["type"] == "object"
     assert schemas["Baz"]["required"] == ["x"]
-
-
-@pytest.fixture
-def fastapi_collision_client():
-    app = FastAPI()
-
-    @serializable
-    @dataclass(frozen=True)
-    class Foo:
-        value: float
-
-    Foo.__module__ = "alpha.module"
-
-    @serializable
-    @dataclass(frozen=True)
-    class Foo2:
-        value: float
-
-    Foo2.__name__ = "Foo"
-    Foo2.__qualname__ = "Foo"
-    Foo2.__module__ = "beta.module"
-
-    detect_collisions()
-
-    class AlphaWrapper(SerializableMixin):
-        __fields_serializer__ = FieldsSerializer(foo=Foo)
-
-        def __init__(self, foo):
-            self.foo = foo
-
-    class BetaWrapper(SerializableMixin):
-        __fields_serializer__ = FieldsSerializer(foo=Foo2)
-
-        def __init__(self, foo):
-            self.foo = foo
-
-    @app.post("/alpha", response_model=AlphaWrapper)
-    def alpha(model: AlphaWrapper) -> AlphaWrapper:
-        return model
-
-    @app.post("/beta", response_model=BetaWrapper)
-    def beta(model: BetaWrapper) -> BetaWrapper:
-        return model
-
-    client = TestClient(app)
-    return client
-
-
-def test_schema_collision(fastapi_collision_client):
-    """Two types with the same __name__ but different __module__ get qualified schema keys."""
-    schema = fastapi_collision_client.get("/openapi.json").json()
-    schema = fix_openapi_refs(schema)
-    schemas = schema["components"]["schemas"]
-
-    assert "alpha__module__Foo" in schemas
-    assert "beta__module__Foo" in schemas
