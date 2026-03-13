@@ -391,7 +391,7 @@ class FieldsSerializer(Mapping):
             if is_openapi_component(field):
                 components[name] = field
             else:
-                for _, child in field.child_components().items():
+                for child in field.child_components().values():
                     if is_openapi_component(child):
                         components.setdefault(child.__name__, child)
 
