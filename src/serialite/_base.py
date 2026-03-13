@@ -176,6 +176,4 @@ class Serializable(Serializer[Self]):
         round_trip: bool = False,
         warnings: bool = True,
     ):
-        # FastAPI does not call this function, but it does require that it be
-        # here.
-        raise NotImplementedError()
+        return self.to_data()

@@ -44,21 +44,15 @@ def detect_collisions():
 
     name_to_modules: dict[str, set[str]] = {}
     for component_class in all_components:
-        name_to_modules.setdefault(component_class.__name__, set()).add(
-            component_class.__module__
-        )
+        name_to_modules.setdefault(component_class.__name__, set()).add(component_class.__module__)
 
-    _collision_names = {
-        name for name, modules in name_to_modules.items() if len(modules) > 1
-    }
+    _collision_names = {name for name, modules in name_to_modules.items() if len(modules) > 1}
 
     _qualified_to_short = {}
     for component_class in all_components:
         if component_class.__name__ in _collision_names:
             qualified = (
-                component_class.__module__.replace(".", "__")
-                + "__"
-                + component_class.__name__
+                component_class.__module__.replace(".", "__") + "__" + component_class.__name__
             )
             _qualified_to_short[qualified] = component_class.__name__
 
@@ -90,7 +84,7 @@ def fix_openapi_refs(schema):
             if "$ref" in obj:
                 ref = obj["$ref"]
                 if ref.startswith(prefix):
-                    name = ref[len(prefix):]
+                    name = ref[len(prefix) :]
                     if name not in schemas and name in _qualified_to_short:
                         short = _qualified_to_short[name]
                         if short in schemas:
@@ -124,7 +118,7 @@ def fix_openapi_refs(schema):
                 if "$ref" in obj:
                     ref = obj["$ref"]
                     if ref.startswith(prefix):
-                        name = ref[len(prefix):]
+                        name = ref[len(prefix) :]
                         if name in false_positives:
                             obj["$ref"] = prefix + false_positives[name]
                 for value in obj.values():
@@ -143,7 +137,7 @@ def fix_openapi_refs(schema):
                 if "$ref" in obj:
                     ref = obj["$ref"]
                     if ref.startswith(prefix):
-                        referenced_names.add(ref[len(prefix):])
+                        referenced_names.add(ref[len(prefix) :])
                 for value in obj.values():
                     collect_refs(value)
             elif isinstance(obj, list):
@@ -153,10 +147,7 @@ def fix_openapi_refs(schema):
         collect_refs(schema)
 
         for short_name in short_to_qualified:
-            if (
-                len(short_to_qualified[short_name]) >= 2
-                and short_name not in referenced_names
-            ):
+            if len(short_to_qualified[short_name]) >= 2 and short_name not in referenced_names:
                 del schemas[short_name]
 
     return schema
@@ -166,9 +157,7 @@ def openapi_schema_name(serializable_class):
     """Return the OpenAPI schema name, module-qualified if collision detected."""
     if serializable_class.__name__ in _collision_names:
         return (
-            serializable_class.__module__.replace(".", "__")
-            + "__"
-            + serializable_class.__name__
+            serializable_class.__module__.replace(".", "__") + "__" + serializable_class.__name__
         )
     return serializable_class.__name__
 
