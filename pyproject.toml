@@ -6,7 +6,7 @@ build-backend = "uv_build"
 name = "serialite"
 version = "0.5.2"
 description = "A serialization library for Python"
-authors = [{ name = "David Hagen", email = "david@drhagen.com" }]
+authors = [ { name = "David Hagen", email = "david@drhagen.com" } ]
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
@@ -24,27 +24,42 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-dependencies = ["returns >= 0.20,<0.27"]
+dependencies = [
+    "returns >= 0.20,<0.27",
+]
 
 [project.optional-dependencies]
-fastapi = ["fastapi >=0.121,<0.136", "pydantic >= 2.12,<3"]
+fastapi = [
+    "fastapi >=0.121,<0.136",
+    "pydantic >= 2.12,<3",
+]
 
-numpy = ["numpy >=1.25,<3"]
+numpy = [
+    "numpy >=1.25,<3",
+]
 
-ordered-set = ["ordered-set ~= 4.1"]
+ordered-set = [
+    "ordered-set ~= 4.1",
+]
 
 [project.urls]
 Repository = "https://github.com/drhagen/serialite"
 
 [dependency-groups]
-nox = ["nox-uv == 0.7.*"]
+nox = [
+    "nox-uv == 0.7.*",
+]
 test = [
     "pytest == 9.*",
     "coverage == 7.*",
     "httpx >= 0.25.2", # Needed by starlette testclient
 ]
-lint = ["ruff == 0.15.*"]
-typecheck = ["ty == 0.0.*"]
+lint = [
+    "ruff == 0.15.*",
+]
+typecheck = [
+    "ty == 0.0.*",
+]
 
 [tool.uv]
 default-groups = "all"
@@ -63,7 +78,10 @@ exclude_lines = [
 ]
 
 [tool.coverage.paths]
-source = ["src/", "**/site-packages/"]
+source = [
+    "src/",
+    "**/site-packages/",
+]
 
 [tool.pytest.ini_options]
 norecursedirs = ["tests/type_checking"]
