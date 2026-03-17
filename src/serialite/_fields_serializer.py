@@ -392,9 +392,7 @@ class FieldsSerializer(Mapping):
                 components[name] = field
             else:
                 for child in field.child_components().values():
-                    if is_openapi_component(child):
-                        components.setdefault(child.__name__, child)
-
+                    components.setdefault(f"{name}__{child.__name__}", child)
         return components
 
     def to_openapi_schema(self) -> dict[str, Any]:
