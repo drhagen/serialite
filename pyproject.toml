@@ -30,7 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi >=0.121,<0.130",
+    "fastapi >=0.121,<0.136",
     "pydantic >= 2.12,<3",
 ]
 
