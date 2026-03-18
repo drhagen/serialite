@@ -1,10 +1,10 @@
 [build-system]
-requires = ["uv_build == 0.9.*"]
+requires = ["uv_build == 0.10.*"]
 build-backend = "uv_build"
 
 [project]
 name = "serialite"
-version = "0.5.1"
+version = "0.5.2"
 description = "A serialization library for Python"
 authors = [ { name = "David Hagen", email = "david@drhagen.com" } ]
 license = "MIT"
@@ -30,7 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi >=0.121,<0.130",
+    "fastapi >=0.121,<0.136",
     "pydantic >= 2.12,<3",
 ]
 
@@ -55,7 +55,7 @@ test = [
     "httpx >= 0.25.2", # Needed by starlette testclient
 ]
 lint = [
-    "ruff == 0.14.*"
+    "ruff == 0.15.*",
 ]
 typecheck = [
     "ty == 0.0.*",

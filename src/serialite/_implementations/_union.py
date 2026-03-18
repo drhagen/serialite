@@ -43,6 +43,8 @@ class TryUnionSerializer(Serializer):
         for i, serializer in enumerate(self.serializers):
             if is_openapi_component(serializer):
                 components[str(i)] = serializer
+            else:
+                components.update(serializer.child_components())
         return components
 
     def to_openapi_schema(self, force: bool = False):
@@ -72,7 +74,7 @@ class OptionalSerializer[Element](Serializer[Element | None]):
         if is_openapi_component(self.element_serializer):
             return {"element": self.element_serializer}
         else:
-            return {}
+            return self.element_serializer.child_components()
 
     def to_openapi_schema(self, force: bool = False):
         return self.element_serializer.to_openapi_schema() | {"nullable": True}
