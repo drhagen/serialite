@@ -1,6 +1,5 @@
-__all__ = ["NoneSerializer"]
 
-from pydantic.json_schema import GenerateJsonSchema
+__all__ = ["NoneSerializer"]
 
 from .._base import Serializer
 from .._errors import Errors
@@ -20,7 +19,5 @@ class NoneSerializer(Serializer[None]):
             raise ValueError(f"Not an None: {value!r}")
         return value
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"nullable": True}

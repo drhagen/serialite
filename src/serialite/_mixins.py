@@ -2,8 +2,6 @@ __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
 from typing import Any, ClassVar, Self
 
-from pydantic.json_schema import GenerateJsonSchema
-
 from ._base import Serializable
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
@@ -39,9 +37,7 @@ class SerializableMixin(Serializable):
         return cls.__fields_serializer__.child_components()
 
     @classmethod
-    def to_openapi_schema(
-        cls, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(cls, force: bool = False, json_schema_generator=None):
         if force:
             schema = cls.__fields_serializer__.to_openapi_schema(
                 json_schema_generator=json_schema_generator
@@ -145,9 +141,7 @@ class AbstractSerializableMixin(Serializable):
         return components
 
     @classmethod
-    def to_openapi_schema(
-        cls, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(cls, force: bool = False, json_schema_generator=None):
         if force:
             return {
                 "type": "object",

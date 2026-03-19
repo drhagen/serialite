@@ -1,8 +1,7 @@
+
 __all__ = ["ArraySerializer"]
 
 import numpy as np
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._dispatcher import serializer
@@ -45,9 +44,7 @@ class ArraySerializer[Element](Serializer[np.ndarray]):
             return {"element": self.element_serializer}
         return self.element_serializer.child_components()
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {
             "type": "array",
             "items": self.element_serializer.to_openapi_schema(

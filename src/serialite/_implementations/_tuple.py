@@ -1,9 +1,8 @@
+
 __all__ = ["TupleLengthError", "TupleSerializer"]
 
 from dataclasses import dataclass
 from typing import Any, Unpack
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -18,8 +17,6 @@ except ImportError:
     # Class that will never pass an isinstance check
     class ndarray:  # noqa: N801
         pass
-
-
 class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]):
     def __init__(self, *element_serializers: Unpack[TupleArguments]):
         self.element_serializers = element_serializers
@@ -73,9 +70,7 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
                 components.update(serializer.child_components())
         return components
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         n = len(self.element_serializers)
         return {
             "type": "array",
@@ -86,8 +81,6 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
             "minItems": n,
             "maxItems": n,
         }
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class TupleLengthError(Exception):

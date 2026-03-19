@@ -1,9 +1,8 @@
+
 __all__ = ["RegexMismatchError", "StringSerializer"]
 
 import re
 from dataclasses import dataclass
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -33,12 +32,8 @@ class StringSerializer(Serializer[str]):
             raise ValueError(f"Does not match regex r'{self.accept}': {value!r}")
         return value
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "string"}
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class RegexMismatchError(Exception):

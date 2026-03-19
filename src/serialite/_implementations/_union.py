@@ -1,6 +1,5 @@
-__all__ = ["OptionalSerializer", "TryUnionSerializer"]
 
-from pydantic.json_schema import GenerateJsonSchema
+__all__ = ["OptionalSerializer", "TryUnionSerializer"]
 
 from .._base import Serializer
 from .._errors import Errors
@@ -49,17 +48,13 @@ class TryUnionSerializer(Serializer):
                 components.update(serializer.child_components())
         return components
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {
             "oneOf": [
                 serializer.to_openapi_schema(json_schema_generator=json_schema_generator)
                 for serializer in self.serializers
             ],
         }
-
-
 class OptionalSerializer[Element](Serializer[Element | None]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
@@ -83,9 +78,7 @@ class OptionalSerializer[Element](Serializer[Element | None]):
         else:
             return self.element_serializer.child_components()
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return self.element_serializer.to_openapi_schema(
             json_schema_generator=json_schema_generator
         ) | {"nullable": True}

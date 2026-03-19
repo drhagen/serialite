@@ -1,10 +1,9 @@
+
 __all__ = ["FloatSerializer"]
 
 from collections.abc import Sequence
 from math import inf, isnan, nan
 from typing import Any
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._errors import Errors
@@ -49,7 +48,5 @@ class FloatSerializer(Serializer[float]):
         else:
             return float(value)
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "number"}

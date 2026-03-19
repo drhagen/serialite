@@ -1,3 +1,4 @@
+
 __all__ = [
     "IntegerOutOfRangeError",
     "IntegerSerializer",
@@ -6,8 +7,6 @@ __all__ = [
 ]
 
 from dataclasses import dataclass
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -29,12 +28,8 @@ class IntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an int: {value!r}")
         return value
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "integer"}
-
-
 class NonnegativeIntegerSerializer(Serializer[int]):
     def from_data(self, data) -> Result[int]:
         if not is_int(data):
@@ -50,12 +45,8 @@ class NonnegativeIntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an nonnegative int: {value!r}")
         return value
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "integer", "minimum": 0}
-
-
 class PositiveIntegerSerializer(Serializer[int]):
     def from_data(self, data) -> Result[int]:
         if not is_int(data):
@@ -71,12 +62,8 @@ class PositiveIntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an positive int: {value!r}")
         return value
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "integer", "minimum": 1}
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class IntegerOutOfRangeError(Exception):

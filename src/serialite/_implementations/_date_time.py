@@ -1,9 +1,8 @@
+
 __all__ = ["DateTimeSerializer", "InvalidDateTimeError"]
 
 from dataclasses import dataclass
 from datetime import datetime
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -35,12 +34,8 @@ class DateTimeSerializer(Serializer[datetime]):
             raise ValueError(f"Not a DateTime: {value!r}")
         return value.isoformat(sep=" ")
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "string", "format": "date-time"}
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class InvalidDateTimeError(Exception):

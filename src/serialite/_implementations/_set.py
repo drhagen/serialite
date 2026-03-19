@@ -1,9 +1,8 @@
+
 __all__ = ["DuplicatedValueError", "SetSerializer"]
 
 from dataclasses import dataclass
 from typing import Any
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -51,17 +50,13 @@ class SetSerializer[Element](Serializer[set[Element]]):
             return {"element": self.element_serializer}
         return self.element_serializer.child_components()
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {
             "type": "array",
             "items": self.element_serializer.to_openapi_schema(
                 json_schema_generator=json_schema_generator
             ),
         }
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class DuplicatedValueError(Exception):

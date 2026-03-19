@@ -5,8 +5,6 @@ __all__ = ["Serializable", "Serializer"]
 from abc import abstractmethod
 from typing import Any, Self
 
-from pydantic.json_schema import GenerateJsonSchema
-
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
 
@@ -36,9 +34,7 @@ class Serializer[Output]:
         """
         return {}
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ) -> Any:
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
         If `force` is False and this serializer represents a component, it
@@ -73,9 +69,7 @@ class Serializable(Serializer[Self]):
         return {}
 
     @classmethod
-    def to_openapi_schema(
-        cls, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ) -> Any:
+    def to_openapi_schema(cls, force: bool = False, json_schema_generator=None) -> Any:
         return {}
 
     # All attributes and methods below this point are for Pydantic v2

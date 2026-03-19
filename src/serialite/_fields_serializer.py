@@ -14,8 +14,6 @@ from collections.abc import Mapping
 from enum import Enum, auto
 from typing import Any
 
-from pydantic.json_schema import GenerateJsonSchema
-
 from ._base import Serializer
 from ._errors import Errors
 from ._result import Failure, Result, Success
@@ -397,9 +395,7 @@ class FieldsSerializer(Mapping):
                     components[f"{name}__{child_name}"] = child
         return components
 
-    def to_openapi_schema(
-        self, json_schema_generator: GenerateJsonSchema | None = None
-    ) -> dict[str, Any]:
+    def to_openapi_schema(self, json_schema_generator=None) -> dict[str, Any]:
         required = []
         properties = {}
         for name, field in self.object_field_serializers.items():

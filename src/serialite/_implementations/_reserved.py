@@ -1,10 +1,9 @@
+
 __all__ = ["ReservedSerializer", "ReservedValueError"]
 
 from collections.abc import Set
 from dataclasses import dataclass
 from typing import Any
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -39,14 +38,10 @@ class ReservedSerializer[Element](Serializer[Element]):
         else:
             return {}
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return self.internal_serializer.to_openapi_schema(
             json_schema_generator=json_schema_generator
         )
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class ReservedValueError(Exception):

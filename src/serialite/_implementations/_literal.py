@@ -1,9 +1,8 @@
+
 __all__ = ["LiteralSerializer", "UnknownValueError"]
 
 from dataclasses import dataclass
 from typing import Any
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -28,9 +27,7 @@ class LiteralSerializer(Serializer):
 
         return value
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         possibilities = list(self.possibilities)
 
         if all(isinstance(x, str) for x in possibilities):
@@ -41,8 +38,6 @@ class LiteralSerializer(Serializer):
             return {"type": "number", "enum": possibilities}
         else:
             return {"enum": possibilities}
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class UnknownValueError(Exception):

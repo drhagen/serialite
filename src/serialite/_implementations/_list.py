@@ -1,6 +1,5 @@
-__all__ = ["ListSerializer"]
 
-from pydantic.json_schema import GenerateJsonSchema
+__all__ = ["ListSerializer"]
 
 from .._base import Serializer
 from .._errors import Errors
@@ -14,8 +13,6 @@ except ImportError:
     # Class that will never pass an isinstance check
     class ndarray:  # noqa: N801
         pass
-
-
 class ListSerializer[Element](Serializer[list[Element]]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer
@@ -52,9 +49,7 @@ class ListSerializer[Element](Serializer[list[Element]]):
             return {"element": self.element_serializer}
         return self.element_serializer.child_components()
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {
             "type": "array",
             "items": self.element_serializer.to_openapi_schema(

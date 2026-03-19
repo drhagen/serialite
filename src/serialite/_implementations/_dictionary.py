@@ -1,9 +1,8 @@
+
 __all__ = ["ExpectedLength2ListError", "OrderedDictSerializer", "RawDictSerializer"]
 
 from dataclasses import dataclass
 from typing import Any
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._decorators import serializable
@@ -70,8 +69,6 @@ class OrderedDictSerializer[Key, Value](Serializer[dict[Key, Value]]):
             [self.key_serializer.to_data(key), self.value_serializer.to_data(value)]
             for key, value in value.items()
         ]
-
-
 class RawDictSerializer[Value](Serializer[dict[str, Value]]):
     """Serializing a dictionary to a dictionary rather than a list of tuples.
 
@@ -143,17 +140,13 @@ class RawDictSerializer[Value](Serializer[dict[str, Value]]):
             components.update(self.value_serializer.child_components())
         return components
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {
             "type": "object",
             "additionalProperties": self.value_serializer.to_openapi_schema(
                 json_schema_generator=json_schema_generator
             ),
         }
-
-
 @serializable
 @dataclass(frozen=True, slots=True)
 class ExpectedLength2ListError(Exception):

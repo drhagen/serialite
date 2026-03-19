@@ -1,8 +1,7 @@
+
 __all__ = ["OrderedSetSerializer"]
 
 from ordered_set import OrderedSet
-
-from pydantic.json_schema import GenerateJsonSchema
 
 from .._base import Serializer
 from .._errors import Errors
@@ -50,9 +49,7 @@ class OrderedSetSerializer[Element](Serializer[OrderedSet[Element]]):
             return {"element": self.element_serializer}
         return self.element_serializer.child_components()
 
-    def to_openapi_schema(
-        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
-    ):
+    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {
             "type": "array",
             "items": self.element_serializer.to_openapi_schema(

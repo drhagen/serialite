@@ -23,7 +23,7 @@ def test_name_collision_produces_module_qualified_refs():
         def __init__(self, x: int):
             self.x = x
 
-    ItemA = Item
+    ItemA = Item  # noqa: N806
     ItemA.__module__ = "package_a.models"
     ItemA.__qualname__ = "Item"
 
@@ -51,7 +51,7 @@ def test_name_collision_produces_module_qualified_refs():
         def __init__(self, y: str):
             self.y = y
 
-    ItemB = Item
+    ItemB = Item  # noqa: N806
     ItemB.__module__ = "package_b.models"
     ItemB.__qualname__ = "Item"
 
@@ -93,7 +93,7 @@ def test_name_collision_with_dataclass():
     class Item:
         x: int
 
-    ItemA = Item
+    ItemA = Item  # noqa: N806
     ItemA.__module__ = "package_a.models"
     ItemA.__qualname__ = "Item"
 
@@ -110,17 +110,15 @@ def test_name_collision_with_dataclass():
 
     schemas_before = get_openapi_schemas(app_before)
 
-    assert schemas_before["WrapperA"]["properties"]["a"] == {
-        "$ref": "#/components/schemas/Item"
-    }
+    assert schemas_before["WrapperA"]["properties"]["a"] == {"$ref": "#/components/schemas/Item"}
     assert schemas_before["Item"]["properties"]["x"] == {"type": "integer"}
 
     @serializable
     @dataclass(frozen=True)
-    class Item:  # noqa: F811
+    class Item:
         y: str
 
-    ItemB = Item
+    ItemB = Item  # noqa: N806
     ItemB.__module__ = "package_b.models"
     ItemB.__qualname__ = "Item"
 
