@@ -1,4 +1,3 @@
-
 __all__ = ["OptionalSerializer", "TryUnionSerializer"]
 
 from .._base import Serializer
@@ -55,6 +54,8 @@ class TryUnionSerializer(Serializer):
                 for serializer in self.serializers
             ],
         }
+
+
 class OptionalSerializer[Element](Serializer[Element | None]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer

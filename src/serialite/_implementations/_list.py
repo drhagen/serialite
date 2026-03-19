@@ -1,4 +1,3 @@
-
 __all__ = ["ListSerializer"]
 
 from .._base import Serializer
@@ -13,6 +12,8 @@ except ImportError:
     # Class that will never pass an isinstance check
     class ndarray:  # noqa: N801
         pass
+
+
 class ListSerializer[Element](Serializer[list[Element]]):
     def __init__(self, element_serializer: Serializer[Element]):
         self.element_serializer = element_serializer

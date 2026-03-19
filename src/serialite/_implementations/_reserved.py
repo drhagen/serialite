@@ -1,4 +1,3 @@
-
 __all__ = ["ReservedSerializer", "ReservedValueError"]
 
 from collections.abc import Set
@@ -42,6 +41,8 @@ class ReservedSerializer[Element](Serializer[Element]):
         return self.internal_serializer.to_openapi_schema(
             json_schema_generator=json_schema_generator
         )
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class ReservedValueError(Exception):

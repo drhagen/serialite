@@ -1,4 +1,3 @@
-
 __all__ = ["TupleLengthError", "TupleSerializer"]
 
 from dataclasses import dataclass
@@ -17,6 +16,8 @@ except ImportError:
     # Class that will never pass an isinstance check
     class ndarray:  # noqa: N801
         pass
+
+
 class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]):
     def __init__(self, *element_serializers: Unpack[TupleArguments]):
         self.element_serializers = element_serializers
@@ -81,6 +82,8 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
             "minItems": n,
             "maxItems": n,
         }
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class TupleLengthError(Exception):

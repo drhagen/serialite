@@ -1,4 +1,3 @@
-
 __all__ = ["DuplicatedValueError", "SetSerializer"]
 
 from dataclasses import dataclass
@@ -57,6 +56,8 @@ class SetSerializer[Element](Serializer[set[Element]]):
                 json_schema_generator=json_schema_generator
             ),
         }
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class DuplicatedValueError(Exception):

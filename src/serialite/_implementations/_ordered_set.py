@@ -1,4 +1,3 @@
-
 __all__ = ["OrderedSetSerializer"]
 
 from ordered_set import OrderedSet

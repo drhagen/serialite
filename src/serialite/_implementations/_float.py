@@ -1,4 +1,3 @@
-
 __all__ = ["FloatSerializer"]
 
 from collections.abc import Sequence

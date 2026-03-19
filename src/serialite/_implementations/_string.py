@@ -1,4 +1,3 @@
-
 __all__ = ["RegexMismatchError", "StringSerializer"]
 
 import re
@@ -34,6 +33,8 @@ class StringSerializer(Serializer[str]):
 
     def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "string"}
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class RegexMismatchError(Exception):

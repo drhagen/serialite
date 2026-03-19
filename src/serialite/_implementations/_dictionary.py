@@ -1,4 +1,3 @@
-
 __all__ = ["ExpectedLength2ListError", "OrderedDictSerializer", "RawDictSerializer"]
 
 from dataclasses import dataclass
@@ -69,6 +68,8 @@ class OrderedDictSerializer[Key, Value](Serializer[dict[Key, Value]]):
             [self.key_serializer.to_data(key), self.value_serializer.to_data(value)]
             for key, value in value.items()
         ]
+
+
 class RawDictSerializer[Value](Serializer[dict[str, Value]]):
     """Serializing a dictionary to a dictionary rather than a list of tuples.
 
@@ -147,6 +148,8 @@ class RawDictSerializer[Value](Serializer[dict[str, Value]]):
                 json_schema_generator=json_schema_generator
             ),
         }
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class ExpectedLength2ListError(Exception):

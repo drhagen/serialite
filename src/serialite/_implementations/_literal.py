@@ -1,4 +1,3 @@
-
 __all__ = ["LiteralSerializer", "UnknownValueError"]
 
 from dataclasses import dataclass
@@ -38,6 +37,8 @@ class LiteralSerializer(Serializer):
             return {"type": "number", "enum": possibilities}
         else:
             return {"enum": possibilities}
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class UnknownValueError(Exception):

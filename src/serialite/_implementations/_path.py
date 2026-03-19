@@ -1,4 +1,3 @@
-
 __all__ = ["PathSerializer"]
 
 from pathlib import Path

@@ -1,4 +1,3 @@
-
 __all__ = ["ArraySerializer"]
 
 import numpy as np

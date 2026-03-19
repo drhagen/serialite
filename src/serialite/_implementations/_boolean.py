@@ -1,4 +1,3 @@
-
 __all__ = ["BooleanSerializer"]
 
 from .._base import Serializer

@@ -1,4 +1,3 @@
-
 __all__ = ["DateTimeSerializer", "InvalidDateTimeError"]
 
 from dataclasses import dataclass
@@ -36,6 +35,8 @@ class DateTimeSerializer(Serializer[datetime]):
 
     def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "string", "format": "date-time"}
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class InvalidDateTimeError(Exception):

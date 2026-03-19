@@ -1,4 +1,3 @@
-
 __all__ = ["InvalidUuidError", "UuidSerializer"]
 
 from dataclasses import dataclass
@@ -30,6 +29,8 @@ class UuidSerializer(Serializer[UUID]):
 
     def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
         return {"type": "string", "format": "uuid"}
+
+
 @serializable
 @dataclass(frozen=True, slots=True)
 class InvalidUuidError(Exception):
