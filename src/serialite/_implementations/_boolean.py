@@ -1,5 +1,7 @@
 __all__ = ["BooleanSerializer"]
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from .._base import Serializer
 from .._errors import Errors
 from .._result import Failure, Result, Success
@@ -18,5 +20,7 @@ class BooleanSerializer(Serializer[bool]):
             raise ValueError(f"Not an bool: {value!r}")
         return value
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(
+        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
         return {"type": "boolean"}

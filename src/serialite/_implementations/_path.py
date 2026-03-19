@@ -2,6 +2,8 @@ __all__ = ["PathSerializer"]
 
 from pathlib import Path
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from .._base import Serializer
 from .._errors import Errors
 from .._result import Failure, Result, Success
@@ -20,5 +22,7 @@ class PathSerializer(Serializer):
             raise ValueError(f"Not a Path: {value!r}")
         return value.as_posix()
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(
+        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
         return {"type": "string"}

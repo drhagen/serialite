@@ -4,6 +4,8 @@ from collections.abc import Set
 from dataclasses import dataclass
 from typing import Any
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
@@ -37,8 +39,12 @@ class ReservedSerializer[Element](Serializer[Element]):
         else:
             return {}
 
-    def to_openapi_schema(self, force: bool = False):
-        return self.internal_serializer.to_openapi_schema()
+    def to_openapi_schema(
+        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
+        return self.internal_serializer.to_openapi_schema(
+            json_schema_generator=json_schema_generator
+        )
 
 
 @serializable

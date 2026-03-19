@@ -3,6 +3,8 @@ __all__ = ["TupleLengthError", "TupleSerializer"]
 from dataclasses import dataclass
 from typing import Any, Unpack
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
@@ -71,12 +73,15 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
                 components.update(serializer.child_components())
         return components
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(
+        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
         n = len(self.element_serializers)
         return {
             "type": "array",
             "prefixItems": [
-                serializer.to_openapi_schema() for serializer in self.element_serializers
+                serializer.to_openapi_schema(json_schema_generator=json_schema_generator)
+                for serializer in self.element_serializers
             ],
             "minItems": n,
             "maxItems": n,

@@ -3,6 +3,8 @@ __all__ = ["InvalidUuidError", "UuidSerializer"]
 from dataclasses import dataclass
 from uuid import UUID
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from .._base import Serializer
 from .._decorators import serializable
 from .._errors import Errors
@@ -27,7 +29,9 @@ class UuidSerializer(Serializer[UUID]):
             raise ValueError(f"Not a UUID: {value!r}")
         return str(value)
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(
+        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
         return {"type": "string", "format": "uuid"}
 
 

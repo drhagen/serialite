@@ -4,6 +4,8 @@ from collections.abc import Sequence
 from math import inf, isnan, nan
 from typing import Any
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from .._base import Serializer
 from .._errors import Errors
 from .._numeric_check import is_real
@@ -47,5 +49,7 @@ class FloatSerializer(Serializer[float]):
         else:
             return float(value)
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(
+        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
         return {"type": "number"}

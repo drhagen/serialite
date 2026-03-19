@@ -5,6 +5,8 @@ __all__ = ["Serializable", "Serializer"]
 from abc import abstractmethod
 from typing import Any, Self
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
 
@@ -34,12 +36,19 @@ class Serializer[Output]:
         """
         return {}
 
-    def to_openapi_schema(self, force: bool = False) -> Any:
+    def to_openapi_schema(
+        self, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
         If `force` is False and this serializer represents a component, it
         should return a '$ref'. If `force` is True, it should return its full
         schema, but not pass `force` to its child serializers.
+
+        When called from Pydantic's schema generation pipeline,
+        `json_schema_generator` is the active `GenerateJsonSchema` instance.
+        Subclasses that produce `$ref` values should use it to generate
+        Pydantic-compatible references via `get_cache_defs_ref_schema`.
 
         The default is no schema.
         """
@@ -64,7 +73,9 @@ class Serializable(Serializer[Self]):
         return {}
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False) -> Any:
+    def to_openapi_schema(
+        cls, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ) -> Any:
         return {}
 
     # All attributes and methods below this point are for Pydantic v2
@@ -136,7 +147,9 @@ class Serializable(Serializer[Self]):
     def __get_pydantic_json_schema__(cls, core_schema_obj, handler):
         # Pydantic v2 uses __get_pydantic_json_schema__ to generate OpenAPI
         # schemas. We return the full schema here (force=True).
-        return cls.to_openapi_schema(force=True)
+        return cls.to_openapi_schema(
+            force=True, json_schema_generator=handler.generate_json_schema
+        )
 
     @classproperty
     def model_fields(cls):

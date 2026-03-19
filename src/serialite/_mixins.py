@@ -2,6 +2,8 @@ __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
 from typing import Any, ClassVar, Self
 
+from pydantic.json_schema import GenerateJsonSchema
+
 from ._base import Serializable
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
@@ -37,9 +39,13 @@ class SerializableMixin(Serializable):
         return cls.__fields_serializer__.child_components()
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False):
+    def to_openapi_schema(
+        cls, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
         if force:
-            schema = cls.__fields_serializer__.to_openapi_schema()
+            schema = cls.__fields_serializer__.to_openapi_schema(
+                json_schema_generator=json_schema_generator
+            )
 
             if hasattr(cls, "__subclass_serializers__"):
                 # It is not possible in OpenAPI to have the discriminator field
@@ -53,6 +59,12 @@ class SerializableMixin(Serializable):
 
             return schema
         else:
+            if json_schema_generator is not None:
+                core_ref = f"{cls.__module__}.{cls.__name__}"
+                _defs_ref, ref_json_schema = json_schema_generator.get_cache_defs_ref_schema(
+                    core_ref
+                )
+                return ref_json_schema
             return {"$ref": f"#/components/schemas/{cls.__name__}"}
 
 
@@ -133,15 +145,23 @@ class AbstractSerializableMixin(Serializable):
         return components
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False):
+    def to_openapi_schema(
+        cls, force: bool = False, json_schema_generator: GenerateJsonSchema | None = None
+    ):
         if force:
             return {
                 "type": "object",
                 "discriminator": {"propertyName": "_type"},
                 "oneOf": [
-                    subclass.to_openapi_schema()
+                    subclass.to_openapi_schema(json_schema_generator=json_schema_generator)
                     for subclass in cls.__subclass_serializers__.values()
                 ],
             }
         else:
+            if json_schema_generator is not None:
+                core_ref = f"{cls.__module__}.{cls.__name__}"
+                _defs_ref, ref_json_schema = json_schema_generator.get_cache_defs_ref_schema(
+                    core_ref
+                )
+                return ref_json_schema
             return {"$ref": f"#/components/schemas/{cls.__name__}"}
