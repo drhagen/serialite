@@ -53,7 +53,7 @@ class SerializableMixin(Serializable):
                 discriminator_field = {"_type": {"type": "string", "enum": [cls.__name__]}}
                 schema = schema | {"properties": discriminator_field | schema["properties"]}
 
-            return schema
+            return schema | {"x-source-module": f"{cls.__module__}.{cls.__qualname__}"}
         else:
             if json_schema_generator is not None:
                 core_ref = f"{cls.__module__}.{cls.__name__}"
@@ -150,6 +150,7 @@ class AbstractSerializableMixin(Serializable):
                     subclass.to_openapi_schema(json_schema_generator=json_schema_generator)
                     for subclass in cls.__subclass_serializers__.values()
                 ],
+                "x-source-module": f"{cls.__module__}.{cls.__qualname__}",
             }
         else:
             if json_schema_generator is not None:
