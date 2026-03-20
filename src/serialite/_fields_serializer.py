@@ -14,7 +14,7 @@ from collections.abc import Mapping
 from enum import Enum, auto
 from typing import Any
 
-from ._base import Serializer
+from ._base import Serializer, SerializerToRef
 from ._errors import Errors
 from ._result import Failure, Result, Success
 
@@ -395,14 +395,14 @@ class FieldsSerializer(Mapping):
                     components[f"{name}__{child_name}"] = child
         return components
 
-    def to_openapi_schema(self, json_schema_generator=None) -> dict[str, Any]:
+    def to_openapi_schema(
+        self, *, serializer_to_ref: SerializerToRef | None = None
+    ) -> dict[str, Any]:
         required = []
         properties = {}
         for name, field in self.object_field_serializers.items():
             if isinstance(field, SingleField):
-                property = field.serializer.to_openapi_schema(
-                    json_schema_generator=json_schema_generator
-                )
+                property = field.serializer.to_openapi_schema(serializer_to_ref=serializer_to_ref)
 
                 if field.default is not no_default and field.default is not None:
                     # OpenAPI generator 5 crashes if the default is null

@@ -3,10 +3,13 @@ from __future__ import annotations
 __all__ = ["Serializable", "Serializer"]
 
 from abc import abstractmethod
+from collections.abc import Callable
 from typing import Any, Self
 
 from ._descriptors import classproperty
 from ._result import Failure, Result, Success
+
+type SerializerToRef = Callable[[Serializer], dict]
 
 
 class Serializer[Output]:
@@ -34,17 +37,18 @@ class Serializer[Output]:
         """
         return {}
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None) -> Any:
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
         If `force` is False and this serializer represents a component, it
         should return a '$ref'. If `force` is True, it should return its full
         schema, but not pass `force` to its child serializers.
 
-        When called from Pydantic's schema generation pipeline,
-        `json_schema_generator` is the active `GenerateJsonSchema` instance.
-        Subclasses that produce `$ref` values should use it to generate
-        Pydantic-compatible references via `get_cache_defs_ref_schema`.
+        `serializer_to_ref` is a function that takes a Serializer and returns
+        a JSON schema reference dict (e.g. ``{"$ref": "..."}``) for it. This
+        decouples schema generation from any particular framework.
 
         The default is no schema.
         """
@@ -69,8 +73,14 @@ class Serializable(Serializer[Self]):
         return {}
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False, json_schema_generator=None) -> Any:
+    def to_openapi_schema(
+        cls, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ) -> Any:
         return {}
+
+    @classmethod
+    def _pydantic_ref(cls) -> str:
+        return f"{cls.__module__}.{cls.__name__}"
 
     # All attributes and methods below this point are for Pydantic v2
     # compatibility. These methods allow all Serialite Serializables to be used
@@ -131,7 +141,7 @@ class Serializable(Serializer[Self]):
 
         return core_schema.no_info_plain_validator_function(
             cls._pydantic_validate,
-            ref=f"{cls.__module__}.{cls.__name__}",
+            ref=cls._pydantic_ref(),
             serialization=core_schema.plain_serializer_function_ser_schema(
                 cls._pydantic_serialize
             ),
@@ -141,9 +151,14 @@ class Serializable(Serializer[Self]):
     def __get_pydantic_json_schema__(cls, core_schema_obj, handler):
         # Pydantic v2 uses __get_pydantic_json_schema__ to generate OpenAPI
         # schemas. We return the full schema here (force=True).
-        return cls.to_openapi_schema(
-            force=True, json_schema_generator=handler.generate_json_schema
-        )
+
+        def serializer_to_pydantic_ref(serializer: Serializer) -> dict:
+            _, ref_json_schema = handler.generate_json_schema.get_cache_defs_ref_schema(
+                serializer._pydantic_ref()
+            )
+            return ref_json_schema
+
+        return cls.to_openapi_schema(force=True, serializer_to_ref=serializer_to_pydantic_ref)
 
     @classproperty
     def model_fields(cls):

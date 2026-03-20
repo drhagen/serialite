@@ -3,7 +3,7 @@ __all__ = ["TupleLengthError", "TupleSerializer"]
 from dataclasses import dataclass
 from typing import Any, Unpack
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._decorators import serializable
 from .._errors import Errors
 from .._openapi import is_openapi_component
@@ -71,12 +71,14 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
                 components.update(serializer.child_components())
         return components
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ):
         n = len(self.element_serializers)
         return {
             "type": "array",
             "prefixItems": [
-                serializer.to_openapi_schema(json_schema_generator=json_schema_generator)
+                serializer.to_openapi_schema(serializer_to_ref=serializer_to_ref)
                 for serializer in self.element_serializers
             ],
             "minItems": n,

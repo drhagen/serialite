@@ -2,7 +2,7 @@ __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
 from typing import Any, ClassVar, Self
 
-from ._base import Serializable
+from ._base import Serializable, SerializerToRef
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
 from ._openapi import is_openapi_component
@@ -37,10 +37,12 @@ class SerializableMixin(Serializable):
         return cls.__fields_serializer__.child_components()
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        cls, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ) -> Any:
         if force:
             schema = cls.__fields_serializer__.to_openapi_schema(
-                json_schema_generator=json_schema_generator
+                serializer_to_ref=serializer_to_ref
             )
 
             if hasattr(cls, "__subclass_serializers__"):
@@ -55,12 +57,8 @@ class SerializableMixin(Serializable):
 
             return schema | {"x-source-module": f"{cls.__module__}.{cls.__qualname__}"}
         else:
-            if json_schema_generator is not None:
-                core_ref = f"{cls.__module__}.{cls.__name__}"
-                _defs_ref, ref_json_schema = json_schema_generator.get_cache_defs_ref_schema(
-                    core_ref
-                )
-                return ref_json_schema
+            if serializer_to_ref is not None:
+                return serializer_to_ref(cls)
             return {"$ref": f"#/components/schemas/{cls.__name__}"}
 
 
@@ -141,22 +139,20 @@ class AbstractSerializableMixin(Serializable):
         return components
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        cls, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ) -> Any:
         if force:
             return {
                 "type": "object",
                 "discriminator": {"propertyName": "_type"},
                 "oneOf": [
-                    subclass.to_openapi_schema(json_schema_generator=json_schema_generator)
+                    subclass.to_openapi_schema(serializer_to_ref=serializer_to_ref)
                     for subclass in cls.__subclass_serializers__.values()
                 ],
                 "x-source-module": f"{cls.__module__}.{cls.__qualname__}",
             }
         else:
-            if json_schema_generator is not None:
-                core_ref = f"{cls.__module__}.{cls.__name__}"
-                _defs_ref, ref_json_schema = json_schema_generator.get_cache_defs_ref_schema(
-                    core_ref
-                )
-                return ref_json_schema
+            if serializer_to_ref is not None:
+                return serializer_to_ref(cls)
             return {"$ref": f"#/components/schemas/{cls.__name__}"}

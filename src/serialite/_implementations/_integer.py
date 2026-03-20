@@ -7,7 +7,7 @@ __all__ = [
 
 from dataclasses import dataclass
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._decorators import serializable
 from .._errors import Errors
 from .._numeric_check import is_int
@@ -27,7 +27,9 @@ class IntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an int: {value!r}")
         return value
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ):
         return {"type": "integer"}
 
 
@@ -46,7 +48,9 @@ class NonnegativeIntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an nonnegative int: {value!r}")
         return value
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ):
         return {"type": "integer", "minimum": 0}
 
 
@@ -65,7 +69,9 @@ class PositiveIntegerSerializer(Serializer[int]):
             raise ValueError(f"Not an positive int: {value!r}")
         return value
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ):
         return {"type": "integer", "minimum": 1}
 
 

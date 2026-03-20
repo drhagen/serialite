@@ -1,4 +1,4 @@
-from ._base import Serializable, Serializer
+from ._base import Serializable, Serializer, SerializerToRef
 from ._dataclass import field
 from ._decorators import abstract_serializable, serializable
 from ._dispatcher import serializer

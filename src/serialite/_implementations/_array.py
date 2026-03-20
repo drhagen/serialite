@@ -2,7 +2,7 @@ __all__ = ["ArraySerializer"]
 
 import numpy as np
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._dispatcher import serializer
 from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
@@ -43,10 +43,12 @@ class ArraySerializer[Element](Serializer[np.ndarray]):
             return {"element": self.element_serializer}
         return self.element_serializer.child_components()
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ):
         return {
             "type": "array",
             "items": self.element_serializer.to_openapi_schema(
-                json_schema_generator=json_schema_generator
+                serializer_to_ref=serializer_to_ref
             ),
         }

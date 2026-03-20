@@ -2,7 +2,7 @@ __all__ = ["PathSerializer"]
 
 from pathlib import Path
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._type_errors import ExpectedStringError
@@ -20,5 +20,7 @@ class PathSerializer(Serializer):
             raise ValueError(f"Not a Path: {value!r}")
         return value.as_posix()
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ):
         return {"type": "string"}

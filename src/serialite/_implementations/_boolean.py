@@ -1,6 +1,6 @@
 __all__ = ["BooleanSerializer"]
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._errors import Errors
 from .._result import Failure, Result, Success
 from .._type_errors import ExpectedBooleanError
@@ -18,5 +18,7 @@ class BooleanSerializer(Serializer[bool]):
             raise ValueError(f"Not an bool: {value!r}")
         return value
 
-    def to_openapi_schema(self, force: bool = False, json_schema_generator=None):
+    def to_openapi_schema(
+        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
+    ):
         return {"type": "boolean"}
