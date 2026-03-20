@@ -50,7 +50,7 @@ def __instancecheck__(cls: type, instance: Any) -> bool:  # noqa: N807
 
 
 def monkey_patch_pydantic_instancecheck() -> None:
-    # FastAPI also make extensive use of isinstance(obj, BaseModel) in
+    # FastAPI also makes use of isinstance(obj, BaseModel) in
     # fastapi.encoders.jsonable_encoder. We need to patch __instancecheck__
     # using the same process for the same reasons. Normally, __instancecheck__
     # calls __subclasscheck__, but Pydantic overrode the default behavior in
