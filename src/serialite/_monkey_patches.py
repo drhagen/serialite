@@ -2,8 +2,6 @@ from __future__ import annotations
 
 __all__ = ["monkey_patch_pydantic_subclasscheck"]
 
-from typing import Any
-
 
 def __subclasscheck__(cls: type, sub: type) -> bool:  # noqa: N807
     from pydantic import BaseModel
@@ -37,7 +35,7 @@ def monkey_patch_pydantic_subclasscheck() -> None:
         metaclass.__subclasscheck__ = __subclasscheck__
 
 
-def __instancecheck__(cls: type, instance: Any) -> bool:  # noqa: N807
+def __instancecheck__(cls: type, instance: object) -> bool:  # noqa: N807
     from pydantic import BaseModel
 
     if cls is BaseModel and hasattr(instance, "is_openapi_component"):
