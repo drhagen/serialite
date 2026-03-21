@@ -18,7 +18,5 @@ class BooleanSerializer(Serializer[bool]):
             raise ValueError(f"Not an bool: {value!r}")
         return value
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {"type": "boolean"}

@@ -79,6 +79,6 @@ def test_child_components_collected():
 
 
 def test_to_openapi_schema():
-    schema = ordered_set_serializer.to_openapi_schema()
+    schema = ordered_set_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "array", "items": {"type": "number"}}
     assert schema == expected_schema

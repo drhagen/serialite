@@ -33,9 +33,7 @@ class DateTimeSerializer(Serializer[datetime]):
             raise ValueError(f"Not a DateTime: {value!r}")
         return value.isoformat(sep=" ")
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {"type": "string", "format": "date-time"}
 
 

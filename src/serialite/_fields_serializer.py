@@ -395,9 +395,7 @@ class FieldsSerializer(Mapping):
                     components[f"{name}__{child_name}"] = child
         return components
 
-    def to_openapi_schema(
-        self, *, serializer_to_ref: SerializerToRef | None = None
-    ) -> dict[str, Any]:
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef) -> dict[str, Any]:
         required = []
         properties = {}
         for name, field in self.object_field_serializers.items():

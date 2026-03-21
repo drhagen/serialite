@@ -71,9 +71,7 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
                 components.update(serializer.child_components())
         return components
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         n = len(self.element_serializers)
         return {
             "type": "array",

@@ -90,6 +90,6 @@ def test_child_components_collected():
 
 
 def test_to_openapi_schema():
-    schema = raw_dict_serializer.to_openapi_schema()
+    schema = raw_dict_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "object", "additionalProperties": {"type": "number"}}
     assert schema == expected_schema

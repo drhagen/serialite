@@ -26,9 +26,7 @@ class LiteralSerializer(Serializer):
 
         return value
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         possibilities = list(self.possibilities)
 
         if all(isinstance(x, str) for x in possibilities):

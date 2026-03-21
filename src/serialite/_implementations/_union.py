@@ -47,9 +47,7 @@ class TryUnionSerializer(Serializer):
                 components.update(serializer.child_components())
         return components
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {
             "oneOf": [
                 serializer.to_openapi_schema(serializer_to_ref=serializer_to_ref)
@@ -81,9 +79,7 @@ class OptionalSerializer[Element](Serializer[Element | None]):
         else:
             return self.element_serializer.child_components()
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return self.element_serializer.to_openapi_schema(serializer_to_ref=serializer_to_ref) | {
             "nullable": True
         }

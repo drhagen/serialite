@@ -37,9 +37,7 @@ class ReservedSerializer[Element](Serializer[Element]):
         else:
             return {}
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return self.internal_serializer.to_openapi_schema(serializer_to_ref=serializer_to_ref)
 
 

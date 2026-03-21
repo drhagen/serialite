@@ -43,9 +43,7 @@ class ArraySerializer[Element](Serializer[np.ndarray]):
             return {"element": self.element_serializer}
         return self.element_serializer.child_components()
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {
             "type": "array",
             "items": self.element_serializer.to_openapi_schema(

@@ -37,9 +37,7 @@ class Serializer[Output]:
         """
         return {}
 
-    def to_openapi_schema(
-        self, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ) -> Any:
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
         If `force` is False and this serializer represents a component, it
@@ -73,9 +71,7 @@ class Serializable(Serializer[Self]):
         return {}
 
     @classmethod
-    def to_openapi_schema(
-        cls, *, force: bool = False, serializer_to_ref: SerializerToRef | None = None
-    ) -> Any:
+    def to_openapi_schema(cls, serializer_to_ref: SerializerToRef, *, force: bool = False) -> Any:
         return {}
 
     @classmethod
