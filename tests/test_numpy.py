@@ -71,7 +71,7 @@ def test_child_components_collected():
 
 
 def test_to_openapi_schema():
-    schema = array_serializer.to_openapi_schema()
+    schema = array_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {
         "type": "array",
         "items": {"type": "integer"},

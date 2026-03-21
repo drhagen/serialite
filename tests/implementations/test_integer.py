@@ -95,18 +95,18 @@ def test_integer_out_of_range_error_to_data_and_str():
 
 
 def test_to_openapi_schema():
-    schema = integer_serializer.to_openapi_schema()
+    schema = integer_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "integer"}
     assert schema == expected_schema
 
 
 def test_nonnegative_to_openapi_schema():
-    schema = nonnegative_integer_serializer.to_openapi_schema()
+    schema = nonnegative_integer_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "integer", "minimum": 0}
     assert schema == expected_schema
 
 
 def test_positive_to_openapi_schema():
-    schema = positive_integer_serializer.to_openapi_schema()
+    schema = positive_integer_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "integer", "minimum": 1}
     assert schema == expected_schema

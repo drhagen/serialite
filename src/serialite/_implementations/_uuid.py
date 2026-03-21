@@ -3,7 +3,7 @@ __all__ = ["InvalidUuidError", "UuidSerializer"]
 from dataclasses import dataclass
 from uuid import UUID
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._decorators import serializable
 from .._errors import Errors
 from .._result import Failure, Result, Success
@@ -27,7 +27,7 @@ class UuidSerializer(Serializer[UUID]):
             raise ValueError(f"Not a UUID: {value!r}")
         return str(value)
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {"type": "string", "format": "uuid"}
 
 

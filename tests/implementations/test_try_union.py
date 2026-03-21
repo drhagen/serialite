@@ -57,6 +57,6 @@ def test_child_components_collected():
 
 
 def test_to_openapi_schema():
-    schema = try_union_serializer.to_openapi_schema()
+    schema = try_union_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"oneOf": [{"type": "number"}, {"type": "integer"}, {"type": "boolean"}]}
     assert schema == expected_schema

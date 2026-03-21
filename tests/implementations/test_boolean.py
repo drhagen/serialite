@@ -31,6 +31,6 @@ def test_error_to_data_and_to_string():
 
 
 def test_to_openapi_schema():
-    schema = boolean_serializer.to_openapi_schema()
+    schema = boolean_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "boolean"}
     assert schema == expected_schema

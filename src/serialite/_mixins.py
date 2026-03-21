@@ -2,7 +2,7 @@ __all__ = ["AbstractSerializableMixin", "SerializableMixin"]
 
 from typing import Any, ClassVar, Self
 
-from ._base import Serializable
+from ._base import Serializable, SerializerToRef
 from ._errors import Errors
 from ._fields_serializer import FieldsSerializer
 from ._openapi import is_openapi_component
@@ -37,9 +37,9 @@ class SerializableMixin(Serializable):
         return cls.__fields_serializer__.child_components()
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False):
+    def to_openapi_schema(cls, serializer_to_ref: SerializerToRef, *, force: bool = False) -> Any:
         if force:
-            schema = cls.__fields_serializer__.to_openapi_schema()
+            schema = cls.__fields_serializer__.to_openapi_schema(serializer_to_ref)
 
             if hasattr(cls, "__subclass_serializers__"):
                 # It is not possible in OpenAPI to have the discriminator field
@@ -53,7 +53,7 @@ class SerializableMixin(Serializable):
 
             return schema
         else:
-            return {"$ref": f"#/components/schemas/{cls.__name__}"}
+            return serializer_to_ref(cls)
 
 
 class AbstractSerializableMixin(Serializable):
@@ -133,15 +133,15 @@ class AbstractSerializableMixin(Serializable):
         return components
 
     @classmethod
-    def to_openapi_schema(cls, force: bool = False):
+    def to_openapi_schema(cls, serializer_to_ref: SerializerToRef, *, force: bool = False) -> Any:
         if force:
             return {
                 "type": "object",
                 "discriminator": {"propertyName": "_type"},
                 "oneOf": [
-                    subclass.to_openapi_schema()
+                    subclass.to_openapi_schema(serializer_to_ref)
                     for subclass in cls.__subclass_serializers__.values()
                 ],
             }
         else:
-            return {"$ref": f"#/components/schemas/{cls.__name__}"}
+            return serializer_to_ref(cls)

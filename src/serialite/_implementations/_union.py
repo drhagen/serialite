@@ -1,6 +1,6 @@
 __all__ = ["OptionalSerializer", "TryUnionSerializer"]
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._errors import Errors
 from .._openapi import is_openapi_component
 from .._result import Failure, Result, Success
@@ -47,9 +47,11 @@ class TryUnionSerializer(Serializer):
                 components.update(serializer.child_components())
         return components
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {
-            "oneOf": [serializer.to_openapi_schema() for serializer in self.serializers],
+            "oneOf": [
+                serializer.to_openapi_schema(serializer_to_ref) for serializer in self.serializers
+            ],
         }
 
 
@@ -76,5 +78,5 @@ class OptionalSerializer[Element](Serializer[Element | None]):
         else:
             return self.element_serializer.child_components()
 
-    def to_openapi_schema(self, force: bool = False):
-        return self.element_serializer.to_openapi_schema() | {"nullable": True}
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
+        return self.element_serializer.to_openapi_schema(serializer_to_ref) | {"nullable": True}

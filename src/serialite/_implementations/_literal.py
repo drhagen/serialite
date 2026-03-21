@@ -3,7 +3,7 @@ __all__ = ["LiteralSerializer", "UnknownValueError"]
 from dataclasses import dataclass
 from typing import Any
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._decorators import serializable
 from .._errors import Errors
 from .._numeric_check import is_int, is_real
@@ -26,7 +26,7 @@ class LiteralSerializer(Serializer):
 
         return value
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         possibilities = list(self.possibilities)
 
         if all(isinstance(x, str) for x in possibilities):

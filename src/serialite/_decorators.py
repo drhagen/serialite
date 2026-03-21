@@ -154,6 +154,9 @@ def serializable(cls):
         if "_pydantic_serialize" not in cls.__dict__:
             cls._pydantic_serialize = Serializable.__dict__["_pydantic_serialize"]
 
+        if "_pydantic_ref" not in cls.__dict__:
+            cls._pydantic_ref = Serializable.__dict__["_pydantic_ref"]
+
         if "__get_pydantic_core_schema__" not in cls.__dict__:
             cls.__get_pydantic_core_schema__ = Serializable.__dict__[
                 "__get_pydantic_core_schema__"
@@ -255,6 +258,9 @@ def abstract_serializable(cls):
 
         if "_pydantic_serialize" not in cls.__dict__:
             cls._pydantic_serialize = Serializable.__dict__["_pydantic_serialize"]
+
+        if "_pydantic_ref" not in cls.__dict__:
+            cls._pydantic_ref = Serializable.__dict__["_pydantic_ref"]
 
         if "__get_pydantic_core_schema__" not in cls.__dict__:
             cls.__get_pydantic_core_schema__ = Serializable.__dict__[

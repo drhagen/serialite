@@ -28,27 +28,27 @@ def test_unknown_value_error_to_data_and_to_string():
 
 
 def test_to_openapi_schema():
-    schema = literal_serializer.to_openapi_schema()
+    schema = literal_serializer.to_openapi_schema(lambda _: {})
     expected_schema = {"enum": ["none", 1, 2, 3]}
     assert schema == expected_schema
 
 
 def test_to_openapi_schema_string():
     string_literal = LiteralSerializer("foo", "bar", "baz")
-    schema = string_literal.to_openapi_schema()
+    schema = string_literal.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "string", "enum": ["foo", "bar", "baz"]}
     assert schema == expected_schema
 
 
 def test_to_openapi_schema_integer():
     integer_literal = LiteralSerializer(1, 2, 3)
-    schema = integer_literal.to_openapi_schema()
+    schema = integer_literal.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "integer", "enum": [1, 2, 3]}
     assert schema == expected_schema
 
 
 def test_to_openapi_schema_number():
     number_literal = LiteralSerializer(1.5, 2.5, 3.5)
-    schema = number_literal.to_openapi_schema()
+    schema = number_literal.to_openapi_schema(lambda _: {})
     expected_schema = {"type": "number", "enum": [1.5, 2.5, 3.5]}
     assert schema == expected_schema

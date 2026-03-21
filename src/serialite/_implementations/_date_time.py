@@ -3,7 +3,7 @@ __all__ = ["DateTimeSerializer", "InvalidDateTimeError"]
 from dataclasses import dataclass
 from datetime import datetime
 
-from .._base import Serializer
+from .._base import Serializer, SerializerToRef
 from .._decorators import serializable
 from .._errors import Errors
 from .._result import Failure, Result, Success
@@ -33,7 +33,7 @@ class DateTimeSerializer(Serializer[datetime]):
             raise ValueError(f"Not a DateTime: {value!r}")
         return value.isoformat(sep=" ")
 
-    def to_openapi_schema(self, force: bool = False):
+    def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {"type": "string", "format": "date-time"}
 
 
