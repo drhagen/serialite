@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__all__ = ["Serializable", "Serializer"]
+__all__ = ["Serializable", "Serializer", "SerializerToRef"]
 
 from abc import abstractmethod
 from collections.abc import Callable
