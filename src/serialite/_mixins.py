@@ -55,7 +55,7 @@ class SerializableMixin(Serializable):
                 discriminator_field = {"_type": {"type": "string", "enum": [cls.__name__]}}
                 schema = schema | {"properties": discriminator_field | schema["properties"]}
 
-            return schema | {"x-source-module": f"{cls.__module__}.{cls.__qualname__}"}
+            return schema
         else:
             if serializer_to_ref is not None:
                 return serializer_to_ref(cls)
@@ -150,7 +150,6 @@ class AbstractSerializableMixin(Serializable):
                     subclass.to_openapi_schema(serializer_to_ref=serializer_to_ref)
                     for subclass in cls.__subclass_serializers__.values()
                 ],
-                "x-source-module": f"{cls.__module__}.{cls.__qualname__}",
             }
         else:
             if serializer_to_ref is not None:
