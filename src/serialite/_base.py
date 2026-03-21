@@ -40,13 +40,15 @@ class Serializer[Output]:
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False) -> Any:
         """Generate the OpenAPI schema representation for this class.
 
+        `serializer_to_ref` is a function that takes a `Serializer` and returns
+        a JSON schema reference dict (e.g. `{"$ref": "..."}`) for it.
+        Serializers that represent a component will query this function to get
+        the reference to themselves, which will be the extent of their schema
+        unless `force` is True.
+
         If `force` is False and this serializer represents a component, it
         should return a '$ref'. If `force` is True, it should return its full
         schema, but not pass `force` to its child serializers.
-
-        `serializer_to_ref` is a function that takes a Serializer and returns
-        a JSON schema reference dict (e.g. ``{"$ref": "..."}``) for it. This
-        decouples schema generation from any particular framework.
 
         The default is no schema.
         """
@@ -154,7 +156,7 @@ class Serializable(Serializer[Self]):
             )
             return ref_json_schema
 
-        return cls.to_openapi_schema(force=True, serializer_to_ref=serializer_to_pydantic_ref)
+        return cls.to_openapi_schema(serializer_to_pydantic_ref, force=True)
 
     @classproperty
     def model_fields(cls):

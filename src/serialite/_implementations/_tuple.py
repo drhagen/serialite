@@ -76,7 +76,7 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
         return {
             "type": "array",
             "prefixItems": [
-                serializer.to_openapi_schema(serializer_to_ref=serializer_to_ref)
+                serializer.to_openapi_schema(serializer_to_ref)
                 for serializer in self.element_serializers
             ],
             "minItems": n,

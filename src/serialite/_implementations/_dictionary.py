@@ -144,9 +144,7 @@ class RawDictSerializer[Value](Serializer[dict[str, Value]]):
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
         return {
             "type": "object",
-            "additionalProperties": self.value_serializer.to_openapi_schema(
-                serializer_to_ref=serializer_to_ref
-            ),
+            "additionalProperties": self.value_serializer.to_openapi_schema(serializer_to_ref),
         }
 
 

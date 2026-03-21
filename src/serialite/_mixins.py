@@ -39,9 +39,7 @@ class SerializableMixin(Serializable):
     @classmethod
     def to_openapi_schema(cls, serializer_to_ref: SerializerToRef, *, force: bool = False) -> Any:
         if force:
-            schema = cls.__fields_serializer__.to_openapi_schema(
-                serializer_to_ref=serializer_to_ref
-            )
+            schema = cls.__fields_serializer__.to_openapi_schema(serializer_to_ref)
 
             if hasattr(cls, "__subclass_serializers__"):
                 # It is not possible in OpenAPI to have the discriminator field
@@ -141,7 +139,7 @@ class AbstractSerializableMixin(Serializable):
                 "type": "object",
                 "discriminator": {"propertyName": "_type"},
                 "oneOf": [
-                    subclass.to_openapi_schema(serializer_to_ref=serializer_to_ref)
+                    subclass.to_openapi_schema(serializer_to_ref)
                     for subclass in cls.__subclass_serializers__.values()
                 ],
             }

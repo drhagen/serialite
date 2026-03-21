@@ -400,7 +400,7 @@ class FieldsSerializer(Mapping):
         properties = {}
         for name, field in self.object_field_serializers.items():
             if isinstance(field, SingleField):
-                property = field.serializer.to_openapi_schema(serializer_to_ref=serializer_to_ref)
+                property = field.serializer.to_openapi_schema(serializer_to_ref)
 
                 if field.default is not no_default and field.default is not None:
                     # OpenAPI generator 5 crashes if the default is null
