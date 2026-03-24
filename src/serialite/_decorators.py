@@ -179,17 +179,28 @@ def serializable(cls):
     return cls
 
 
-@classproperty
-def __subclass_serializers__(cls) -> dict[str, Serializer]:  # noqa: N807
+def _collect_concrete_descendants(cls) -> dict[str, Serializer]:
     result = {}
     for subclass in cls.__subclasses__():
         if "__subclass_serializers__" in subclass.__dict__:
-            # Abstract intermediate — recurse to collect its concrete descendants
+            # Abstract intermediate, collect its concrete descendants
             result.update(subclass.__subclass_serializers__)
-        else:
-            # Concrete leaf — include directly
+
+        elif "__fields_serializer__" in subclass.__dict__:
+            # Concrete, include it and recurse so concrete-of-concrete
+            # subclasses are discovered
             result[subclass.__name__] = subclass
+            result.update(_collect_concrete_descendants(subclass))
+
+        # else: skip, @dataclass(slots=True) leaves a ghost class in
+        # __subclasses__() that has neither attribute
+
     return result
+
+
+@classproperty
+def __subclass_serializers__(cls) -> dict[str, Serializer]:  # noqa: N807
+    return _collect_concrete_descendants(cls)
 
 
 def infer_subclass_serializers(cls):
