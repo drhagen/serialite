@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     # See https://github.com/astral-sh/ty/issues/2788
     class Result[Output]:
         def unwrap(self) -> Output: ...
+        def failure(self) -> Errors: ...
 else:
     type Result[Output] = result.Result[Output, Errors]
 
