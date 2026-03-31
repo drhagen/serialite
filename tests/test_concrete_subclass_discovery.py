@@ -1,55 +1,150 @@
 from dataclasses import dataclass
 
-from serialite import abstract_serializable, serializable
+import pytest
 
-garbage_collection_protection = []
+from serialite import (
+    FieldsSerializer,
+    SerializableMixin,
+    Success,
+    abstract_serializable,
+    serializable,
+)
+
+# Allow commented-out code in this file for the hierarchy diagram
+# ruff: noqa: ERA001
 
 
+# Hierarchy under test:
+#
+# Base  (abstract, slots=True)
+# ├── AbstractMiddle  (abstract, slots=True)
+# │   ├── SlotsConcrete  (@serializable, slots=True)
+# │   │   └── SlotsConcreteChild  (@serializable, slots=True)
+# │   └── NoSlotsConcrete  (@serializable, no slots)
+# ├── ManualConcrete  (hand-written from_data, no dataclass)
+# ├── MixinConcrete  (SerializableMixin, __fields_serializer__)
+# └── SlotsManualConcrete  (@dataclass(slots=True), hand-written from_data)
 @abstract_serializable
 @dataclass(frozen=True, kw_only=True, slots=True)
-class Package:
+class Base:
     pass
 
 
 @abstract_serializable
 @dataclass(frozen=True, kw_only=True, slots=True)
-class PyPiPackage(Package):
-    extras: list[str] | None = None
+class AbstractMiddle(Base):
+    pass
 
 
 @serializable
 @dataclass(frozen=True, kw_only=True, slots=True)
-class PyPiVersionPackage(PyPiPackage):
-    version: str
+class SlotsConcrete(AbstractMiddle):
+    x: int
 
 
 @serializable
 @dataclass(frozen=True, kw_only=True, slots=True)
-class PyPiPinnedPackage(PyPiVersionPackage):
-    hash: str
+class SlotsConcreteChild(SlotsConcrete):
+    y: str
 
 
 @serializable
-@dataclass(frozen=True, kw_only=True, slots=True)
-class CondaPackage(Package):
-    version: str
+@dataclass(frozen=True, kw_only=True)
+class NoSlotsConcrete(AbstractMiddle):
+    z: float
 
 
-# @dataclass(slots=True) creates a new class, leaving the original in
-# __subclasses__() as a ghost. Hold strong references so ghosts survive GC
-# and actually exercise the ghost-skipping logic.
+class ManualConcrete(Base):
+    @classmethod
+    def from_data(cls, data):
+        return Success(cls())
+
+    def to_data(self):
+        return {}
+
+
+class MixinConcrete(SerializableMixin, Base):
+    __fields_serializer__ = FieldsSerializer(value=int)
+
+    def __init__(self, value: int):
+        self.value = value
+
+
+@dataclass(frozen=True, slots=True)
+class SlotsManualConcrete(Base):
+    w: int
+
+    @classmethod
+    def from_data(cls, data):
+        return Success(cls(w=data["w"]))
+
+    def to_data(self):
+        return {"w": self.w}
+
+
+# @dataclass(slots=True) creates a replacement class and leaves the original in __subclasses__()
+# (https://github.com/python/cpython/issues/135228).  Hold strong references so original classes
+# survive GC and exercise the skipping logic.
 garbage_collection_protection = [
-    Package,
-    PyPiPackage,
-    PyPiVersionPackage,
-    PyPiPinnedPackage,
-    CondaPackage,
+    Base,
+    AbstractMiddle,
+    SlotsConcrete,
+    SlotsConcreteChild,
+    NoSlotsConcrete,
+    ManualConcrete,
+    MixinConcrete,
+    SlotsManualConcrete,
 ]
 
 
-def test_subclass_serializers_contains_exactly_all_concrete():
-    assert set(Package.__subclass_serializers__.keys()) == {
-        "PyPiVersionPackage",
-        "PyPiPinnedPackage",
-        "CondaPackage",
+# ── Discovery completeness ────────────────────────────────────────────────────
+def test_base_discovers_all_concrete():
+    assert set(Base.__subclass_serializers__.keys()) == {
+        "SlotsConcrete",
+        "SlotsConcreteChild",
+        "NoSlotsConcrete",
+        "ManualConcrete",
+        "MixinConcrete",
+        "SlotsManualConcrete",
     }
+
+
+def test_abstract_intermediate_discovers_own_subtree():
+    assert set(AbstractMiddle.__subclass_serializers__.keys()) == {
+        "SlotsConcrete",
+        "SlotsConcreteChild",
+        "NoSlotsConcrete",
+    }
+
+
+# ── Identity: every entry is the replacement, not the original ────────────────
+@pytest.mark.parametrize(
+    ("name", "expected_cls"),
+    [
+        ("SlotsConcrete", SlotsConcrete),
+        ("SlotsConcreteChild", SlotsConcreteChild),
+        ("NoSlotsConcrete", NoSlotsConcrete),
+        ("ManualConcrete", ManualConcrete),
+        ("MixinConcrete", MixinConcrete),
+        ("SlotsManualConcrete", SlotsManualConcrete),
+    ],
+)
+def test_discovered_class_is_real(name, expected_cls):
+    assert Base.__subclass_serializers__[name] is expected_cls
+
+
+# ── Original-class skipping ───────────────────────────────────────────────────
+def test_original_class_with_class_body_from_data_is_skipped():
+    all_subs = list(Base.__subclasses__())  # prevent GC
+
+    original = next(
+        (
+            s
+            for s in all_subs
+            if s.__name__ == "SlotsManualConcrete" and "__slots__" not in vars(s)
+        ),
+        None,
+    )
+    assert original is not None, "Original class must exist for this test to be valid"
+    assert "from_data" in original.__dict__
+    assert Base.__subclass_serializers__["SlotsManualConcrete"] is not original

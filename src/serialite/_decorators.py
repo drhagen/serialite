@@ -179,21 +179,39 @@ def serializable(cls):
     return cls
 
 
+def _was_replaced_by_slots(cls) -> bool:
+    """True if *cls* is the original class left behind by `@dataclass(slots=True)`.
+
+    `@dataclass` cannot add `__slots__` to an existing class, so when `slots=True` it creates a new
+    replacement class and returns that instead. The original class is never cleaned up and remains
+    visible in its parent's `__subclasses__()` list
+    (https://github.com/python/cpython/issues/135228).
+
+    Both classes carry `__dataclass_params__` in their own `__dict__` (the attribute is set before
+    the replacement is created and then copied into it), but only the replacement receives
+    `__slots__`.  A class that has `__dataclass_params__.slots` set to `True` yet lacks `__slots__`
+    in its own `__dict__` is therefore necessarily the pre-replacement original. No real class can
+    be in that state.
+    """
+    params = cls.__dict__.get("__dataclass_params__")
+    return params is not None and params.slots and "__slots__" not in cls.__dict__
+
+
 def _collect_concrete_descendants(cls) -> dict[str, Serializer]:
     result = {}
     for subclass in cls.__subclasses__():
-        if "__subclass_serializers__" in subclass.__dict__:
-            # Abstract intermediate, collect its concrete descendants
-            result.update(subclass.__subclass_serializers__)
+        if _was_replaced_by_slots(subclass):
+            continue
 
-        elif "__fields_serializer__" in subclass.__dict__:
-            # Concrete, include it and recurse so concrete-of-concrete
-            # subclasses are discovered
+        if "__subclass_serializers__" in subclass.__dict__:
+            # Abstract intermediate: collect its concrete descendants
+            result.update(subclass.__subclass_serializers__)
+        elif "__fields_serializer__" in subclass.__dict__ or "from_data" in subclass.__dict__:
+            # Concrete: either @serializable (sets __fields_serializer__) or a manual Serializable
+            # (defines from_data directly).
+            # Recurse so concrete-of-concrete subclasses are discovered.
             result[subclass.__name__] = subclass
             result.update(_collect_concrete_descendants(subclass))
-
-        # else: skip, @dataclass(slots=True) leaves a ghost class in
-        # __subclasses__() that has neither attribute
 
     return result
 

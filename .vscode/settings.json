@@ -1,4 +1,5 @@
 {
+    "editor.rulers": [99],
     "python.testing.pytestArgs": [
         "tests"
     ],
