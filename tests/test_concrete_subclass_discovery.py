@@ -82,22 +82,6 @@ class SlotsManualConcrete(Base):
         return {"w": self.w}
 
 
-# @dataclass(slots=True) creates a replacement class and leaves the original in __subclasses__()
-# (https://github.com/python/cpython/issues/135228).  Hold strong references so original classes
-# survive GC and exercise the skipping logic.
-garbage_collection_protection = [
-    Base,
-    AbstractMiddle,
-    SlotsConcrete,
-    SlotsConcreteChild,
-    NoSlotsConcrete,
-    ManualConcrete,
-    MixinConcrete,
-    SlotsManualConcrete,
-]
-
-
-# ── Discovery completeness ────────────────────────────────────────────────────
 def test_base_discovers_all_concrete():
     assert set(Base.__subclass_serializers__.keys()) == {
         "SlotsConcrete",
@@ -117,7 +101,6 @@ def test_abstract_intermediate_discovers_own_subtree():
     }
 
 
-# ── Identity: every entry is the replacement, not the original ────────────────
 @pytest.mark.parametrize(
     ("name", "expected_cls"),
     [
@@ -129,11 +112,10 @@ def test_abstract_intermediate_discovers_own_subtree():
         ("SlotsManualConcrete", SlotsManualConcrete),
     ],
 )
-def test_discovered_class_is_real(name, expected_cls):
+def test_discovered_class_is_replacement_not_original(name, expected_cls):
     assert Base.__subclass_serializers__[name] is expected_cls
 
 
-# ── Original-class skipping ───────────────────────────────────────────────────
 def test_original_class_with_class_body_from_data_is_skipped():
     all_subs = list(Base.__subclasses__())  # prevent GC
 
