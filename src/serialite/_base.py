@@ -156,7 +156,14 @@ class Serializable(Serializer[Self]):
             )
             return ref_json_schema
 
-        return cls.to_openapi_schema(serializer_to_pydantic_ref, force=True)
+        schema = cls.to_openapi_schema(serializer_to_pydantic_ref, force=True)
+
+        # Pydantic v2 delegates schema generation entirely to __get_pydantic_json_schema__, so we
+        # need to inject it ourselves.
+        if cls.__doc__ is not None and "description" not in schema:
+            schema["description"] = cls.__doc__
+
+        return schema
 
     @classproperty
     def model_fields(cls):
