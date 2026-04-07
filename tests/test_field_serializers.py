@@ -237,3 +237,48 @@ def test_required_one_of_fields_error_to_data_and_to_string():
     o = RequiredOneOfFieldsError(["a", "b"])
     assert o.to_data() == {"field_names": ["a", "b"]}
     assert str(o) == "Expected one of the fields ['a', 'b'], but did not receive any"
+
+
+@pytest.mark.parametrize(
+    ("fields_serializer", "expected_schema"),
+    [
+        (
+            FieldsSerializer(name=SingleField(str)),
+            {
+                "type": "object",
+                "required": ["name"],
+                "properties": {"name": {"type": "string"}},
+            },
+        ),
+        (
+            FieldsSerializer(name=SingleField(str, default="foo")),
+            {
+                "type": "object",
+                "required": [],
+                "properties": {"name": {"type": "string", "default": "foo"}},
+            },
+        ),
+        (
+            FieldsSerializer(name=SingleField(serializer(str | None))),
+            {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                    "name": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                },
+            },
+        ),
+        (
+            FieldsSerializer(name=SingleField(serializer(str | None), default=None)),
+            {
+                "type": "object",
+                "required": [],
+                "properties": {
+                    "name": {"anyOf": [{"type": "string"}, {"type": "null"}], "default": None},
+                },
+            },
+        ),
+    ],
+)
+def test_to_openapi_schema(fields_serializer, expected_schema):
+    assert fields_serializer.to_openapi_schema(lambda s: {}) == expected_schema

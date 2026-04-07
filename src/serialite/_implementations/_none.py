@@ -19,4 +19,4 @@ class NoneSerializer(Serializer[None]):
         return value
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
-        return {"nullable": True}
+        return {"type": "null"}

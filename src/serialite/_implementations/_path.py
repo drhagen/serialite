@@ -21,4 +21,4 @@ class PathSerializer(Serializer):
         return value.as_posix()
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
-        return {"type": "string"}
+        return {"type": "string", "format": "path"}

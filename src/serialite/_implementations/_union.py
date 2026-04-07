@@ -79,4 +79,9 @@ class OptionalSerializer[Element](Serializer[Element | None]):
             return self.element_serializer.child_components()
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
-        return self.element_serializer.to_openapi_schema(serializer_to_ref) | {"nullable": True}
+        return {
+            "anyOf": [
+                self.element_serializer.to_openapi_schema(serializer_to_ref),
+                {"type": "null"},
+            ],
+        }

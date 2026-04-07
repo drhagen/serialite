@@ -49,5 +49,5 @@ def test_child_components_collected():
 
 def test_to_openapi_schema():
     schema = optional_serializer.to_openapi_schema(lambda _: {})
-    expected_schema = {"type": "number", "nullable": True}
+    expected_schema = {"anyOf": [{"type": "number"}, {"type": "null"}]}
     assert schema == expected_schema
