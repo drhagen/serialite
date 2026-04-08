@@ -51,6 +51,9 @@ class SerializableMixin(Serializable):
                 discriminator_field = {"_type": {"type": "string", "enum": [cls.__name__]}}
                 schema = schema | {"properties": discriminator_field | schema["properties"]}
 
+            if cls.__doc__ is not None:
+                schema = schema | {"description": cls.__doc__}
+
             return schema
         else:
             return serializer_to_ref(cls)
@@ -135,7 +138,7 @@ class AbstractSerializableMixin(Serializable):
     @classmethod
     def to_openapi_schema(cls, serializer_to_ref: SerializerToRef, *, force: bool = False) -> Any:
         if force:
-            return {
+            schema = {
                 "type": "object",
                 "discriminator": {"propertyName": "_type"},
                 "oneOf": [
@@ -143,5 +146,10 @@ class AbstractSerializableMixin(Serializable):
                     for subclass in cls.__subclass_serializers__.values()
                 ],
             }
+
+            if cls.__doc__ is not None:
+                schema["description"] = cls.__doc__
+
+            return schema
         else:
             return serializer_to_ref(cls)

@@ -192,6 +192,60 @@ def test_fastapi_not_too_strict(client_fixture, request):
     assert isinstance(response.json()["foo"]["b"], float)
 
 
+def test_docstring_in_schema():
+    app = FastAPI()
+
+    @serializable
+    @dataclass(frozen=True)
+    class DocumentedDataclass:
+        """User docstring."""
+
+        x: int
+
+    @serializable
+    @dataclass(frozen=True)
+    class UndocumentedDataclass:
+        x: int
+
+    class DocumentedMixin(SerializableMixin):
+        """Mixin docstring."""
+
+        __fields_serializer__ = FieldsSerializer(x=int)
+
+        def __init__(self, x: int):
+            self.x = x
+
+    class UndocumentedMixin(SerializableMixin):
+        __fields_serializer__ = FieldsSerializer(x=int)
+
+        def __init__(self, x: int):
+            self.x = x
+
+    @app.post("/a")
+    def a(v: DocumentedDataclass) -> DocumentedDataclass:
+        return v
+
+    @app.post("/b")
+    def b(v: UndocumentedDataclass) -> UndocumentedDataclass:
+        return v
+
+    @app.post("/c")
+    def c(v: DocumentedMixin) -> DocumentedMixin:
+        return v
+
+    @app.post("/d")
+    def d(v: UndocumentedMixin) -> UndocumentedMixin:
+        return v
+
+    client = TestClient(app)
+    schemas = client.get("/openapi.json").json()["components"]["schemas"]
+
+    assert schemas["DocumentedDataclass"]["description"] == "User docstring."
+    assert schemas["UndocumentedDataclass"]["description"] == "UndocumentedDataclass(x: int)"
+    assert schemas["DocumentedMixin"]["description"] == "Mixin docstring."
+    assert "description" not in schemas["UndocumentedMixin"]
+
+
 @pytest.fixture
 def fastapi_pydantic_client():
     app = FastAPI()
