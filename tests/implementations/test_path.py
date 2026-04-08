@@ -28,5 +28,5 @@ def test_to_data_failure():
 
 def test_to_openapi_schema():
     schema = path_serializer.to_openapi_schema(lambda _: {})
-    expected_schema = {"type": "string"}
+    expected_schema = {"type": "string", "format": "path"}
     assert schema == expected_schema

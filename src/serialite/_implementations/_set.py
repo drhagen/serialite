@@ -53,6 +53,7 @@ class SetSerializer[Element](Serializer[set[Element]]):
         return {
             "type": "array",
             "items": self.element_serializer.to_openapi_schema(serializer_to_ref),
+            "uniqueItems": True,
         }
 
 

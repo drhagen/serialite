@@ -37,5 +37,5 @@ def test_error_to_data_and_to_string():
 
 def test_to_openapi_schema():
     schema = none_serializer.to_openapi_schema(lambda _: {})
-    expected_schema = {"nullable": True}
+    expected_schema = {"type": "null"}
     assert schema == expected_schema

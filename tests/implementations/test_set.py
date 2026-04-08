@@ -83,5 +83,5 @@ def test_child_components_collected():
 
 def test_to_openapi_schema():
     schema = set_serializer.to_openapi_schema(lambda _: {})
-    expected_schema = {"type": "array", "items": {"type": "number"}}
+    expected_schema = {"type": "array", "items": {"type": "number"}, "uniqueItems": True}
     assert schema == expected_schema
