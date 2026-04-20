@@ -1,10 +1,26 @@
 from datetime import datetime
+from enum import Enum, IntEnum, StrEnum
 from typing import Any, Dict, List, Literal, NewType, Optional, Tuple, Union
 from uuid import UUID
 
 import pytest
 
 from serialite import Success, serializer
+
+
+class Color(Enum):
+    RED = "red"
+    GREEN = "green"
+
+
+class Priority(IntEnum):
+    LOW = 1
+    HIGH = 2
+
+
+class Status(StrEnum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
 
 
 @pytest.mark.parametrize(
@@ -27,6 +43,9 @@ from serialite import Success, serializer
         (tuple[int, str], [5, "a"], (5, "a")),
         (Dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
         (dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
+        (Color, "RED", Color.RED),
+        (Priority, "LOW", Priority.LOW),
+        (Status, "ACTIVE", Status.ACTIVE),
     ],
 )
 def test_dispatch(data_type, data, value):
