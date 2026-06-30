@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 import pytest
@@ -156,3 +157,18 @@ def test_raise_errors_in_alt():
 def test_raise_errors_on_empty():
     with pytest.raises(ValueError):
         raise_errors(Errors())
+
+
+def test_raise_errors_propagates_through_context_manager():
+    @contextmanager
+    def resource():
+        yield
+
+    real_error = ValueError("the real error")
+    errors = Errors.one(real_error, location=["path"])
+
+    with pytest.raises(ValidationExceptionGroup) as exc_info:
+        with resource():
+            raise_errors(errors)
+
+    assert exc_info.value.errors == (ErrorElement(real_error, location=("path",)),)

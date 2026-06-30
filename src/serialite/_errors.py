@@ -24,7 +24,9 @@ class ValidationError(Exception):
         return self.message
 
 
-@dataclass(frozen=True, slots=True, init=False)
+# Not frozen: as an exception unwinds, contextlib (and similar) assign
+# __traceback__ at the Python level, which a frozen __setattr__ would reject.
+@dataclass(init=False)
 class ValidationExceptionGroup(ExceptionGroup):
     """An ExceptionGroup raised by Errors.raise_on_errors.
 
