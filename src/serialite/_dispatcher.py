@@ -1,7 +1,7 @@
 __all__ = ["serializer"]
 
 from abc import get_cache_token
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from types import GenericAlias, UnionType
 from typing import Any, Literal, NewType, TypeAliasType, Union, get_origin
@@ -179,6 +179,13 @@ def string_serializer(cls):
     from ._implementations._string import StringSerializer
 
     return StringSerializer()
+
+
+@serializer.register(date)
+def date_serializer(cls):
+    from ._implementations._date import DateSerializer
+
+    return DateSerializer()
 
 
 @serializer.register(datetime)
