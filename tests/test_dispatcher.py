@@ -4,7 +4,15 @@ from uuid import UUID
 
 import pytest
 
-from serialite import Success, serializer
+from serialite import (
+    Errors,
+    Failure,
+    Serializable,
+    StringSerializer,
+    Success,
+    ValidationError,
+    serializer,
+)
 
 
 @pytest.mark.parametrize(
@@ -134,3 +142,75 @@ def test_dispatch_dict_with_nested_type_alias_str_key():
     dict_serializer = serializer(dict[NestedKey, int])
     assert dict_serializer.from_data({"a": 1, "b": 2}) == Success({"a": 1, "b": 2})
     assert dict_serializer.to_data({"a": 1, "b": 2}) == {"a": 1, "b": 2}
+
+
+def test_dispatch_serializable_subclass_of_registered_type():
+    class Tag(str, Serializable):
+        @classmethod
+        def from_data(cls, data):
+            if not isinstance(data, str) or not data.startswith("tag:"):
+                return Failure(Errors.one(ValidationError(f"Not a tag: {data!r}")))
+            return Success(cls(data))
+
+        def to_data(self):
+            return str(self)
+
+    tag_serializer = serializer(Tag)
+    assert tag_serializer is Tag  # the class is its own serializer
+
+    # Recovering a Tag (not a plain str) proves Tag.from_data/to_data run.
+    assert isinstance(tag_serializer.from_data("tag:x").unwrap(), Tag)
+    assert tag_serializer.to_data(Tag("tag:x")) == "tag:x"
+
+    # A plain string is accepted by the builtin StringSerializer but must be
+    # rejected here, proving Tag.from_data runs rather than StringSerializer.
+    assert isinstance(tag_serializer.from_data("plain"), Failure)
+
+
+def test_dispatch_explicit_registration_overrides_serializable_subclass():
+    class Widget(str, Serializable):
+        pass
+
+    override = StringSerializer()
+    serializer.register(Widget, lambda cls: override)
+
+    assert serializer(Widget) is override
+
+
+def test_dispatch_generic_serializable_subclass_of_registered_type():
+    class TypedList[T](list, Serializable):
+        @classmethod
+        def from_data(cls, data):
+            if not isinstance(data, list):
+                return Failure(Errors.one(ValidationError(f"Not a list: {data!r}")))
+            return Success(cls(data))
+
+        def to_data(self):
+            return list(self)
+
+    typed_list_serializer = serializer(TypedList[int])
+
+    # The builtin list serializer would yield a plain list. Recovering a
+    # TypedList proves TypedList.from_data runs instead of ListSerializer.
+    parsed = typed_list_serializer.from_data([1, 2, 3])
+    assert isinstance(parsed.unwrap(), TypedList)
+    assert typed_list_serializer.to_data(TypedList([1, 2, 3])) == [1, 2, 3]
+
+
+def test_dispatch_generic_serializable_subclass_without_registered_base():
+    class Box[T](Serializable):
+        def __init__(self, value):
+            self.value = value
+
+        @classmethod
+        def from_data(cls, data):
+            return Success(cls(data["value"]))
+
+        def to_data(self):
+            return {"value": self.value}
+
+    # Unlike TypedList (whose origin subclasses the registered list), Box's
+    # origin has no registered serializer. This covers the plain generic path.
+    box_serializer = serializer(Box[int])
+    assert box_serializer.from_data({"value": 7}).unwrap().value == 7
+    assert box_serializer.to_data(Box(7)) == {"value": 7}
