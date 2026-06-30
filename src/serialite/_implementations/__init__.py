@@ -1,4 +1,5 @@
 from ._boolean import BooleanSerializer
+from ._date import DateSerializer, InvalidDateError
 from ._date_time import DateTimeSerializer, InvalidDateTimeError
 from ._dictionary import (
     ExpectedLength2ListError,
