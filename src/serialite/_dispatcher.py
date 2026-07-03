@@ -7,7 +7,7 @@ from types import GenericAlias, UnionType
 from typing import Any, Literal, NewType, TypeAliasType, Union, get_origin
 from uuid import UUID
 
-from ._base import Serializer
+from ._base import Serializable, Serializer
 
 
 def subclassdispatch(func):
@@ -51,6 +51,15 @@ def subclassdispatch(func):
     registry = {}
     dispatch_cache = WeakKeyDictionary()
     cache_token = None
+
+    def is_own_serializer(cls):
+        """Whether `cls` serializes its own instances rather than a base's.
+
+        A `Serializable` subclass defines `from_data`/`to_data` on itself, so it
+        is its own serializer. That must win over the MRO lookup in `_find_impl`,
+        which would otherwise pick a base class's registered serializer.
+        """
+        return cls not in registry and issubclass(cls, Serializable)
 
     def dispatch(cls: type):
         """generic_func.dispatch(cls) -> <function implementation>
@@ -97,12 +106,17 @@ def subclassdispatch(func):
                     if origin is Literal:
                         # issubclass does not work on Literal either
                         impl = literal_serializer
+                    elif is_own_serializer(origin):
+                        # e.g. a generic Serializable subclass such as Box[int]
+                        impl = registry[object]
                     else:
                         # This is the standard Generic class
                         impl = _find_impl(origin, registry)
                 elif cls is Any:
                     # issubclass does not work on Any; must directly inject this
                     impl = any_serializer
+                elif is_own_serializer(cls):
+                    impl = registry[object]
                 else:
                     impl = _find_impl(cls, registry)
             dispatch_cache[cls] = impl
