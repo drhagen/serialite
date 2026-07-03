@@ -30,7 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi >=0.121,<0.136",
+    "fastapi >=0.121,<0.140",
     "pydantic >= 2.12,<3",
 ]
 
@@ -58,7 +58,7 @@ lint = [
     "ruff == 0.15.*",
 ]
 typecheck = [
-    "ty == 0.0.*",
+    "ty == 0.0.37", # Last version to not error on Returns Result
 ]
 
 [tool.uv]
