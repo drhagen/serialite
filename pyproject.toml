@@ -58,7 +58,7 @@ lint = [
     "ruff == 0.15.*",
 ]
 typecheck = [
-    "ty == 0.0.37", # Last version to not error on Returns Result
+    "ty >= 0.0.65",
 ]
 
 [tool.uv]
