@@ -3,7 +3,7 @@ __all__ = ["abstract_serializable", "serializable"]
 import dataclasses
 from dataclasses import MISSING
 from functools import wraps
-from typing import get_type_hints
+from typing import cast, get_type_hints
 
 from ._base import Serializable, Serializer
 from ._descriptors import classproperty
@@ -15,7 +15,7 @@ from ._mixins import AbstractSerializableMixin, SerializableMixin
 
 
 # Inspired by https://stackoverflow.com/a/14412901/1485877
-def flexible_decorator(dec):
+def flexible_decorator[F](dec: F) -> F:
     """A decorator decorator to allow it to be used with or without parameters.
 
     Decorate a decorator like this:
@@ -59,7 +59,8 @@ def flexible_decorator(dec):
             # Decorator called with arguments
             return lambda f: dec(f, *args, **kwargs)
 
-    return new_dec
+    # The wrapper accepts the same arguments as the bare decorator, so advertise its signature.
+    return cast(F, new_dec)
 
 
 def infer_fields_serializer(cls):
@@ -105,7 +106,7 @@ def infer_fields_serializer(cls):
 
 
 @flexible_decorator
-def serializable(cls):
+def serializable[T](cls: type[T]) -> type[T]:
     """Decorator that provides Serializable interface.
 
     This decorator can be applied to a dataclass. It inserts `SerializableMixin`
@@ -234,7 +235,7 @@ def infer_subclass_serializers(cls):
 
 
 @flexible_decorator
-def abstract_serializable(cls):
+def abstract_serializable[T](cls: type[T]) -> type[T]:
     """Decorator that provides AbstractSerializableMixin interface.
 
     This decorator can be applied to an abstract class. It inserts
