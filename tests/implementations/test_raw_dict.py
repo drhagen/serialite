@@ -47,7 +47,7 @@ def test_from_data_failure_value():
 
 
 def test_to_data_failure():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = raw_dict_serializer.to_data(12.3)
 
 

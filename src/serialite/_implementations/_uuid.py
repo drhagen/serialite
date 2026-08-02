@@ -15,7 +15,7 @@ class UuidSerializer(Serializer[UUID]):
         if isinstance(data, str):
             try:
                 value = UUID(data)
-            except Exception:
+            except ValueError:
                 return Failure(Errors.one(InvalidUuidError(data)))
             else:
                 return Success(value)
@@ -24,7 +24,7 @@ class UuidSerializer(Serializer[UUID]):
 
     def to_data(self, value: UUID):
         if not isinstance(value, UUID):
-            raise ValueError(f"Not a UUID: {value!r}")
+            raise TypeError(f"Not a UUID: {value!r}")
         return str(value)
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):

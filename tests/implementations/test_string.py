@@ -26,7 +26,7 @@ def test_from_data_failure():
 
 
 def test_to_data_failure():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = string_serializer.to_data(12.5)
 
 

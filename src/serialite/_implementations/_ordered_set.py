@@ -39,7 +39,7 @@ class OrderedSetSerializer[Element](Serializer[OrderedSet[Element]]):
 
     def to_data(self, value: OrderedSet[Element]):
         if not isinstance(value, OrderedSet):
-            raise ValueError(f"Not an OrderedSet: {value!r}")
+            raise TypeError(f"Not an OrderedSet: {value!r}")
 
         return [self.element_serializer.to_data(item) for item in value]
 

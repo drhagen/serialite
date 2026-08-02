@@ -1,7 +1,7 @@
 __all__ = ["TupleLengthError", "TupleSerializer"]
 
 from dataclasses import dataclass
-from typing import Any, Unpack
+from typing import Any
 
 from .._base import Serializer, SerializerToRef
 from .._decorators import serializable
@@ -18,11 +18,11 @@ except ImportError:
         pass
 
 
-class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]):
-    def __init__(self, *element_serializers: Unpack[TupleArguments]):
+class TupleSerializer[*TupleArguments](Serializer[tuple[*TupleArguments]]):
+    def __init__(self, *element_serializers: *TupleArguments):
         self.element_serializers = element_serializers
 
-    def from_data(self, data) -> Result[tuple[Unpack[TupleArguments]]]:
+    def from_data(self, data) -> Result[tuple[*TupleArguments]]:
         # Return early if the data isn't even a list
         if not isinstance(data, list):
             return Failure(Errors.one(ExpectedListError(data)))
@@ -48,10 +48,10 @@ class TupleSerializer[*TupleArguments](Serializer[tuple[Unpack[TupleArguments]]]
         else:
             return Success(tuple(values))
 
-    def to_data(self, value: tuple[Unpack[TupleArguments]]):
+    def to_data(self, value: tuple[*TupleArguments]):
         # Accept an ndarray or list for ergonomics
         if not isinstance(value, (tuple, list, ndarray)):
-            raise ValueError(f"Not a tuple: {value!r}")
+            raise TypeError(f"Not a tuple: {value!r}")
         if len(value) != len(self.element_serializers):
             raise ValueError(
                 f"Has {len(value)} elements, not {len(self.element_serializers)}: {value}"

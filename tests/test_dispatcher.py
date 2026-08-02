@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import Any, Dict, List, Literal, NewType, Optional, Tuple, Union
+from datetime import UTC, datetime
+from typing import Any, Dict, List, Literal, NewType, Optional, Tuple, Union  # noqa: UP035
 from uuid import UUID
 
 import pytest
@@ -22,19 +22,19 @@ from serialite import (
         (int, 3, 3),
         (float, 2.5, 2.5),
         (str, "a", "a"),
-        (datetime, "2018-06-28 03:18:53", datetime(2018, 6, 28, 3, 18, 53)),
+        (datetime, "2018-06-28 03:18:53+00:00", datetime(2018, 6, 28, 3, 18, 53, tzinfo=UTC)),
         (
             UUID,
             "00112233-4455-6677-8899-aabbccddeeff",
             UUID("00112233-4455-6677-8899-aabbccddeeff"),
         ),
-        (List[int], [11, 22, 33], [11, 22, 33]),
-        (List[str], ["a", "b"], ["a", "b"]),
+        (list[int], [11, 22, 33], [11, 22, 33]),
         (list[str], ["a", "b"], ["a", "b"]),
-        (Tuple[int, str], [5, "a"], (5, "a")),
+        (List[str], ["a", "b"], ["a", "b"]),  # noqa: UP006
         (tuple[int, str], [5, "a"], (5, "a")),
-        (Dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
+        (Tuple[int, str], [5, "a"], (5, "a")),  # noqa: UP006
         (dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),
+        (Dict[str, int], {"a": 11, "b": 22}, {"a": 11, "b": 22}),  # noqa: UP006
     ],
 )
 def test_dispatch(data_type, data, value):
@@ -44,7 +44,7 @@ def test_dispatch(data_type, data, value):
     assert this_serializer.to_data(value) == data
 
 
-@pytest.mark.parametrize("type", [Optional[int], int | None])
+@pytest.mark.parametrize("type", [Optional[int], int | None])  # noqa: UP045
 def test_dispatch_optional(type):
     optional_serializer = serializer(type)
 
@@ -54,7 +54,7 @@ def test_dispatch_optional(type):
     assert optional_serializer.to_data(None) is None
 
 
-@pytest.mark.parametrize("type", [Union[str, int], str | int])
+@pytest.mark.parametrize("type", [Union[str, int], str | int])  # noqa: UP007
 def test_dispatch_union(type):
     union_serializer = serializer(type)
 

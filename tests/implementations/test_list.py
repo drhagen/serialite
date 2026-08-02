@@ -38,7 +38,7 @@ def test_from_data_failure_element():
 
 
 def test_to_data_failure_top_level():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = list_serializer.to_data(12.5)
 
 

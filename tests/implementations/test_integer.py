@@ -27,7 +27,7 @@ class TestIntegerSerializer:
         )
 
     def test_to_data_failure(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(TypeError):
             _ = integer_serializer.to_data(13.5)
 
 

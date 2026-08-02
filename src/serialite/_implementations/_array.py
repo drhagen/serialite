@@ -34,7 +34,7 @@ class ArraySerializer[Element](Serializer[np.ndarray]):
 
     def to_data(self, value: np.ndarray):
         if not isinstance(value, np.ndarray):
-            raise ValueError(f"Not an array: {value!r}")
+            raise TypeError(f"Not an array: {value!r}")
 
         return self.list_serializer.to_data(value.tolist())
 

@@ -31,7 +31,7 @@ class TryUnionSerializer(Serializer):
         for serializer in self.serializers:
             try:
                 return serializer.to_data(value)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001, no way around this if we want to be general
                 errors.append(e)
 
         raise ValueError(

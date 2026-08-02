@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -40,13 +40,13 @@ def test_from_data_rejects_datetime_string():
 
 
 def test_to_data_failure():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = date_serializer.to_data("1969")
 
 
 def test_to_data_rejects_datetime():
-    with pytest.raises(ValueError):
-        _ = date_serializer.to_data(datetime(1969, 7, 20, 20, 17, 40))
+    with pytest.raises(TypeError):
+        _ = date_serializer.to_data(datetime(1969, 7, 20, 20, 17, 40, tzinfo=UTC))
 
 
 def test_date_error_to_data_and_to_string():

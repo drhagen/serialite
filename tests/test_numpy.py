@@ -45,12 +45,12 @@ def test_from_data_failure():
 
 
 def test_to_data_failure_not_array():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = array_serializer.to_data(3)
 
 
 def test_to_data_failure_bad_element():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = array_serializer.to_data([12, 15, 18])
 
 

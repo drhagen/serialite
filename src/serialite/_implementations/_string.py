@@ -26,7 +26,7 @@ class StringSerializer(Serializer[str]):
 
     def to_data(self, value: str):
         if not isinstance(value, str):
-            raise ValueError(f"Not a string: {value!r}")
+            raise TypeError(f"Not a string: {value!r}")
         if self.accept is not None and not self.accept_regex.fullmatch(value):
             raise ValueError(f"Does not match regex r'{self.accept}': {value!r}")
         return value

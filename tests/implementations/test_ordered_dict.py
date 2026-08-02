@@ -59,7 +59,7 @@ def test_from_data_failure_items():
 
 
 def test_to_data_failure():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = ordered_dict_serializer.to_data([12.34, 15.5])
 
 

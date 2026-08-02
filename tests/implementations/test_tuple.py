@@ -44,7 +44,7 @@ def test_from_data_failure_element():
 
 
 def test_to_data_failure_wrong_type():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = tuple_serializer.to_data(12.5)
 
 

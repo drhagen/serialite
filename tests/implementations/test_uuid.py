@@ -33,7 +33,7 @@ def test_from_data_failure_invalid_string():
 
 
 def test_to_data_failure():
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         # string instead of UUID object
         _ = uuid_serializer.to_data("00112233-4455-6677-8899-aabbccddeeff")
 

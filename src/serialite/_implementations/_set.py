@@ -40,7 +40,7 @@ class SetSerializer[Element](Serializer[set[Element]]):
 
     def to_data(self, value: set[Element]):
         if not isinstance(value, set):
-            raise ValueError(f"Not a set: {value!r}")
+            raise TypeError(f"Not a set: {value!r}")
 
         return [self.element_serializer.to_data(item) for item in value]
 

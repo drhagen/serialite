@@ -167,8 +167,7 @@ def test_raise_errors_propagates_through_context_manager():
     real_error = ValueError("the real error")
     errors = Errors.one(real_error, location=["path"])
 
-    with pytest.raises(ValidationExceptionGroup) as exc_info:
-        with resource():
-            raise_errors(errors)
+    with pytest.raises(ValidationExceptionGroup) as exc_info, resource():
+        raise_errors(errors)
 
     assert exc_info.value.errors == (ErrorElement(real_error, location=("path",)),)

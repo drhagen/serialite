@@ -15,7 +15,7 @@ class BooleanSerializer(Serializer[bool]):
 
     def to_data(self, value: bool):
         if not isinstance(value, bool):
-            raise ValueError(f"Not an bool: {value!r}")
+            raise TypeError(f"Not an bool: {value!r}")
         return value
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):
