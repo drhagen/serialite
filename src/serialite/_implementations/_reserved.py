@@ -1,6 +1,6 @@
 __all__ = ["ReservedSerializer", "ReservedValueError"]
 
-from collections.abc import Set
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from typing import Any
 
@@ -12,7 +12,9 @@ from .._result import Failure, Result, Success
 
 
 class ReservedSerializer[Element](Serializer[Element]):
-    def __init__(self, internal_serializer: Serializer[Element], *, reserved: Set[Element]):
+    def __init__(
+        self, internal_serializer: Serializer[Element], *, reserved: AbstractSet[Element]
+    ):
         self.internal_serializer = internal_serializer
         self.reserved = reserved
 

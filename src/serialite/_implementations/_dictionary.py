@@ -62,7 +62,7 @@ class OrderedDictSerializer[Key, Value](Serializer[dict[Key, Value]]):
 
     def to_data(self, value: dict[Key, Value]):
         if not isinstance(value, dict):
-            raise ValueError(f"Not an dict: {value!r}")
+            raise TypeError(f"Not an dict: {value!r}")
 
         return [
             [self.key_serializer.to_data(key), self.value_serializer.to_data(value)]
@@ -122,7 +122,7 @@ class RawDictSerializer[Value](Serializer[dict[str, Value]]):
 
     def to_data(self, value: dict[str, Value]):
         if not isinstance(value, dict):
-            raise ValueError(f"Not an dict: {value!r}")
+            raise TypeError(f"Not an dict: {value!r}")
 
         return {
             self.key_serializer.to_data(key): self.value_serializer.to_data(value)

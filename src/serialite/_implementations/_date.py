@@ -29,7 +29,7 @@ class DateSerializer(Serializer[date]):
         # accept a datetime and serialize it with a time component. Exclude it
         # explicitly.
         if not isinstance(value, date) or isinstance(value, datetime):
-            raise ValueError(f"Not a Date: {value!r}")
+            raise TypeError(f"Not a Date: {value!r}")
         return value.isoformat()
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):

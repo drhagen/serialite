@@ -22,7 +22,7 @@ def test_from_data_failure(data):
 
 def test_to_data_failure():
     # to_data expects a pathlib.Path instance
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         _ = path_serializer.to_data("a/b/c.txt")
 
 

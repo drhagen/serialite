@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv_build == 0.11.*"]
+requires = ["uv_build == 0.12.*"]
 build-backend = "uv_build"
 
 [project]
@@ -25,12 +25,12 @@ classifiers = [
 ]
 
 dependencies = [
-    "returns >= 0.20,<0.27",
+    "returns >= 0.20,<0.30",
 ]
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi >=0.121,<0.140",
+    "fastapi >=0.121,<0.142",
     "pydantic >= 2.12,<3",
 ]
 
@@ -47,7 +47,7 @@ Repository = "https://github.com/drhagen/serialite"
 
 [dependency-groups]
 nox = [
-    "nox-uv == 0.7.*",
+    "nox-uv == 0.8.*",
 ]
 test = [
     "pytest == 9.*",
@@ -55,7 +55,7 @@ test = [
     "httpx >= 0.25.2", # Needed by starlette testclient
 ]
 lint = [
-    "ruff == 0.15.*",
+    "ruff == 0.16.*",
 ]
 typecheck = [
     "ty >= 0.0.65",
@@ -96,16 +96,15 @@ extend-select = [
     "N", # pep8-naming
     "RUF", # ruff
     "B", # flake8-bugbear
-    "N", # flake8-broken-line
     "C4", # flake8-comprehensions
-    "PIE", # flake8-pie
     "PT", # flake8-pytest-style
     "PTH", # flake8-use-pathlib
     "ERA", # flake8-eradicate
 ]
 # F402: Variable shadowing is perfectly fine
 # PT011: testing for broad exceptions is fine
-extend-ignore = ["F402", "PT011"]
+# SIM118: x in my_dict.keys() is better than x in my_dict
+extend-ignore = ["F402", "PT011", "SIM118"]
 
 [tool.ruff.lint.per-file-ignores]
 # F401: unused-import; Allow unused imports in __init__.py files

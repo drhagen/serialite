@@ -24,7 +24,7 @@ class IntegerSerializer(Serializer[int]):
 
     def to_data(self, value: int):
         if not isinstance(value, int):
-            raise ValueError(f"Not an int: {value!r}")
+            raise TypeError(f"Not an int: {value!r}")
         return value
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):

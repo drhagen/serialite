@@ -30,7 +30,7 @@ class DateTimeSerializer(Serializer[datetime]):
 
     def to_data(self, value):
         if not isinstance(value, datetime):
-            raise ValueError(f"Not a DateTime: {value!r}")
+            raise TypeError(f"Not a DateTime: {value!r}")
         return value.isoformat(sep=" ")
 
     def to_openapi_schema(self, serializer_to_ref: SerializerToRef, *, force: bool = False):

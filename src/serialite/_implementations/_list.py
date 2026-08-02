@@ -41,7 +41,7 @@ class ListSerializer[Element](Serializer[list[Element]]):
     def to_data(self, value: list[Element]):
         # Accept an ndarray also for ergonomics
         if not isinstance(value, (list, ndarray)):
-            raise ValueError(f"Not a list: {value!r}")
+            raise TypeError(f"Not a list: {value!r}")
 
         return [self.element_serializer.to_data(item) for item in value]
 
