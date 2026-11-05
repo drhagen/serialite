@@ -1,9 +1,10 @@
 __all__ = ["abstract_serializable", "serializable"]
 
 import dataclasses
+from collections.abc import Callable
 from dataclasses import MISSING
 from functools import wraps
-from typing import cast, get_type_hints
+from typing import cast, get_type_hints, overload
 
 from ._base import Serializable, Serializer
 from ._descriptors import classproperty
@@ -63,7 +64,7 @@ def flexible_decorator[F](dec: F) -> F:
     return cast(F, new_dec)
 
 
-def infer_fields_serializer(cls):
+def infer_fields_serializer(cls, *, hide_default: bool = True):
     from . import serializer
 
     if "__fields_serializer__" in cls.__dict__:
@@ -98,22 +99,37 @@ def infer_fields_serializer(cls):
             elif maybe_factory_default is not MISSING:
                 field_default = maybe_factory_default()
 
-            serializer_fields[field.name] = SingleField(field_serializer, default=field_default)
+            serializer_fields[field.name] = SingleField(
+                field_serializer, default=field_default, hide_default=hide_default
+            )
 
         cls.__fields_serializer__ = FieldsSerializer(**serializer_fields)
     else:
         raise TypeError("The serializable decorator can only be applied to dataclasses.")
 
 
-@flexible_decorator
-def serializable[T](cls: type[T]) -> type[T]:
+@overload
+def serializable[T](cls: type[T], /) -> type[T]: ...
+
+
+@overload
+def serializable[T](*, hide_default: bool = True) -> Callable[[type[T]], type[T]]: ...
+
+
+def serializable(cls=None, /, *, hide_default=True):
     """Decorator that provides Serializable interface.
 
     This decorator can be applied to a dataclass. It inserts `SerializableMixin`
     at the front of the list of base classes and generates a reasonable
     `__fields_serializer__` class attribute from the dataclass fields.
     """
-    infer_fields_serializer(cls)
+    if cls is None:
+        return lambda c: _make_serializable(c, hide_default=hide_default)
+    return _make_serializable(cls, hide_default=hide_default)
+
+
+def _make_serializable(cls, *, hide_default):
+    infer_fields_serializer(cls, hide_default=hide_default)
 
     new_bases = (SerializableMixin, *cls.__bases__)
     try:

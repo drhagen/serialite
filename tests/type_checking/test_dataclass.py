@@ -28,3 +28,16 @@ assert_type(result, Result[UserProfile])
 
 errors = result.failure()
 assert_type(errors, Errors)
+
+
+@serializable(hide_default=False)
+@dataclass(frozen=True, kw_only=True, slots=True)
+class ShownDefaults(Serializable):
+    age: int
+    name: str = "anonymous"
+
+
+shown = ShownDefaults.from_data({"age": 30})
+assert_type(shown, Result[ShownDefaults])
+assert_type(shown.unwrap(), ShownDefaults)
+assert_type(shown.unwrap().name, str)

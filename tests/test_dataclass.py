@@ -149,3 +149,26 @@ def test_field_serializer_is_type():
     assert IsType.from_data(bad_data) == Failure(
         Errors.one(ExpectedStringError(2), location=["b", 1])
     )
+
+
+def test_hide_default_false():
+    @serializable(hide_default=False)
+    @dataclass(frozen=True)
+    class Defaults:
+        a: int
+        b: str = "x"
+        c: list[int] = dataclasses.field(default_factory=list)
+        d: int | None = None
+
+    data = Defaults(1).to_data()
+    assert data == {"a": 1, "b": "x", "c": [], "d": None}
+    assert Defaults.from_data(data) == Success(Defaults(1))
+
+
+def test_hide_default_false_with_field_serializer():
+    @serializable(hide_default=False)
+    @dataclass(frozen=True)
+    class WithFieldSerializer:
+        a: int = field(default=1, serializer=PositiveIntegerSerializer())
+
+    assert WithFieldSerializer().to_data() == {"a": 1}

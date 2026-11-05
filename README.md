@@ -34,6 +34,20 @@ For `dataclass`es, it is even easier. There is a decorator `serializable` that i
 `SerializableMixin` into the list of base classes after the `dataclass` decorator has run and also
 generates `__fields_serializer__` from the data class attributes.
 
+By default, fields whose value equals their default are left out of the serialized data. Pass
+`hide_default=False` to include them:
+
+```python
+@serializable(hide_default=False)
+@dataclass(frozen=True)
+class Foo:
+    a: int
+    b: str = "x"
+
+
+Foo(1).to_data()  # {'a': 1, 'b': 'x'}
+```
+
 Finding the correct serializer for each type can be a pain, so
 `serializer(cls: type) -> Serializer` is provided as a convenience function. This is a single
 dispatch function, which looks up the serializer registered for a particular type. For example,
