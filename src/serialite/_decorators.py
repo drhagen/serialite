@@ -109,7 +109,7 @@ def infer_fields_serializer(cls, *, hide_default: bool = True):
 
 
 @overload
-def serializable[T](cls: type[T], /) -> type[T]: ...
+def serializable[T](cls: type[T], /, *, hide_default: bool = True) -> type[T]: ...
 
 
 @overload
