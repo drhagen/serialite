@@ -51,6 +51,17 @@ def test_dataclass_basic(cls: type):
     assert cls.from_data(data) == Success(value)
 
 
+def test_serializable_empty_parentheses():
+    @serializable()
+    @dataclass(frozen=True)
+    class EmptyParens:
+        a: int
+        b: str = "x"
+
+    assert EmptyParens(1).to_data() == {"a": 1}
+    assert EmptyParens.from_data({"a": 1}) == Success(EmptyParens(1))
+
+
 @serializable
 @dataclass(frozen=True)
 class Default:
@@ -172,3 +183,13 @@ def test_hide_default_false_with_field_serializer():
         a: int = field(default=1, serializer=PositiveIntegerSerializer())
 
     assert WithFieldSerializer().to_data() == {"a": 1}
+
+
+def test_hide_default_false_fills_missing_fields():
+    @serializable(hide_default=False)
+    @dataclass(frozen=True)
+    class Defaults:
+        a: int
+        b: str = "x"
+
+    assert Defaults.from_data({"a": 1}) == Success(Defaults(1))

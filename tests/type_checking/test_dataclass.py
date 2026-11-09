@@ -41,3 +41,12 @@ shown = ShownDefaults.from_data({"age": 30})
 assert_type(shown, Result[ShownDefaults])
 assert_type(shown.unwrap(), ShownDefaults)
 assert_type(shown.unwrap().name, str)
+
+
+@serializable()
+@dataclass(frozen=True, kw_only=True, slots=True)
+class EmptyParens(Serializable):
+    age: int
+
+
+assert_type(EmptyParens.from_data({"age": 30}).unwrap(), EmptyParens)
