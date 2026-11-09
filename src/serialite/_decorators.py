@@ -1,9 +1,10 @@
 __all__ = ["abstract_serializable", "serializable"]
 
 import dataclasses
+from collections.abc import Callable
 from dataclasses import MISSING
 from functools import wraps
-from typing import cast, get_type_hints
+from typing import Any, Concatenate, Protocol, cast, get_type_hints, overload
 
 from ._base import Serializable, Serializer
 from ._descriptors import classproperty
@@ -14,56 +15,62 @@ from ._mixins import AbstractSerializableMixin, SerializableMixin
 # ruff: noqa: ERA001
 
 
+class FlexibleClassDecorator[**P](Protocol):
+    """A class decorator usable bare (`@foo`) or with keyword options (`@foo(...)`)."""
+
+    @overload
+    def __call__[T](self, cls: type[T], /) -> type[T]: ...
+
+    @overload
+    def __call__[T](
+        self, /, *args: P.args, **kwargs: P.kwargs
+    ) -> Callable[[type[T]], type[T]]: ...
+
+
 # Inspired by https://stackoverflow.com/a/14412901/1485877
-def flexible_decorator[F](dec: F) -> F:
-    """A decorator decorator to allow it to be used with or without parameters.
+def flexible_class_decorator[**P](
+    dec: Callable[Concatenate[type[Any], P], type[Any]],
+) -> FlexibleClassDecorator[P]:
+    """A decorator decorator to allow a class decorator to be used with or without parameters.
 
-    Decorate a decorator like this:
+    Decorate a class decorator whose options are all keyword-only like this:
 
-    @decorator
-    def multiply(f, factor=2):
-        # Multiply a function's return value by some factor
-        @wraps(f)
-        def wrap(*args, **kwargs):
-            return factor * f(*args, **kwargs)
-        return wrap
+    @flexible_class_decorator
+    def tag[T](cls: type[T], /, *, label: str = "default") -> type[T]:
+        cls.label = label
+        return cls
 
     Then use the decorator in any of the following ways:
 
-    @multiply
-    def f1(x, y):
-        return x + y
+    @tag
+    class A: ...
 
-    @multiply(3)
-    def f2(x, y):
-        return x * y
+    @tag()
+    class B: ...
 
-    @multiply(factor=5)
-    def f3(x, y):
-        return x - y
+    @tag(label="custom")
+    class C: ...
 
-    assert f1(2, 3) == (2 + 3) * 2
-    assert f2(2, 5) == (2 * 5) * 3
-    assert f3(8, 1) == (8 - 1) * 5
+    assert (A.label, B.label, C.label) == ("default", "default", "custom")
 
-    Note that this technique will fail if the decorator can be parameterized
-    with a single positional argument that is callable.
+    Because the options must be keyword-only, a single positional argument is
+    always the class being decorated, so there is no ambiguity between `@tag`
+    and `@tag(...)`.
     """
 
     @wraps(dec)
     def new_dec(*args, **kwargs):
-        if len(args) == 1 and len(kwargs) == 0 and callable(args[0]):
-            # Bare decorated function
+        if len(args) == 1 and len(kwargs) == 0:
+            # Bare decorated class
             return dec(args[0])
         else:
-            # Decorator called with arguments
-            return lambda f: dec(f, *args, **kwargs)
+            # Decorator called with options
+            return lambda cls: dec(cls, *args, **kwargs)
 
-    # The wrapper accepts the same arguments as the bare decorator, so advertise its signature.
-    return cast(F, new_dec)
+    return cast(FlexibleClassDecorator[P], new_dec)
 
 
-def infer_fields_serializer(cls):
+def infer_fields_serializer(cls, *, hide_default: bool = True):
     from . import serializer
 
     if "__fields_serializer__" in cls.__dict__:
@@ -98,22 +105,29 @@ def infer_fields_serializer(cls):
             elif maybe_factory_default is not MISSING:
                 field_default = maybe_factory_default()
 
-            serializer_fields[field.name] = SingleField(field_serializer, default=field_default)
+            serializer_fields[field.name] = SingleField(
+                field_serializer, default=field_default, hide_default=hide_default
+            )
 
         cls.__fields_serializer__ = FieldsSerializer(**serializer_fields)
     else:
         raise TypeError("The serializable decorator can only be applied to dataclasses.")
 
 
-@flexible_decorator
-def serializable[T](cls: type[T]) -> type[T]:
+@flexible_class_decorator
+def serializable[T](cls: type[T], /, *, hide_default: bool = True) -> type[T]:
     """Decorator that provides Serializable interface.
 
     This decorator can be applied to a dataclass. It inserts `SerializableMixin`
     at the front of the list of base classes and generates a reasonable
     `__fields_serializer__` class attribute from the dataclass fields.
+
+    It can be used bare (`@serializable`) or with options
+    (`@serializable(hide_default=False)`). If `hide_default` is `True` (the
+    default), fields whose value equals their default are omitted from the
+    serialized data.
     """
-    infer_fields_serializer(cls)
+    infer_fields_serializer(cls, hide_default=hide_default)
 
     new_bases = (SerializableMixin, *cls.__bases__)
     try:
@@ -234,8 +248,8 @@ def infer_subclass_serializers(cls):
     cls.__subclass_serializers__ = __subclass_serializers__
 
 
-@flexible_decorator
-def abstract_serializable[T](cls: type[T]) -> type[T]:
+@flexible_class_decorator
+def abstract_serializable[T](cls: type[T], /) -> type[T]:
     """Decorator that provides AbstractSerializableMixin interface.
 
     This decorator can be applied to an abstract class. It inserts
