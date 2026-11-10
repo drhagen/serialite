@@ -105,8 +105,14 @@ def infer_fields_serializer(cls, *, hide_default: bool = True):
             elif maybe_factory_default is not MISSING:
                 field_default = maybe_factory_default()
 
+            maybe_hide_default = field.metadata.get("hide_default", MISSING)
+            if maybe_hide_default is not MISSING:
+                field_hide_default = maybe_hide_default
+            else:
+                field_hide_default = hide_default
+
             serializer_fields[field.name] = SingleField(
-                field_serializer, default=field_default, hide_default=hide_default
+                field_serializer, default=field_default, hide_default=field_hide_default
             )
 
         cls.__fields_serializer__ = FieldsSerializer(**serializer_fields)
@@ -125,7 +131,8 @@ def serializable[T](cls: type[T], /, *, hide_default: bool = True) -> type[T]:
     It can be used bare (`@serializable`) or with options
     (`@serializable(hide_default=False)`). If `hide_default` is `True` (the
     default), fields whose value equals their default are omitted from the
-    serialized data.
+    serialized data. This sets the default for all fields; an individual field
+    can override it with `field(hide_default=...)`.
     """
     infer_fields_serializer(cls, hide_default=hide_default)
 

@@ -50,3 +50,15 @@ class EmptyParens(Serializable):
 
 
 assert_type(EmptyParens.from_data({"age": 30}).unwrap(), EmptyParens)
+
+
+@serializable
+@dataclass(frozen=True, kw_only=True, slots=True)
+class FieldShownDefault(Serializable):
+    age: int
+    name: str = field(default="anonymous", hide_default=False)
+    tags: list[str] = field(default_factory=list, hide_default=True)
+
+
+assert_type(FieldShownDefault(age=30).name, str)
+assert_type(FieldShownDefault(age=30).tags, list[str])

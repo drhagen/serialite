@@ -20,6 +20,7 @@ def field[T](
     default: T,
     default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
     serializer: Serializer[T] = ...,
+    hide_default: bool = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,
@@ -36,6 +37,7 @@ def field[T](
     default: Literal[_MISSING_TYPE.MISSING] = ...,
     default_factory: Callable[[], T] = ...,
     serializer: Serializer[T] = ...,
+    hide_default: bool = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,
@@ -52,6 +54,7 @@ def field[T](
     default: Literal[_MISSING_TYPE.MISSING] = ...,
     default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
     serializer: Serializer[T] = ...,
+    hide_default: bool = ...,
     init: bool = ...,
     repr: bool = ...,
     hash: bool | None = ...,
@@ -66,6 +69,7 @@ def field(
     default=MISSING,
     default_factory=MISSING,
     serializer=MISSING,
+    hide_default=MISSING,
     init=True,
     repr=True,
     hash=None,
@@ -73,7 +77,21 @@ def field(
     metadata=None,
     kw_only=MISSING,
 ):
-    serializer_metadata = (metadata if metadata is not None else {}) | {"serializer": serializer}
+    """Dataclass field with additional serialization options.
+
+    This is a drop-in replacement for `dataclasses.field` with these additional
+    options:
+
+    * `serializer`: the serializer to use for this field instead of the one
+      inferred from the field's type annotation.
+    * `hide_default`: whether to omit this field from the serialized data when
+      its value equals its default. If not provided, the `hide_default` option
+      of the `serializable` decorator is used.
+    """
+    serializer_metadata = (metadata if metadata is not None else {}) | {
+        "serializer": serializer,
+        "hide_default": hide_default,
+    }
     return dataclasses.field(
         default=default,
         default_factory=default_factory,

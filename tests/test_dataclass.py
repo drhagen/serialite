@@ -193,3 +193,39 @@ def test_hide_default_false_fills_missing_fields():
         b: str = "x"
 
     assert Defaults.from_data({"a": 1}) == Success(Defaults(1))
+
+
+def test_field_hide_default_false():
+    @serializable
+    @dataclass(frozen=True)
+    class FieldShown:
+        a: int
+        b: str = field(default="x", hide_default=False)
+        c: list[int] = field(default_factory=list, hide_default=False)
+        d: str = "y"
+
+    data = FieldShown(1).to_data()
+    assert data == {"a": 1, "b": "x", "c": []}
+    assert FieldShown.from_data(data) == Success(FieldShown(1))
+
+
+def test_field_hide_default_true_overrides_decorator():
+    @serializable(hide_default=False)
+    @dataclass(frozen=True)
+    class FieldHidden:
+        a: int
+        b: str = field(default="x", hide_default=True)
+        c: str = "y"
+
+    data = FieldHidden(1).to_data()
+    assert data == {"a": 1, "c": "y"}
+    assert FieldHidden.from_data(data) == Success(FieldHidden(1))
+
+
+def test_field_without_hide_default_uses_decorator():
+    @serializable(hide_default=False)
+    @dataclass(frozen=True)
+    class FieldInherits:
+        a: int = field(default=1, serializer=PositiveIntegerSerializer())
+
+    assert FieldInherits().to_data() == {"a": 1}
