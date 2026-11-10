@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  uv-version: "0.11.3"
+  uv-version: "0.13.7"
 
 jobs:
   pypi-publish:

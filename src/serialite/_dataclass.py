@@ -4,7 +4,7 @@ __all__ = ["field"]
 
 import dataclasses
 from collections.abc import Callable, Mapping
-from dataclasses import _MISSING_TYPE, MISSING
+from dataclasses import MISSING
 from typing import Any, Literal, overload
 
 from ._base import Serializer
@@ -18,7 +18,7 @@ from ._base import Serializer
 def field[T](
     *,
     default: T,
-    default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
+    default_factory: Literal[MISSING] = ...,
     serializer: Serializer[T] = ...,
     hide_default: bool = ...,
     init: bool = ...,
@@ -34,7 +34,7 @@ def field[T](
 @overload
 def field[T](
     *,
-    default: Literal[_MISSING_TYPE.MISSING] = ...,
+    default: Literal[MISSING] = ...,
     default_factory: Callable[[], T] = ...,
     serializer: Serializer[T] = ...,
     hide_default: bool = ...,
@@ -51,8 +51,8 @@ def field[T](
 @overload
 def field[T](
     *,
-    default: Literal[_MISSING_TYPE.MISSING] = ...,
-    default_factory: Literal[_MISSING_TYPE.MISSING] = ...,
+    default: Literal[MISSING] = ...,
+    default_factory: Literal[MISSING] = ...,
     serializer: Serializer[T] = ...,
     hide_default: bool = ...,
     init: bool = ...,

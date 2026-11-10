@@ -13,25 +13,25 @@ options.sessions = [
 ]
 
 
-@session(python=["3.12", "3.13", "3.14"], uv_groups=["test"])
+@session(python=["3.12", "3.13", "3.14", "3.15"], uv_groups=["test"])
 def test(s: Session):
     coverage_file = f".coverage.{s.python}"
     s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests")
 
 
-@session(python=["3.12", "3.13", "3.14"], uv_groups=["test"], uv_extras=["fastapi"])
+@session(python=["3.12", "3.13", "3.14", "3.15"], uv_groups=["test"], uv_extras=["fastapi"])
 def test_fastapi(s: Session):
     coverage_file = f".coverage.{s.python}.fastapi"
     s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests/fastapi")
 
 
-@session(python=["3.12", "3.13", "3.14"], uv_groups=["test"], uv_extras=["numpy"])
+@session(python=["3.12", "3.13", "3.14", "3.15"], uv_groups=["test"], uv_extras=["numpy"])
 def test_numpy(s: Session):
     coverage_file = f".coverage.{s.python}.numpy"
     s.run("coverage", "run", "--data-file", coverage_file, "-m", "pytest", "tests/test_numpy.py")
 
 
-@session(python=["3.12", "3.13", "3.14"], uv_groups=["test"], uv_extras=["ordered-set"])
+@session(python=["3.12", "3.13", "3.14", "3.15"], uv_groups=["test"], uv_extras=["ordered-set"])
 def test_ordered_set(s: Session):
     coverage_file = f".coverage.{s.python}.ordered_set"
     s.run(
