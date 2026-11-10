@@ -28,25 +28,14 @@ in the structure where the bad data exist.
 For new classes, it is recommended that the `Serializer` be implemented on the class itself. There is
 an abstract base class `Serializable` that classes can inherit from to indicate this. There is a mixin
 `SerializableMixin` that provides an implementation of `from_data` and `to_data` for any class that
-implements the `__fields_serializer` class attribute.
+implements the `__fields_serializer__` class attribute.
 
 For `dataclass`es, it is even easier. There is a decorator `serializable` that inserts
 `SerializableMixin` into the list of base classes after the `dataclass` decorator has run and also
 generates `__fields_serializer__` from the data class attributes.
 
 By default, fields whose value equals their default are left out of the serialized data. Pass
-`hide_default=False` to include them:
-
-```python
-@serializable(hide_default=False)
-@dataclass(frozen=True)
-class Foo:
-    a: int
-    b: str = "x"
-
-
-Foo(1).to_data()  # {'a': 1, 'b': 'x'}
-```
+`hide_default=False` to `serializable` or `field` to always include them.
 
 Finding the correct serializer for each type can be a pain, so
 `serializer(cls: type) -> Serializer` is provided as a convenience function. This is a single
