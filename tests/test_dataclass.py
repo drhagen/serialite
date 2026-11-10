@@ -222,6 +222,22 @@ def test_field_hide_default_true_overrides_decorator():
     assert FieldHidden.from_data(data) == Success(FieldHidden(1))
 
 
+def test_field_hide_default_true_overrides_decorator_with_factory():
+    @serializable(hide_default=False)
+    @dataclass(frozen=True)
+    class FactoryHidden:
+        a: int
+        b: list[int] = field(default_factory=list, hide_default=True)
+
+    data = FactoryHidden(1).to_data()
+    assert data == {"a": 1}
+    assert FactoryHidden.from_data(data) == Success(FactoryHidden(1))
+
+    non_default = FactoryHidden(1, [2, 3])
+    assert non_default.to_data() == {"a": 1, "b": [2, 3]}
+    assert FactoryHidden.from_data(non_default.to_data()) == Success(non_default)
+
+
 def test_field_without_hide_default_uses_decorator():
     @serializable(hide_default=False)
     @dataclass(frozen=True)
