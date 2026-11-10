@@ -70,7 +70,6 @@ class MixinConcrete(SerializableMixin, Base):
         self.value = value
 
 
-@dataclass(frozen=True, slots=True)
 class SlotsManualConcrete(Base):
     w: int
 
@@ -80,6 +79,13 @@ class SlotsManualConcrete(Base):
 
     def to_data(self):
         return {"w": self.w}
+
+
+# Equivalent to decorating SlotsManualConcrete with @dataclass(frozen=True, slots=True), but keeps
+# a strong reference to the original class that the decorator replaces to deterministically keep
+# the original around in the presence of garbage collection.
+SlotsManualConcreteOriginal = SlotsManualConcrete
+SlotsManualConcrete = dataclass(frozen=True, slots=True)(SlotsManualConcrete)
 
 
 def test_base_discovers_all_concrete():
@@ -117,16 +123,9 @@ def test_discovered_class_is_replacement_not_original(name, expected_cls):
 
 
 def test_original_class_with_class_body_from_data_is_skipped():
-    all_subs = list(Base.__subclasses__())  # prevent GC
-
-    original = next(
-        (
-            s
-            for s in all_subs
-            if s.__name__ == "SlotsManualConcrete" and "__slots__" not in vars(s)
-        ),
-        None,
-    )
-    assert original is not None, "Original class must exist for this test to be valid"
+    original = SlotsManualConcreteOriginal
+    assert original is not SlotsManualConcrete
+    assert original in Base.__subclasses__()
+    assert "__slots__" not in vars(original)
     assert "from_data" in original.__dict__
     assert Base.__subclass_serializers__["SlotsManualConcrete"] is not original

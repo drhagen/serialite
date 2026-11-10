@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv_build == 0.12.*"]
+requires = ["uv_build == 0.13.*"]
 build-backend = "uv_build"
 
 [project]
@@ -15,22 +15,22 @@ requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
-    "returns >= 0.20,<0.30",
+    "returns >= 0.20,<0.31",
 ]
 
 [project.optional-dependencies]
 fastapi = [
-    "fastapi >=0.121,<0.142",
+    "fastapi >=0.121,<0.163",
     "pydantic >= 2.12,<3",
 ]
 
@@ -52,10 +52,10 @@ nox = [
 test = [
     "pytest == 9.*",
     "coverage == 7.*",
-    "httpx >= 0.25.2", # Needed by starlette testclient
+    "httpx2 >= 2.0", # Needed by starlette testclient
 ]
 lint = [
-    "ruff == 0.16.*",
+    "ruff == 0.17.*",
 ]
 typecheck = [
     "ty >= 0.0.65",
