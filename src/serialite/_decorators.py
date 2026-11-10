@@ -89,9 +89,8 @@ def infer_fields_serializer(cls, *, hide_default: bool = True):
 
         serializer_fields = {}
         for field in fields:
-            maybe_serializer = field.metadata.get("serializer", MISSING)
-            if maybe_serializer is not MISSING:
-                field_serializer = maybe_serializer
+            if "serializer" in field.metadata:
+                field_serializer = field.metadata["serializer"]
             else:
                 field_serializer = serializer(types[field.name])
 
@@ -105,11 +104,7 @@ def infer_fields_serializer(cls, *, hide_default: bool = True):
             elif maybe_factory_default is not MISSING:
                 field_default = maybe_factory_default()
 
-            maybe_hide_default = field.metadata.get("hide_default", MISSING)
-            if maybe_hide_default is not MISSING:
-                field_hide_default = maybe_hide_default
-            else:
-                field_hide_default = hide_default
+            field_hide_default = field.metadata.get("hide_default", hide_default)
 
             serializer_fields[field.name] = SingleField(
                 field_serializer, default=field_default, hide_default=field_hide_default

@@ -88,10 +88,11 @@ def field(
       its value equals its default. If not provided, the `hide_default` option
       of the `serializable` decorator is used.
     """
-    serializer_metadata = (metadata if metadata is not None else {}) | {
-        "serializer": serializer,
-        "hide_default": hide_default,
-    }
+    serializer_metadata = dict(metadata) if metadata is not None else {}
+    if serializer is not MISSING:
+        serializer_metadata["serializer"] = serializer
+    if hide_default is not MISSING:
+        serializer_metadata["hide_default"] = hide_default
     return dataclasses.field(
         default=default,
         default_factory=default_factory,
